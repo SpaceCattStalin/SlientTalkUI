@@ -3,12 +3,21 @@ const { withNativeWind } = require('nativewind/metro');
 
 const config = getDefaultConfig(__dirname);
 
-config.transformer.babelTransformerPath = require.resolve(
-  'react-native-svg-transformer'
-);
-config.resolver.assetExts = config.resolver.assetExts.filter(
-  (ext) => ext !== 'svg'
-);
-config.resolver.sourceExts.push('svg');
+const { transformer, resolver } = config;
 
+config.transformer = {
+  ...transformer,
+  getTransformOptions: async () => ({
+    transform: {
+      experimentalImportSupport: false,
+      inlineRequires: true,
+    },
+  }),
+  babelTransformerPath: require.resolve('react-native-svg-transformer/expo'),
+};
+config.resolver = {
+  ...resolver,
+  assetExts: [...resolver.assetExts.filter((ext) => ext !== 'svg'), 'lottie'],
+  sourceExts: [...resolver.sourceExts, 'svg'],
+};
 module.exports = withNativeWind(config, { input: './app/global.css' });

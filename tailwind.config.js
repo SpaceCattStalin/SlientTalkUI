@@ -9,28 +9,28 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // brand: {
-        //   light: '#E8F1FF',
-        //   hover: '#7CAAF7',
-        //   DEFAULT: '#2877ED',
-        //   pressed: '#2463C9',
-        //   dark: '#0B3478',
-        // },
-        // success: '#4DED35',
-        // error: '#CA3D3D',
+        brand: {
+          50: '#E8F1FF', // lightest
+          200: '#7CAAF7', // hover
+          400: '#2877ED', // base
+          600: '#2463C9', // pressed
+          800: '#0B3478', // dark
+        },
+        success: '#4DED35',
+        error: '#CA3D3D',
         // accent: '#F4D2B8',
-        primary: '#030014',
-        secondary: '#151312',
-        light: {
-          100: '#D6C6FF',
-          200: '#A8B5DB',
-          300: '#9CA4AB',
-        },
-        dark: {
-          100: '#221f3d',
-          200: '#0f0d23',
-        },
-        accent: '#AB8BFF',
+        // primary: '#030014',
+        // secondary: '#151312',
+        // light: {
+        //   100: '#D6C6FF',
+        //   200: '#A8B5DB',
+        //   300: '#9CA4AB',
+        // },
+        // dark: {
+        //   100: '#221f3d',
+        //   200: '#0f0d23',
+        // },
+        // accent: '#AB8BFF',
       },
     },
   },

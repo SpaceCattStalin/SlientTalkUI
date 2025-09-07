@@ -14,6 +14,6 @@ export interface AuthContextType {
 
 export type AuthAction =
     | { type: "RESTORE_TOKEN"; token: string | null; }
-    | { type: "SIGN_IN"; token: string; }
+    | { type: "SIGN_IN"; token: string | null; }
     | { type: "SIGN_UP"; }
     | { type: "SIGN_OUT"; }; 
