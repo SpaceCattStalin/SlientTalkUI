@@ -4,6 +4,7 @@ import OnboardingScreen from '@/components/OnboardingScreen';
 import { colors } from '@/global/theme';
 import { OnboardingPage } from '../../components/OnboardingScreen';
 import LottieView from 'lottie-react-native';
+import { useRoute } from '@react-navigation/native';
 const onboardingPages: OnboardingPage[] = [
   {
     title: 'Phiên dịch trực tiếp',
@@ -44,21 +45,28 @@ const onboardingPages: OnboardingPage[] = [
   },
 ];
 
-const Main = () => {
+type OnboardingProps = {
+  onDone: () => void;
+};
+
+const Onboarding = ({ onDone }: OnboardingProps) => {
+  const route = useRoute();
+  console.log("Currently on route:", route.name);
+
+
   return (
     <View style={styles.container}>
       <View style={styles.main}>
         <OnboardingScreen
           pages={onboardingPages}
-          onDone={() => console.log("Hi")}
-          isFirstTime={true}
+          onDone={onDone}
         />
       </View>
     </View >
   );
 };
 
-export default Main;
+export default Onboarding;
 
 const styles = StyleSheet.create({
   container: {

@@ -1,16 +1,18 @@
 import ThemedView from '@/components/ThemedView';
 import React from 'react';
-import { Image, Text, TouchableOpacity, TextInput, View } from 'react-native';
+import { Image, Text, TouchableOpacity, TextInput, View, StyleSheet } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 
 import SunAnimation from '@/components/animation/SunAnimation';
 import ThemedText from '@/components/ThemedText';
 import { Link } from 'expo-router';
 import Animated, { FadeInLeft, FadeInUp } from 'react-native-reanimated';
+import { colors } from '@/global/theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Register = () => {
   return (
-    <ThemedView safe={true} className='relative h-full bg-brand-200'>
+    <SafeAreaView className='relative h-full' style={styles.container}>
       <Animated.View entering={FadeInLeft.delay(200).duration(1000).springify()}>
         <SunAnimation size={350} />
       </Animated.View>
@@ -23,16 +25,16 @@ const Register = () => {
 
         <ThemedView className='flex-1 flex items-center pt-20 mx-4 gap-4' transparent={true}>
           <Animated.View entering={FadeInUp.delay(200).duration(1000).springify()} className='bg-gray-200 p-1.5 rounded-2xl w-full border-solid'>
-            <TextInput placeholder='Email' className='text-lg' />
+            <TextInput placeholder='Email' className='text-lg text-black' />
           </Animated.View>
 
           <View className='flex flex-row gap-3 mb-5'>
             <Animated.View entering={FadeInUp.delay(300).duration(1000).springify()} className='bg-gray-200 p-1.5 rounded-2xl w-full flex-1'>
-              <TextInput placeholder='Mật khẩu' className='text-lg' secureTextEntry />
+              <TextInput placeholder='Mật khẩu' className='text-lg text-black' secureTextEntry />
             </Animated.View>
 
             <Animated.View entering={FadeInUp.delay(300).duration(1000).springify()} className='bg-gray-200 p-1.5 rounded-2xl w-full flex-1'>
-              <TextInput placeholder='Xác nhận mật khẩu' className='text-lg' secureTextEntry />
+              <TextInput placeholder='Xác nhận mật khẩu' className='text-lg text-black' secureTextEntry />
             </Animated.View>
           </View>
 
@@ -77,8 +79,14 @@ const Register = () => {
           </Animated.View>
         </ThemedView>
       </ThemedView>
-    </ThemedView>
+    </SafeAreaView>
   );
 };
 
 export default Register;
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.primary500,
+  }
+});

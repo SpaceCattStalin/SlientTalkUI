@@ -1,18 +1,24 @@
 import ThemedView from '@/components/ThemedView';
 import React from 'react';
-import { Image, Text, TouchableOpacity, TextInput, View } from 'react-native';
+import { Image, Text, TouchableOpacity, TextInput, View, StyleSheet } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 
 import SunAnimation from '@/components/animation/SunAnimation';
 import ThemedText from '@/components/ThemedText';
 import { Link, useRouter } from 'expo-router';
 import Animated, { FadeInLeft, FadeInUp } from 'react-native-reanimated';
+import { useRoute } from '@react-navigation/native';
+import { colors } from '@/global/theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Login = () => {
     const router = useRouter();
+    const route = useRoute();
+    console.log("Currently on route:", route.name);
 
     return (
-        <ThemedView safe={true} className='relative h-full bg-[#2877ED]'>
+        // <ThemedView safe={true} className='relative h-full' style={styles.container}>
+        <SafeAreaView className='relative h-full' style={styles.container}>
             <Animated.View entering={FadeInLeft.delay(200).duration(1000).springify()}>
                 <SunAnimation size={350} />
             </Animated.View>
@@ -26,10 +32,10 @@ const Login = () => {
 
                 <ThemedView className='flex-1 flex items-center pt-20 mx-4 gap-4' transparent={true}>
                     <Animated.View entering={FadeInUp.duration(1000).springify()} className='bg-gray-200 p-1.5 rounded-2xl w-full border-solid'>
-                        <TextInput placeholder='Email' className='text-lg' />
+                        <TextInput placeholder='Email' className='text-lg text-black' />
                     </Animated.View>
                     <Animated.View entering={FadeInUp.delay(200).duration(1000).springify()} className='bg-gray-200 p-1.5 rounded-2xl w-full mb-5'>
-                        <TextInput placeholder='Mật khẩu' className='text-lg' secureTextEntry />
+                        <TextInput placeholder='Mật khẩu' className='text-lg text-black' secureTextEntry />
                     </Animated.View>
 
                     <Animated.View entering={FadeInUp.delay(600).duration(1000).springify()} className='w-full'>
@@ -72,8 +78,14 @@ const Login = () => {
                     </Animated.View>
                 </ThemedView>
             </ThemedView>
-        </ThemedView>
+        </SafeAreaView>
     );
 };
 
 export default Login;
+
+const styles = StyleSheet.create({
+    container: {
+        backgroundColor: colors.primary500,
+    }
+});

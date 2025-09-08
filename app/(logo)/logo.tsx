@@ -2,15 +2,11 @@ import { StyleSheet, Text, View } from 'react-native';
 import React, { useEffect } from 'react';
 import { colors } from '@/global/theme';
 import AnimatedTyping from '@/components/animation/AnimatedTyping';
-import { Redirect } from 'expo-router';
+import { useRoute } from '@react-navigation/native';
 
-const Index = () => {
-
-    useEffect(() => {
-        const timer = setTimeout(() => <Redirect href="/(onboarding)/index"></Redirect>, 2000);
-
-        return () => clearTimeout(timer);
-    }, []);
+const Logo = () => {
+    const route = useRoute();
+    console.log("Currently on route:", route.name);
 
     return (
         <View style={styles.container}>
@@ -21,7 +17,7 @@ const Index = () => {
     );
 };
 
-export default Index;
+export default Logo;
 
 const styles = StyleSheet.create({
     container: {

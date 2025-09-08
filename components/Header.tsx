@@ -1,48 +1,77 @@
-import { Text, View, Image, StyleSheet } from 'react-native';
+import { Text, View, Image, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import React from 'react';
-import ThemedView from './ThemedView';
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { colors, fontSizes, spacing } from '@/global/theme';
+import Logo from '@/assets/images/logo.svg';
 
 type HeaderProps = {
-    className?: string;
+    title?: string;
+    onPressRight?: () => void;
 };
 
-const Header = ({ className }: HeaderProps) => {
-    const insets = useSafeAreaInsets();
+const Header = ({ title, onPressRight }: HeaderProps) => {
 
     return (
-        <ThemedView
-            safe={true}
-            className={`${className}`}
-            style={styles.header}
-        >
+        <View style={styles.container}>
 
-            <Image
-                source={require('@/assets/images/logo.png')}
-                style={styles.logo}
-            />
-            {/* <View>
-                <View style={{ height: .5, backgroundColor: "#d3d3d3" }} />
-                <View style={{ height: .5, backgroundColor: "#a9a9a9" }} />
-            </View> */}
-        </ThemedView>
+            <View className='flex-row gap-1'>
+                <Logo width={35} height={35} />
+                <Text style={styles.title}>SilentTalk</Text>
+            </View>
+
+
+            {/* Tiêu đề ở giữa */}
+            {/* {title && (
+                <Text style={styles.title} numberOfLines={1}>
+                    {title}
+                </Text>
+            )} */}
+
+            {/* Nút bên phải */}
+            {/* <TouchableOpacity onPress={onPressRight} style={styles.rightBtn}>
+                <Image
+                    source={require('@/assets/images/notification.png')}
+                    style={styles.icon}
+                />
+            </TouchableOpacity> */}
+        </View>
     );
 };
 
 export default Header;
 
-
 const styles = StyleSheet.create({
-    header: {
-        backgroundColor: "#2877ED",
-        paddingHorizontal: 16,
-        // height: 60,
-        flexDirection: "row",
-        alignItems: "center"
+    container: {
+        backgroundColor: colors.gray100,
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.sm,
+        borderBottomWidth: 1,
+        borderBottomColor: "#ddd",
+
+        ...Platform.select({
+            android: {
+                elevation: 2
+            }
+        })
     },
     logo: {
-        height: 24,
+        height: 28,
         aspectRatio: 1,
-        objectFit: "contain"
+        resizeMode: "contain",
+    },
+    title: {
+        alignSelf: 'center',
+        fontSize: fontSizes.xl,
+        fontWeight: "600",
+        color: colors.primary500,
+    },
+    rightBtn: {
+        padding: 8,
+    },
+    icon: {
+        height: 22,
+        width: 22,
+        resizeMode: "contain",
+        tintColor: "#fff",
     },
 });

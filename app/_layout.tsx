@@ -12,13 +12,6 @@ const RootNavigation = () => {
   const [showLogo, setShowLogo] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(true);
 
-  // useEffect(() => {
-  //   // logic check onboarding chưa.
-
-  //   const timer = setTimeout(() => setShowOnboarding(false), 2000);
-  //   return () => clearTimeout(timer);
-  // });
-
 
   useEffect(() => {
     // Hiển thị logo trong 2 giây
@@ -31,24 +24,29 @@ const RootNavigation = () => {
 
     return () => clearTimeout(logoTimer);
   }, []);
-  if (showLogo) {
-    console.log(showLogo);
 
-    return (
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(logo)/index" />
-      </Stack>
-    );
-  }
+  // if (showLogo) {
+  //   console.log(showLogo);
+
+  //   return (
+  //     <Stack screenOptions={{ headerShown: false }}>
+  //       <Stack.Screen name="(logo)" />
+  //     </Stack>
+  //   );
+  // }
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      {showOnboarding ? (
-        <Stack.Screen name="(onboarding)/index" />
+      {/* {showOnboarding ? (
+        <Stack.Screen name="(onboarding)" />
       ) : authState.userToken ? (
-        <Stack.Screen name="(main)/home" />
+        <Stack.Screen name="(main)" />
       ) : (
-        <Stack.Screen name="(auth)/login" />
-      )}
+        <Stack.Screen name="(auth)" />
+      )} */}
+      <Stack.Screen name="(logo)" />
+      <Stack.Screen name="(onboarding)" />
+      <Stack.Screen name="(auth)" />
+      <Stack.Screen name="(main)" />
     </Stack>
   );
 

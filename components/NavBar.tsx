@@ -1,5 +1,5 @@
-import React from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import React, { useState } from 'react';
+import { Image, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Button } from 'react-native-paper';
 
 import Home from '@/assets/images/home.svg';
@@ -7,38 +7,74 @@ import Book from '@/assets/images/book.svg';
 import Search from '@/assets/images/search.svg';
 import Profile from '@/assets/images/profile.svg';
 import Wave from '@/assets/images/wave.svg';
+import { colors, fontSizes, spacing } from '../global/theme';
 
 type NavbarProps = {
     style?: object;
 };
 
+const ICON_SIZE = 20;
+
 const NavBar = ({ style }: NavbarProps) => {
+    const [activeTab, setActiveTab] = useState("home");
+
     return (
         <View style={{ ...styles.container, ...style }}>
-            <Button style={styles.button}>
-                <Home width={24} height={24} />
-                {/* <Image source={require('@/assets/images/home.png')} style={styles.image} /> */}
-            </Button>
+            <TouchableOpacity style={styles.button} onPress={() => setActiveTab("home")}>
+                {/* <View style={{ backgroundColor: activeTab === "home" ? "red" : "transparent", ...styles.wrapper }}> */}
+                <View style={styles.wrapper}>
+                    <Home
+                        width={ICON_SIZE}
+                        height={ICON_SIZE}
+                        stroke={activeTab === "home" ? colors.primary400 : colors.gray500}
+                        fill={activeTab === "home" ? colors.primary400 : colors.gray500}
+                    />
+                    <Text style={{ color: activeTab === "home" ? colors.primary400 : colors.gray500, ...styles.text }}>Trang chủ</Text>
+                </View>
+            </TouchableOpacity>
 
-            <Button style={styles.button}>
-                <Book width={24} height={24} />
-                {/* <Image source={require('@/assets/images/book.png')} style={styles.image} /> */}
-            </Button>
+            <TouchableOpacity style={styles.button} onPress={() => setActiveTab("practice")}>
+                <View style={styles.wrapper}>
+                    <Book
+                        width={ICON_SIZE}
+                        height={ICON_SIZE}
+                        stroke={activeTab === "practice" ? colors.primary400 : colors.gray500}
+                    />
+                    <Text style={{ color: activeTab === "practice" ? colors.primary400 : colors.gray500, ...styles.text }}>Luyện tập</Text>
+                </View>
+            </TouchableOpacity>
 
-            <Button style={styles.button}>
-                <Wave width={30} height={30} />
-                {/* <Image source={require('@/assets/images/search.png')} style={styles.image} /> */}
-            </Button>
+            {/* <Button style={styles.button}>
+                <Wave width={ICON_SIZE} height={ICON_SIZE} />
+            </Button> */}
 
-            <Button style={styles.button}>
-                <Search width={24} height={24} />
-                {/* <Image source={require('@/assets/images/search.png')} style={styles.image} /> */}
-            </Button>
+            <TouchableOpacity style={styles.button} onPress={() => setActiveTab("translate")}>
+                <View style={styles.wrapper}>
+                    <Wave width={ICON_SIZE} height={ICON_SIZE} />
+                </View>
+            </TouchableOpacity>
 
-            <Button style={styles.button}>
-                <Profile width={24} height={24} />
-                {/* <Image source={require('@/assets/images/profile.png')} style={styles.image} /> */}
-            </Button>
+            <TouchableOpacity style={styles.button} onPress={() => setActiveTab("dictionary")}>
+                <View style={{ ...styles.wrapper, }}>
+                    <Search
+                        width={ICON_SIZE}
+                        height={ICON_SIZE}
+                        stroke={activeTab === "dictionary" ? colors.primary400 : colors.gray500}
+                    />
+                    <Text style={{ color: activeTab === "dictionary" ? colors.primary400 : colors.gray500, ...styles.text }}>Từ điển</Text>
+                </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.button} onPress={() => setActiveTab("profile")}>
+                <View style={{ ...styles.wrapper }}>
+                    <Profile
+                        width={ICON_SIZE}
+                        height={ICON_SIZE}
+                        stroke={activeTab === "profile" ? colors.primary400 : colors.gray500}
+                    />
+                    <Text style={{ color: activeTab === "profile" ? colors.primary400 : colors.gray500, ...styles.text }}>Tài khoản</Text>
+                </View>
+            </TouchableOpacity>
         </View>
     );
 };
@@ -59,16 +95,24 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         borderTopWidth: 1,
         borderTopColor: "#ddd",
-        height: 60
+        height: 70
     },
     button: {
-        flex: 1,
+
+    },
+    wrapper: {
+        borderRadius: 10,
+        padding: spacing.sm,
         justifyContent: "center",
-        alignContent: 'center'
+        alignItems: 'center'
     },
     image: {
         width: "100%",
         height: "100%",
         objectFit: "contain"
+    },
+    text: {
+        fontSize: fontSizes.sm,
+        fontWeight: 500
     }
 });

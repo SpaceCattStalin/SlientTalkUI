@@ -14,26 +14,15 @@ type Props = {
     pages: OnboardingPage[];
     onDone: () => void;
     onSkip?: () => void;
-    isFirstTime: boolean;
 };
 
-export default function OnboardingScreen({ pages, onDone, onSkip, isFirstTime }: Props) {
-
-    useEffect(() => {
-        if (!isFirstTime) {
-            onDone();
-        }
-    }, [isFirstTime, onDone]);
-
-    if (!isFirstTime) return null;
-
-
+export default function OnboardingScreen({ pages, onDone, onSkip}: Props) {
     return (
         <Onboarding
             bottomBarColor={colors.primary50}
             nextLabel={<View><Text style={styles.btnText}>Tiếp theo</Text></View>}
             skipLabel={<View><Text style={styles.btnText}>Bỏ qua</Text></View>}
-            bottomBarHeight={120}
+            bottomBarHeight={170}
             pages={pages.map((page) => ({
                 backgroundColor: page.backgroundColor || "#fff",
                 image: <View style={styles.imageWrapper}>{page.image}</View>,

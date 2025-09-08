@@ -5,6 +5,7 @@ import { spacing } from '@/global/theme';
 
 type CardProps = {
     icon?: ImageSourcePropType;
+    iconSize?: { width: number; height: number; };
     promo?: ImageSourcePropType;
     title?: ReactNode;
     content?: ReactNode;
@@ -12,25 +13,27 @@ type CardProps = {
     width: DimensionValue;
     height: DimensionValue;
     justifyContent?: "flex-end" | "flex-start" | "center" | "space-between" | "space-around" | "space-evenly" | undefined;
+
 };
 
-const Card = ({ icon, promo, title, content, justifyContent = 'flex-end', gradientColors = ['#ffffff', '#eeeeee'], height, width }: CardProps) => {
+const Card = ({ icon, iconSize, promo, title, content, justifyContent = 'flex-end', gradientColors = ['#ffffff', '#eeeeee'], height, width }: CardProps) => {
     return (
         <View style={{ ...styles.card, width: width, height: height, justifyContent: justifyContent }}>
-            {icon && <Svg height="150" width="160" style={styles.svg}>
+            {icon && <Svg height="120" width="120" style={styles.svg}>
                 <Defs>
                     <RadialGradient id="grad" cx="65%" cy="20%" r="70%">
                         <Stop offset="0%" stopColor={gradientColors[0]} />
                         <Stop offset="100%" stopColor={gradientColors[1]} />
                     </RadialGradient>
                 </Defs>
-                <Rect x="0" y="0" width="160" height="150" fill="url(#grad)" />
+                <Rect x="0" y="0" width="110" height="100" fill="url(#grad)" />
             </Svg>}
 
 
             {icon &&
                 <View style={styles.imageWrapper}>
-                    <Image source={icon} style={styles.icon} />
+                    <Image source={icon} style={{ width: iconSize?.width, height: iconSize?.height }} />
+                    {/* <Image source={icon} style={styles.icon} /> */}
                 </View>
             }
 
@@ -81,8 +84,8 @@ const styles = StyleSheet.create({
         right: -20
     },
     icon: {
-        width: 90,
-        height: 90
+        width: 70,
+        height: 70
     },
     promoImageWrapper: {
         position: "absolute",
