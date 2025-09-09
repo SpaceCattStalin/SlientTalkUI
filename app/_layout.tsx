@@ -5,6 +5,7 @@ import { AuthProvider } from "@/context/AuthProvider";
 import { ThemeProvider } from "@/context/ThemeProvider";
 import { useAuth } from "@/hooks/useAuth";
 import ThemedView from "@/components/ThemedView";
+import Navigation from "@/components/Navigation";
 
 const RootNavigation = () => {
   const { authState } = useAuth();
@@ -47,6 +48,7 @@ const RootNavigation = () => {
       <Stack.Screen name="(onboarding)" />
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(main)" />
+      <Stack.Screen name="(dictionary)" />
     </Stack>
   );
 

@@ -3,6 +3,7 @@ import AnimatedLikeIcon from '@/components/animation/AnimatedLikeIcon';
 import Card from '@/components/Card';
 import Header from '@/components/Header';
 import NavBar from '@/components/NavBar';
+import Navigation from '@/components/Navigation';
 import { spacing, colors, fontSizes } from '@/global/theme';
 import { useRoute } from '@react-navigation/native';
 import React from 'react';
@@ -132,7 +133,7 @@ const Home = () => {
                                             accent={colors.blueAccent500}
                                             onPress={() => console.log("Hi")}
                                         /> */}
-                                        <AnimateChveron />
+                                        <AnimateChveron onPress={() => console.log("Hi")} />
                                     </View>
 
                                     <Text style={{
@@ -235,6 +236,7 @@ const Home = () => {
                 {/* <View className='flex-1 bg-black'>
             </View> */}
                 <NavBar />
+                {/* <Navigation /> */}
             </View>
         </SafeAreaView>
     );

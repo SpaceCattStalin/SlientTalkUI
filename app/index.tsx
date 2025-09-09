@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Image, Text, TouchableOpacity, TextInput, View } from 'react-native';
 import Logo from "./(logo)/logo";
 import Onboarding from "./(onboarding)/onboarding";
+import Navigation from "@/components/Navigation";
 
 
 export default function Index() {

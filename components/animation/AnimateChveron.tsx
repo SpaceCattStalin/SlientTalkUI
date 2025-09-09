@@ -11,8 +11,8 @@ const BUTTON_SIZE = size * 1.5;
 const AnimatedComponent = Animated.createAnimatedComponent(ChevronRight);
 
 type Props = {
-    primary: string,
-    accent: string,
+    primary?: string,
+    accent?: string,
     onPress: () => void;
 };
 

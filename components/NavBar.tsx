@@ -8,9 +8,12 @@ import Search from '@/assets/images/search.svg';
 import Profile from '@/assets/images/profile.svg';
 import Wave from '@/assets/images/wave.svg';
 import { colors, fontSizes, spacing } from '../global/theme';
+import { Link } from 'expo-router';
 
 type NavbarProps = {
     style?: object;
+    // activeTab: string;
+    // setActiveTab: (tab: string) => void;
 };
 
 const ICON_SIZE = 20;
@@ -20,61 +23,72 @@ const NavBar = ({ style }: NavbarProps) => {
 
     return (
         <View style={{ ...styles.container, ...style }}>
-            <TouchableOpacity style={styles.button} onPress={() => setActiveTab("home")}>
-                {/* <View style={{ backgroundColor: activeTab === "home" ? "red" : "transparent", ...styles.wrapper }}> */}
-                <View style={styles.wrapper}>
-                    <Home
-                        width={ICON_SIZE}
-                        height={ICON_SIZE}
-                        stroke={activeTab === "home" ? colors.primary400 : colors.gray500}
-                        fill={activeTab === "home" ? colors.primary400 : colors.gray500}
-                    />
-                    <Text style={{ color: activeTab === "home" ? colors.primary400 : colors.gray500, ...styles.text }}>Trang chủ</Text>
-                </View>
-            </TouchableOpacity>
+            <Link href="/(main)/home" asChild>
+                <TouchableOpacity style={styles.button} onPress={() => setActiveTab("home")}>
+                    {/* <View style={{ backgroundColor: activeTab === "home" ? "red" : "transparent", ...styles.wrapper }}> */}
+                    <View style={styles.wrapper}>
+                        <Home
+                            width={ICON_SIZE}
+                            height={ICON_SIZE}
+                            stroke={activeTab === "home" ? colors.primary400 : colors.gray500}
+                            fill={activeTab === "home" ? colors.primary400 : colors.gray500}
+                        />
+                        <Text style={{ color: activeTab === "home" ? colors.primary400 : colors.gray500, ...styles.text }}>Trang chủ</Text>
+                    </View>
+                </TouchableOpacity>
+            </Link>
 
-            <TouchableOpacity style={styles.button} onPress={() => setActiveTab("practice")}>
-                <View style={styles.wrapper}>
-                    <Book
-                        width={ICON_SIZE}
-                        height={ICON_SIZE}
-                        stroke={activeTab === "practice" ? colors.primary400 : colors.gray500}
-                    />
-                    <Text style={{ color: activeTab === "practice" ? colors.primary400 : colors.gray500, ...styles.text }}>Luyện tập</Text>
-                </View>
-            </TouchableOpacity>
+            <Link href="/(practice)/index" asChild>
+
+                <TouchableOpacity style={styles.button} onPress={() => setActiveTab("practice")}>
+                    <View style={styles.wrapper}>
+                        <Book
+                            width={ICON_SIZE}
+                            height={ICON_SIZE}
+                            stroke={activeTab === "practice" ? colors.primary400 : colors.gray500}
+                        />
+                        <Text style={{ color: activeTab === "practice" ? colors.primary400 : colors.gray500, ...styles.text }}>Luyện tập</Text>
+                    </View>
+                </TouchableOpacity>
+            </Link>
 
             {/* <Button style={styles.button}>
                 <Wave width={ICON_SIZE} height={ICON_SIZE} />
             </Button> */}
 
-            <TouchableOpacity style={styles.button} onPress={() => setActiveTab("translate")}>
-                <View style={styles.wrapper}>
-                    <Wave width={ICON_SIZE} height={ICON_SIZE} />
-                </View>
-            </TouchableOpacity>
+            <Link href="/(translate)/index" asChild>
+                <TouchableOpacity style={styles.button} onPress={() => setActiveTab("translate")}>
+                    <View style={styles.wrapper}>
+                        <Wave width={ICON_SIZE * 2} height={ICON_SIZE * 2} />
+                    </View>
+                </TouchableOpacity>
+            </Link>
 
-            <TouchableOpacity style={styles.button} onPress={() => setActiveTab("dictionary")}>
-                <View style={{ ...styles.wrapper, }}>
-                    <Search
-                        width={ICON_SIZE}
-                        height={ICON_SIZE}
-                        stroke={activeTab === "dictionary" ? colors.primary400 : colors.gray500}
-                    />
-                    <Text style={{ color: activeTab === "dictionary" ? colors.primary400 : colors.gray500, ...styles.text }}>Từ điển</Text>
-                </View>
-            </TouchableOpacity>
+            <Link href="/(dictionary)/index" asChild>
+                <TouchableOpacity style={styles.button} onPress={() => setActiveTab("dictionary")}>
+                    <View style={{ ...styles.wrapper, }}>
+                        <Search
+                            width={ICON_SIZE}
+                            height={ICON_SIZE}
+                            stroke={activeTab === "dictionary" ? colors.primary400 : colors.gray500}
+                        />
+                        <Text style={{ color: activeTab === "dictionary" ? colors.primary400 : colors.gray500, ...styles.text }}>Từ điển</Text>
+                    </View>
+                </TouchableOpacity>
+            </Link>
 
-            <TouchableOpacity style={styles.button} onPress={() => setActiveTab("profile")}>
-                <View style={{ ...styles.wrapper }}>
-                    <Profile
-                        width={ICON_SIZE}
-                        height={ICON_SIZE}
-                        stroke={activeTab === "profile" ? colors.primary400 : colors.gray500}
-                    />
-                    <Text style={{ color: activeTab === "profile" ? colors.primary400 : colors.gray500, ...styles.text }}>Tài khoản</Text>
-                </View>
-            </TouchableOpacity>
+            <Link href="/(profile)/index" asChild>
+                <TouchableOpacity style={styles.button} onPress={() => setActiveTab("profile")}>
+                    <View style={{ ...styles.wrapper }}>
+                        <Profile
+                            width={ICON_SIZE}
+                            height={ICON_SIZE}
+                            stroke={activeTab === "profile" ? colors.primary400 : colors.gray500}
+                        />
+                        <Text style={{ color: activeTab === "profile" ? colors.primary400 : colors.gray500, ...styles.text }}>Tài khoản</Text>
+                    </View>
+                </TouchableOpacity>
+            </Link>
         </View>
     );
 };
@@ -114,5 +128,8 @@ const styles = StyleSheet.create({
     text: {
         fontSize: fontSizes.sm,
         fontWeight: 500
+    },
+    link: {
+        position: 'absolute'
     }
 });
