@@ -9,6 +9,7 @@ import Profile from '@/assets/images/profile.svg';
 import Wave from '@/assets/images/wave.svg';
 import { colors, fontSizes, spacing } from '../global/theme';
 import { Link } from 'expo-router';
+import { useNav } from '@/context/NavContext';
 
 type NavbarProps = {
     style?: object;
@@ -19,7 +20,8 @@ type NavbarProps = {
 const ICON_SIZE = 20;
 
 const NavBar = ({ style }: NavbarProps) => {
-    const [activeTab, setActiveTab] = useState("home");
+    // const [activeTab, setActiveTab] = useState("home");
+    const { activeTab, setActiveTab } = useNav();
 
     return (
         <View style={{ ...styles.container, ...style }}>
@@ -38,8 +40,7 @@ const NavBar = ({ style }: NavbarProps) => {
                 </TouchableOpacity>
             </Link>
 
-            <Link href="/(practice)/index" asChild>
-
+            <Link href="/(practice)" asChild>
                 <TouchableOpacity style={styles.button} onPress={() => setActiveTab("practice")}>
                     <View style={styles.wrapper}>
                         <Book
@@ -64,7 +65,7 @@ const NavBar = ({ style }: NavbarProps) => {
                 </TouchableOpacity>
             </Link>
 
-            <Link href="/(dictionary)/index" asChild>
+            <Link href="/(dictionary)" asChild>
                 <TouchableOpacity style={styles.button} onPress={() => setActiveTab("dictionary")}>
                     <View style={{ ...styles.wrapper, }}>
                         <Search
@@ -77,7 +78,7 @@ const NavBar = ({ style }: NavbarProps) => {
                 </TouchableOpacity>
             </Link>
 
-            <Link href="/(profile)/index" asChild>
+            <Link href="/(profile)" asChild>
                 <TouchableOpacity style={styles.button} onPress={() => setActiveTab("profile")}>
                     <View style={{ ...styles.wrapper }}>
                         <Profile

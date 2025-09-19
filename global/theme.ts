@@ -11,7 +11,7 @@ export const colors = {
   primary: '#3498db',
   background: '#E8F1FF',
   text: '#333',
-
+  dictionaryBackground: '#2C6AEF',
   // ------------------- Gray -------------------------
   // ------------------- Interface --------------------
   gray50: '#FDFDFE',
@@ -34,7 +34,7 @@ export const colors = {
   primary500: '#2877ED',
   primary600: '#1E5DBD',
   primary700: '#0B3478',
-
+  primary800: '#061D41',
 
   // ------------------- Accent -----------------------
   // ------------------- Orange Accent ----------------
@@ -73,7 +73,7 @@ export const colors = {
   red200: '#FECACA',
   red300: '#FCA5A5',
   red400: '#F87171',
-  red500: '#EF4444', 
+  red500: '#EF4444',
   red600: '#DC2626',
   red700: '#B91C1C',
   red800: '#991B1B',

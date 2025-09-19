@@ -1,21 +1,56 @@
 import { StyleSheet, Text, View } from 'react-native';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { colors } from '@/global/theme';
 import AnimatedTyping from '@/components/animation/AnimatedTyping';
 import { useRoute } from '@react-navigation/native';
-
+import { Redirect, router } from 'expo-router';
+import Onboarding from '../(onboarding)/onboarding';
+type Prop = {
+    onDone: () => void;
+};
 const Logo = () => {
-    const route = useRoute();
-    console.log("Currently on route:", route.name);
+    const [showOnboarding, setShowOnboarding] = useState(false);
+    const [readyToRedirect, setReadyToRedirect] = useState(false);
+    const [splashDone, setSplashDone] = useState(false);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSplashDone(true);
+
+            const hasSeenOnboarding = false;
+
+            if (hasSeenOnboarding) {
+                setReadyToRedirect(true);
+            } else {
+                setShowOnboarding(true);
+            }
+        }, 3000);
+
+        return () => clearTimeout(timer);
+    }, []);
+
+    if (showOnboarding) {
+        return (
+            <Onboarding onDone={() => {
+                setShowOnboarding(false);
+                setReadyToRedirect(true);
+            }} />
+        );
+    }
+
+    if (readyToRedirect) {
+        return <Redirect href="/(main)/home" />;
+    }
 
     return (
         <View style={styles.container}>
             <View style={styles.main}>
-                <AnimatedTyping textToType={["SilentTalk"]} />
+                <AnimatedTyping textToType={["SilentTalk"]} displayLogo={true} />
             </View>
-        </View >
+        </View>
     );
 };
+
 
 export default Logo;
 

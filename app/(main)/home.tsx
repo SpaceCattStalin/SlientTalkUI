@@ -3,28 +3,35 @@ import AnimatedLikeIcon from '@/components/animation/AnimatedLikeIcon';
 import Card from '@/components/Card';
 import Header from '@/components/Header';
 import NavBar from '@/components/NavBar';
-import Navigation from '@/components/Navigation';
 import { spacing, colors, fontSizes } from '@/global/theme';
 import { useRoute } from '@react-navigation/native';
 import React from 'react';
 import { StyleSheet, View, Text, Pressable, Platform, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Path, Rect } from 'react-native-svg';
-import Video from 'react-native-video';
+import { useVideoPlayer, VideoView } from 'expo-video';
+import BackgroundDecoration from '@/components/BackgroundDecoration';
+import AnimatedTyping from '@/components/animation/AnimatedTyping';
 
 const Home = () => {
+    const player = useVideoPlayer('https://www.w3schools.com/html/mov_bbb.mp4');
+
     const route = useRoute();
     console.log("Currently on route:", route.name);
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* <BackgroundDecoration /> */}
+            <BackgroundDecoration />
             {/* <View className='flex flex-1' style={styles.background}> */}
             <Header />
             <View className='flex-1'>
                 <View style={styles.main}>
-                    <View>
-                        <Text style={styles.greeting}>Xin chào, An</Text>
+                    <View style={{ marginTop: spacing.md }}>
+                        <AnimatedTyping
+                            textToType={["Xin chào, An"]}
+                            displayLogo={false}
+                            textStyle={styles.greeting}
+                        />
+                        {/* <Text style={styles.greeting}>Xin chào, An</Text> */}
                     </View>
                     <View style={styles.summary}>
                         <View style={{
@@ -103,8 +110,16 @@ const Home = () => {
                             </View>
                         </View>
                     </View>
-                    <View className='gap-4'>
-                        <Text style={{ fontSize: fontSizes.xl, fontWeight: 600, color: colors.gray800 }}>Từ của ngày hôm nay</Text>
+                    <View className='gap-4 mt-6'>
+                        <Text
+                            style={{
+                                fontSize: fontSizes.xl,
+                                fontWeight: 600,
+                                color: colors.primary600
+                                //color: colors.gray50
+                            }}>
+                            Từ của ngày hôm nay
+                        </Text>
                         <View style={{
                             borderWidth: .75,
                             borderColor: colors.gray500,
@@ -112,14 +127,27 @@ const Home = () => {
                             backgroundColor: colors.gray100,
                             padding: spacing.md,
                             alignSelf: 'stretch',
-                            gap: 8
+                            gap: 8,
+                            ...Platform.select({
+                                ios: {
+                                    shadowColor: '#ddd',
+                                    shadowOffset: { width: 0, height: 2 },
+                                    shadowOpacity: 0.1,
+                                    shadowRadius: 4
+                                },
+                                android: { elevation: 2 },
+                            }),
                         }}>
                             <View>
-                                <Video
+                                <VideoView
+                                    player={player}
+                                    style={{ width: '100%', aspectRatio: 16 / 9 }}
+                                />
+                                {/* <Video
                                     source={{ uri: 'https://www.w3schools.com/html/mov_bbb.mp4' }}
                                     style={{ width: '100%', aspectRatio: 16 / 9 }}
                                     controls
-                                />
+                                /> */}
                             </View>
                             <View>
                                 <View className='gap-4'>
@@ -247,9 +275,9 @@ export default Home;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.gray200
-        // padding: spacing.md,
-        // backgroundColor: "red"
+        backgroundColor: '#F6F7FA'
+        // backgroundColor: colors.gray100
+        // backgroundColor: '#2C6AEF'
     },
     test: {
         backgroundColor: 'red'
@@ -259,11 +287,15 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingTop: spacing.md,
         paddingHorizontal: spacing.md,
+
         gap: spacing.lg
     },
     greeting: {
         fontWeight: 600,
-        fontSize: fontSizes['3xl']
+        fontSize: fontSizes['3xl'] * 1.5,
+        color: colors.primary500,
+        //color: colors.gray50,
+        flex: 1
     },
     summary: {
         backgroundColor: colors.gray100,
@@ -271,7 +303,17 @@ const styles = StyleSheet.create({
         alignSelf: 'stretch',
         borderColor: colors.gray600,
         borderWidth: .75,
-        borderRadius: 10
+        borderRadius: 10,
+
+        ...Platform.select({
+            ios: {
+                shadowColor: '#ddd',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4
+            },
+            android: { elevation: 2 },
+        }),
     },
     summaryTitle: {
         fontSize: fontSizes.lg,
@@ -283,9 +325,7 @@ const styles = StyleSheet.create({
         paddingVertical: spacing.sm,
         paddingHorizontal: spacing.sm
     },
-    summaryBullet: {
 
-    },
     // card: {
     //     borderRadius: 12,
     //     // elevation: 10,

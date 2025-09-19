@@ -26,8 +26,6 @@ const AnimateChveron = ({ onPress }: Props) => {
         };
     }, []);
 
-    console.log(buttonPressed);
-
     useEffect(() => {
         offset.value = withRepeat(
             withTiming(2, {

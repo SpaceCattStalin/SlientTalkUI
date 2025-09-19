@@ -6,9 +6,11 @@ import LottieView from 'lottie-react-native';
 type AnimatedTypingProps = {
     textToType: string[],
     onCompleted?: () => void;
+    displayLogo: boolean;
+    textStyle?: object;
 };
 
-const AnimatedTyping = ({ textToType, onCompleted }: AnimatedTypingProps) => {
+const AnimatedTyping = ({ textToType, onCompleted, displayLogo, textStyle }: AnimatedTypingProps) => {
     let [logoRendered, setLogoRendered] = useState(false);
 
     useEffect(() => {
@@ -98,13 +100,13 @@ const AnimatedTyping = ({ textToType, onCompleted }: AnimatedTypingProps) => {
 
     return (
         <View style={styles.main}>
-            <LottieView
+            {displayLogo && <LottieView
                 source={require('@/assets/lottie/logo.json')}
                 autoPlay
                 style={{ width: 80, height: 80 }}
                 loop={false}
-            />
-            <Text style={styles.text}>
+            />}
+            <Text style={[styles.text, textStyle]}>
                 {typedText}
                 {/* <Text style={{ color: cursorColor, fontSize: 35 }}>|</Text> */}
             </Text>
