@@ -17,6 +17,7 @@ const Mode = () => {
     const { name } = useLocalSearchParams<{ name?: string; }>();
     const [selectedMode, setSelectedMode] = useState<"recognition" | "practice" | null>(null);
 
+
     return (
         <SafeAreaView style={styles.container}>
             <VTBackground
@@ -115,7 +116,10 @@ const Mode = () => {
                                     Bắt đầu thôi nào!
                                 </Text>
                                 {/* </AnimatedText> */}
-                                <AnimatedArrowButton onPress={() => router.push("./question")} />
+                                <AnimatedArrowButton onPress={() => {
+                                    setSelectedMode(null);
+                                    router.push("./question");
+                                }} />
                             </View>
                         )}
                     </View>
@@ -204,7 +208,10 @@ const Mode = () => {
                                     Bắt đầu thôi nào!
                                 </Text>
                                 {/* </AnimatedText> */}
-                                <AnimatedArrowButton onPress={() => router.push("./question")} />
+                                <AnimatedArrowButton onPress={() => {
+                                    setSelectedMode(null);
+                                    router.push("./question");
+                                }} />
                             </View>
                         )}
                     </View>

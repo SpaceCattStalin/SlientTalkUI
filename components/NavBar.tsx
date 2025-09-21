@@ -6,7 +6,8 @@ import Home from '@/assets/images/home.svg';
 import Book from '@/assets/images/book.svg';
 import Search from '@/assets/images/search.svg';
 import Profile from '@/assets/images/profile.svg';
-import Wave from '@/assets/images/wave.svg';
+// import Wave from '@/assets/images/wave.svg';
+import Scan from '@/assets/images/scan.svg';
 import { colors, fontSizes, spacing } from '../global/theme';
 import { Link } from 'expo-router';
 import { useNav } from '@/context/NavContext';
@@ -57,10 +58,17 @@ const NavBar = ({ style }: NavbarProps) => {
                 <Wave width={ICON_SIZE} height={ICON_SIZE} />
             </Button> */}
 
-            <Link href="/(translate)/index" asChild>
-                <TouchableOpacity style={styles.button} onPress={() => setActiveTab("translate")}>
-                    <View style={styles.wrapper}>
-                        <Wave width={ICON_SIZE * 2} height={ICON_SIZE * 2} />
+            <Link href="/(translate)" asChild>
+                <TouchableOpacity style={styles.translateBtn} onPress={() => setActiveTab("translate")}>
+                    <View style={{ ...styles.wrapper, }}>
+                        <Scan
+                            width={ICON_SIZE}
+                            height={ICON_SIZE}
+                            stroke={activeTab === "translate" ? colors.primary400 : colors.gray500}
+                        />
+                        <Text style={{ color: activeTab === "translate" ? colors.primary400 : colors.gray500, ...styles.text }}>
+                            Phiên dịch
+                        </Text>
                     </View>
                 </TouchableOpacity>
             </Link>
@@ -114,6 +122,15 @@ const styles = StyleSheet.create({
     },
     button: {
 
+    },
+    translateBtn: {
+        // position: 'relative',
+        // bottom: 20,
+        // backgroundColor: colors.gray50,
+        // padding: spacing.sm,
+        // borderRadius: 999,
+        // borderColor: '#ddd',
+        // borderWidth: 1
     },
     wrapper: {
         borderRadius: 10,

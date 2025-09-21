@@ -11,12 +11,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import BackgroundDecoration from '@/components/BackgroundDecoration';
 import AnimatedTyping from '@/components/animation/AnimatedTyping';
+import { router } from 'expo-router';
 
 const Home = () => {
     const player = useVideoPlayer('https://www.w3schools.com/html/mov_bbb.mp4');
 
     const route = useRoute();
-    console.log("Currently on route:", route.name);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -25,6 +25,7 @@ const Home = () => {
             <Header />
             <View className='flex-1'>
                 <View style={styles.main}>
+
                     <View style={{ marginTop: spacing.md }}>
                         <AnimatedTyping
                             textToType={["Xin chào, An"]}
@@ -110,7 +111,7 @@ const Home = () => {
                             </View>
                         </View>
                     </View>
-                    <View className='gap-4 mt-6'>
+                    <View className='gap-4 mt-1'>
                         <Text
                             style={{
                                 fontSize: fontSizes.xl,
@@ -139,10 +140,20 @@ const Home = () => {
                             }),
                         }}>
                             <View>
-                                <VideoView
+                                <Image
+                                    source={require('@/assets/images/3d.png')}
+                                    style={{
+                                        width: 200,
+                                        height: 220,
+                                        alignSelf: 'center',
+                                        resizeMode: 'contain',
+                                        marginTop: spacing.lg
+                                    }}
+                                />
+                                {/* <VideoView
                                     player={player}
                                     style={{ width: '100%', aspectRatio: 16 / 9 }}
-                                />
+                                /> */}
                                 {/* <Video
                                     source={{ uri: 'https://www.w3schools.com/html/mov_bbb.mp4' }}
                                     style={{ width: '100%', aspectRatio: 16 / 9 }}
@@ -161,7 +172,14 @@ const Home = () => {
                                             accent={colors.blueAccent500}
                                             onPress={() => console.log("Hi")}
                                         /> */}
-                                        <AnimateChveron onPress={() => console.log("Hi")} />
+                                        <AnimateChveron
+                                            onPress={() =>
+                                                router.push({
+                                                    pathname: "../(dictionary)/word/[word]",
+                                                    params: { word: "friend" },
+                                                })
+                                            }
+                                        />
                                     </View>
 
                                     <Text style={{

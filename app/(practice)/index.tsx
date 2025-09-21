@@ -9,27 +9,28 @@ import VTBackground from '@/assets/images/vt_bg.svg';
 import Slider from '@/components/Slider';
 import { useSharedValue } from 'react-native-reanimated';
 import AnimatedText from '@/components/animation/AnimatedText';
+import { Collection } from '@/types/Types';
 
-type Collection = {
-  id: number;
-  name: string;
-  wordCount: number;
-};
+// type Collection = {
+//   id: number;
+//   name: string;
+//   wordCount: number;
+// };
 
 const collections: Collection[] = [
-  { id: 1, name: 'Tất cả từ đã lưu', wordCount: 120 },
-  { id: 2, name: 'Y tế', wordCount: 45 },
-  { id: 3, name: 'fafa', wordCount: 10 },
+  { id: 'randomstring', name: 'Tất cả từ đã lưu', wordCount: 120 },
+  { id: 'randomstring1', name: 'Y tế', wordCount: 45 },
+  { id: 'randomstring3', name: 'fafa', wordCount: 10 },
 ];
 
 
 const Index = () => {
-  const [selectedId, setSelectedId] = useState<number | null>();
+  const [selectedId, setSelectedId] = useState<string | null>();
   // const [progress, setProgress] = useState(0);
   const progress = useSharedValue(0);
   const [isSelected, setIsSelected] = useState<Collection | null>();
 
-  const handlePress = (id: number) => {
+  const handlePress = (id: string) => {
     // setSelectedId((prev) => (prev === id ? null : id));
     // setProgress(0);
     // let selectedItem = collections.find(item => item.id === id);
@@ -51,89 +52,92 @@ const Index = () => {
         style={{ position: 'absolute', opacity: 0.4 }}
         preserveAspectRatio="xMidYMid slice"
       />
-      <View style={styles.main}>
-        <BackButton color={colors.primary600} />
+      <View style={{ flex: 1 }}>
 
-        <View style={{ gap: spacing.sm, marginBottom: spacing.md * 1.5 }}>
-          <Text style={styles.word}>Luyện tập</Text>
-          <Text style={{ fontSize: fontSizes.xl, fontWeight: 600, color: colors.primary500 }}>Chọn bộ sưu tập để luyện tập</Text>
-        </View>
+        <View style={styles.main}>
+          {/* <BackButton color={colors.primary600} /> */}
 
-        <View>
-          {collections.map((item) => {
-            return (
-              <TouchableOpacity
-                key={item.id}
-                style={[
-                  styles.collectionCard,
-                  { backgroundColor: selectedId === item.id ? colors.primary400 : colors.gray50 },
-                ]}
-                onPress={() => handlePress(item.id)}
-              >
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    color: selectedId === item.id ? 'white' : 'black',
-                    fontWeight: '600',
-                  }}
+          <View style={{ gap: spacing.sm, marginBottom: spacing.md * 1.5 }}>
+            <Text style={styles.word}>Luyện tập</Text>
+            <Text style={{ fontSize: fontSizes.xl, fontWeight: 600, color: colors.primary500 }}>Chọn bộ sưu tập để luyện tập</Text>
+          </View>
+
+          <View>
+            {collections.map((item) => {
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[
+                    styles.collectionCard,
+                    { backgroundColor: selectedId === item.id ? colors.primary400 : colors.gray50 },
+                  ]}
+                  onPress={() => handlePress(item.id)}
                 >
-                  {item.name} ({item.wordCount} từ)
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+                  <Text
+                    style={{
+                      textAlign: 'center',
+                      color: selectedId === item.id ? 'white' : 'black',
+                      fontWeight: '600',
+                    }}
+                  >
+                    {item.name} ({item.wordCount} từ)
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
 
-        <View style={{ marginTop: spacing.md }}>
-          {isSelected && (
-            <View style={{ gap: spacing.sm }}>
-              <View>
-                <Text style={{ fontSize: fontSizes.xl, color: colors.primary600, fontWeight: 600 }}>Số lượng từ:</Text>
+          <View style={{ marginTop: spacing.md }}>
+            {isSelected && (
+              <View style={{ gap: spacing.sm }}>
+                <View>
+                  <Text style={{ fontSize: fontSizes.xl, color: colors.primary600, fontWeight: 600 }}>Số lượng từ:</Text>
+                </View>
+                <View
+                  style={{
+                    marginTop: spacing.sm,
+                    flexDirection: 'row',
+                    gap: spacing.sm,
+                    alignItems: 'center',
+                    alignSelf: 'stretch',
+                  }}>
+
+                  <Slider
+                    maxValue={isSelected.wordCount}
+                    onChange={(val) => (progress.value = val)}
+                  />
+                  <AnimatedText progress={progress} max={isSelected.wordCount} />
+                </View>
               </View>
-              <View
-                style={{
-                  marginTop: spacing.sm,
-                  flexDirection: 'row',
-                  gap: spacing.sm,
-                  alignItems: 'center',
-                  alignSelf: 'stretch',
+            )}
+          </View>
+
+          <View>
+            {isSelected && (
+              <Link
+                href={{
+                  pathname: "./mode",
+                  params: { name: isSelected?.name },
+                }}
+                asChild
+              >
+                <TouchableOpacity style={{
+                  ...styles.button,
+                  width: 200,
+                  backgroundColor: colors.primary500,
+                  alignSelf: 'center',
+                  paddingHorizontal: spacing.sm * 1.4,
+                  paddingVertical: spacing.sm * 1.2,
+                  borderRadius: 6
                 }}>
-
-                <Slider
-                  maxValue={isSelected.wordCount}
-                  onChange={(val) => (progress.value = val)}
-                />
-                <AnimatedText progress={progress} max={isSelected.wordCount} />
-              </View>
-            </View>
-          )}
+                  <Text style={{ textAlign: 'center', fontSize: fontSizes.md, color: colors.gray100, fontWeight: 700 }}>Xác nhận</Text>
+                </TouchableOpacity>
+              </Link>
+            )}
+          </View>
         </View>
-
-        <View>
-          {isSelected && (
-            <Link
-              href={{
-                pathname: "./mode",
-                params: { name: isSelected?.name },
-              }}
-              asChild
-            >
-              <TouchableOpacity style={{
-                ...styles.button,
-                width: 200,
-                backgroundColor: colors.primary500,
-                alignSelf: 'center',
-                paddingHorizontal: spacing.sm * 1.4,
-                paddingVertical: spacing.sm * 1.2,
-                borderRadius: 6
-              }}>
-                <Text style={{ textAlign: 'center', fontSize: fontSizes.md, color: colors.gray100, fontWeight: 700 }}>Xác nhận</Text>
-              </TouchableOpacity>
-            </Link>
-          )}
-        </View>
+        <NavBar />
       </View>
-      <NavBar />
     </SafeAreaView>
   );
 };
@@ -145,7 +149,8 @@ const styles = StyleSheet.create({
     flex: 1,
     // backgroundColor: "#2C6AEF"
     // backgroundColor: colors.primary200
-    backgroundColor: colors.gray50
+    backgroundColor: colors.gray50,
+    // marginBottom: spacing.lg * 2
   },
   main: {
     padding: spacing.md,

@@ -12,6 +12,7 @@ import NavBar from '@/components/NavBar';
 import EditPen from '@/assets/images/edit-icon.svg';
 import BackButton from '@/components/BackButton';
 import AnimatedButton from '@/components/animation/AnimatedButton';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const Account = () => {
     const [isEditing, setIsEditing] = useState(false);
@@ -21,6 +22,13 @@ const Account = () => {
             flex: 1,
         }}>
             <View style={styles.container}>
+                {/* <LinearGradient
+                    colors={['#0B3478', '#2877ED']}
+                    locations={[0, 0.5]}
+                    start={{ x: 1, y: 1 }}
+                    end={{ x: 1, y: 0 }}
+                    style={StyleSheet.absoluteFillObject}
+                /> */}
                 <BackButton color={colors.primary800} />
                 <View style={styles.header}>
                     <Text
@@ -45,11 +53,12 @@ const Account = () => {
                     <View style={styles.avatarSection}>
                         <View>
                             <Avatar
-                                width={180}
-                                height={180}
+                                width={100}
+                                height={100}
                             />
                             <View style={styles.penButton}>
-                                <EditPen style={styles.penButton} />
+                                {/* <EditPen style={styles.penButton} /> */}
+                                <EditPen/>
                             </View>
                         </View>
                     </View>
@@ -110,9 +119,6 @@ const Account = () => {
                     </View>
                     {isEditing && (
                         <View style={styles.actionRow}>
-                            {/* <View>
-
-                            </View> */}
                             <AnimatedButton
                                 style={[styles.actionBtn, styles.cancelBtn]}
                                 onPress={() => setIsEditing(false)}>
@@ -120,9 +126,7 @@ const Account = () => {
                                     Hủy
                                 </Text>
                             </AnimatedButton>
-                            {/* <Pressable >
-
-                            </Pressable> */}
+                        
                             <AnimatedButton
                                 style={[styles.actionBtn, styles.saveBtn]}
                                 onPress={() => console.log("Save changes")}
@@ -160,7 +164,7 @@ const styles = StyleSheet.create({
     },
     avatarSection: {
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     main: {
         flex: 3,
@@ -192,7 +196,7 @@ const styles = StyleSheet.create({
     },
     penButton: {
         position: "absolute",
-        bottom: 10,
+        bottom: 0,
         right: 10,
         backgroundColor: "#F97316",
         width: 40,

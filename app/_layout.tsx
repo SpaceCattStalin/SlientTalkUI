@@ -14,8 +14,8 @@ const RootNavigation = () => {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(logo)" />
-      <Stack.Screen name="(main)" />
       <Stack.Screen name="(onboarding)" />
+      <Stack.Screen name="(main)" />
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(dictionary)" />
       <Stack.Screen name="(practice)" />

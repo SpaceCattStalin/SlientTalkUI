@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View, Image, FlatList } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Image, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Search from '@/components/Searchbar';
 import NavBar from '@/components/NavBar';
@@ -9,15 +9,36 @@ import { ChevronRight } from 'lucide-react-native';
 
 import AnimatedLikeIcon from '@/components/animation/AnimatedLikeIcon';
 import { useRouter } from 'expo-router';
+import ResultModal from '@/components/ResultModal';
+import CollectionModal from '@/components/CollectionModal';
+import AddCollectionModal from '@/components/AddModal';
+import { Collection } from '@/types/Types';
 
 const categories = ["Triệu chứng", "Bộ phận cơ thể", "Điều trị", "Trường học"];
 
-const dictionary = ["Bố", "Mẹ", "Banh", "Cô", "Kẹo"];
+const collections: Collection[] = [
+    { id: 'randomstring', name: 'Tất cả từ đã lưu', wordCount: 120 },
+    { id: 'randomstring1', name: 'Y tế', wordCount: 45 },
+    { id: 'randomstring3', name: 'fafa', wordCount: 10 },
+];
+
+const dictionary = [
+    "Bố", "Mẹ", "Banh", "Cô", "Kẹo",
+    "Anh", "Chị", "Em", "Ông", "Bà",
+    "Cơm", "Nước", "Sữa", "Bánh mì", "Táo",
+    "Thầy", "Cô giáo", "Bạn", "Sách", "Bút",
+    "Xin chào", "Cảm ơn", "Xin lỗi", "Có", "Không"
+];
 
 const Index = () => {
     const router = useRouter();
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<string[]>([]);
+
+    const [isCollectionVisible, setIsCollectionVisible] = useState(false);
+    const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+    const [isResultVisible, setIsResultVisible] = useState(false);
+    const [resultState, setResultState] = useState<"add" | "save">("save");
 
     useEffect(() => {
         if (query.length > 0) {
@@ -31,19 +52,26 @@ const Index = () => {
     }, [query]);
 
     return (
-        <SafeAreaView style={styles.container}>
-            <Header />
-            <View className='flex-1'>
-                <View style={styles.searchContainer}>
-                    <Text
-                        style={{
-                            paddingHorizontal: spacing.md,
-                            fontSize: fontSizes['2xl'],
-                            fontWeight: 700,
-                            color: colors.gray50
-                        }}>Bạn cần kiếm ký hiệu gì?</Text>
-                    <Search value={query} onChange={setQuery} />
-                    {/* <FlatList
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
+        >
+            <SafeAreaView style={styles.container}>
+                {/* <Header /> */}
+                <View style={{ flex: 1 }}>
+                    <View style={styles.searchContainer}>
+                        <Text
+                            style={{
+                                paddingHorizontal: spacing.md,
+                                fontSize: fontSizes['2xl'],
+                                fontWeight: 700,
+                                color: colors.gray50
+                            }}>
+                            Bạn cần kiếm ký hiệu gì?
+                        </Text>
+                        <Search value={query} onChange={setQuery} />
+                        {/* <FlatList
                         style={{ alignSelf: 'auto', padding: spacing.sm }}
                         horizontal
                         data={categories}
@@ -58,7 +86,7 @@ const Index = () => {
                         ItemSeparatorComponent={() => <View style={{ width: 8 }} />}
                     /> */}
 
-                    {/* 
+                        {/* 
                     <View style={{
                         paddingHorizontal: spacing.md,
                     }}>
@@ -67,54 +95,72 @@ const Index = () => {
                
                         <CTAButton />
                     </View> */}
-                </View>
-                <View style={styles.main}>
-                    {results.length > 0 && (
-                        <View style={{ marginTop: spacing.lg, paddingHorizontal: spacing.md }}>
-                            <FlatList
-                                style={{ marginTop: 10 }}
-                                data={results}
-                                keyExtractor={(item) => item}
-                                renderItem={({ item }) => (
-                                    <View style={styles.card}>
-                                        <TouchableOpacity
-                                            style={styles.searchItem}
-                                            onPress={() => {
-                                                console.log(item);
-                                                router.push(`./${item}`);
-                                            }}
-                                        >
-                                            <Text style={{
-                                                fontSize: fontSizes.lg,
-                                                color: colors.primary600,
-                                                fontWeight: 500
-                                            }}>
-                                                {item}
-                                            </Text>
-                                            <View style={{
-                                                flexDirection: 'row',
-                                                gap: spacing.xs,
-                                                alignItems: 'center'
-                                            }}>
-                                                <AnimatedLikeIcon
-                                                    accent='transparent'
-                                                    primary={colors.primary600}
-                                                    onPress={() => console.log('Hi')}
-                                                />
-                                                <ChevronRight
-                                                    color={colors.primary700}
-                                                    size={28}
-                                                />
+                    </View>
+                    <View style={styles.main}>
+                        {query ? (
+                            results.length > 0 ? (
+                                <View style={{ marginTop: spacing.lg, paddingHorizontal: spacing.md }}>
+                                    <FlatList
+                                        style={{ marginTop: 10 }}
+                                        data={results}
+                                        keyExtractor={(item) => item}
+                                        renderItem={({ item }) => (
+                                            <View style={styles.card}>
+                                                <TouchableOpacity
+                                                    style={styles.searchItem}
+                                                    onPress={() => {
+                                                        console.log(item);
+                                                        // router.push(`./word/${item}`);
+                                                        router.push(`./word/${encodeURIComponent(item)}`);
+                                                    }}
+                                                >
+                                                    <Text style={{
+                                                        fontSize: fontSizes.lg,
+                                                        color: colors.primary600,
+                                                        fontWeight: 500
+                                                    }}>
+                                                        {item}
+                                                    </Text>
+                                                    <View style={{
+                                                        flexDirection: 'row',
+                                                        gap: spacing.xs,
+                                                        alignItems: 'center'
+                                                    }}>
+                                                        <AnimatedLikeIcon
+                                                            accent='transparent'
+                                                            primary={colors.primary600}
+                                                            onPress={() => setIsCollectionVisible(true)}
+                                                        />
+                                                        <ChevronRight
+                                                            color={colors.primary700}
+                                                            size={28}
+                                                        />
+                                                    </View>
+                                                </TouchableOpacity>
                                             </View>
-                                        </TouchableOpacity>
-                                    </View>
-                                )}
-                            />
-                        </View>
-                    )}
-
-                    {!query && (
-                        <View style={{ flex: 1, gap: spacing.md }}>
+                                        )}
+                                    />
+                                </View>
+                            ) : <View style={{ flex: 1, gap: spacing.md }}>
+                                <Image source={require('@/assets/images/empty.png')}
+                                    style={{
+                                        width: 200,
+                                        height: 200,
+                                        alignSelf: 'center',
+                                        resizeMode: 'contain',
+                                        marginTop: spacing.lg
+                                    }}
+                                />
+                                <Text
+                                    style={{
+                                        fontSize: fontSizes.lg,
+                                        color: colors.gray400,
+                                        textAlign: 'center',
+                                    }}>
+                                    Không tìm thấy kết quả cho &quot;{query}&quot;
+                                </Text>
+                            </View>
+                        ) : (<View style={{ flex: 1, gap: spacing.md, justifyContent: 'flex-start' }}>
                             <Text style={{
                                 textAlign: 'center',
                                 color: colors.primary700,
@@ -124,7 +170,12 @@ const Index = () => {
                             }}>Khám phá theo chủ đề</Text>
                             <View style={styles.topicsContainer}>
                                 <View style={styles.topicContainer}>
-                                    <TouchableOpacity style={styles.topic}>
+                                    <TouchableOpacity style={styles.topic}
+                                        onPress={() => {
+                                            // router.push('./family');
+                                            router.push(`./${encodeURIComponent("Gia đình")}`);
+                                        }}
+                                    >
                                         <View style={styles.topicImage}>
                                             <Image
                                                 source={require('@/assets/images/family.png')}
@@ -134,7 +185,12 @@ const Index = () => {
                                         </View>
                                         <Text style={styles.topicTitle}>Gia đình</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={styles.topic}>
+                                    <TouchableOpacity
+                                        style={styles.topic}
+                                        onPress={() => {
+                                            router.push(`./${encodeURIComponent("Y tế")}`);
+                                        }}
+                                    >
                                         <View style={styles.topicImage}>
                                             <Image
                                                 source={require('@/assets/images/doctor.png')}
@@ -146,7 +202,12 @@ const Index = () => {
                                     </TouchableOpacity>
                                 </View>
                                 <View style={styles.topicContainer}>
-                                    <TouchableOpacity style={styles.topic}>
+                                    <TouchableOpacity
+                                        style={styles.topic}
+                                        onPress={() => {
+                                            router.push(`./${encodeURIComponent("Trường học")}`);
+                                        }}
+                                    >
                                         <View style={styles.topicImage}>
                                             <Image
                                                 source={require('@/assets/images/school.png')}
@@ -156,7 +217,12 @@ const Index = () => {
                                         </View>
                                         <Text style={styles.topicTitle}>Trường học</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={styles.topic}>
+                                    <TouchableOpacity
+                                        style={styles.topic}
+                                        onPress={() => {
+                                            router.push(`./${encodeURIComponent("Câu hỏi")}`);
+                                        }}
+                                    >
                                         <View style={styles.topicImage}>
                                             <Image
                                                 source={require('@/assets/images/question.png')}
@@ -168,19 +234,54 @@ const Index = () => {
                                     </TouchableOpacity>
                                 </View>
                             </View>
-                        </View>
-                    )}
 
+
+                        </View>)}
+
+
+
+                    </View>
+                    <NavBar />
                 </View>
-                <NavBar />
-            </View>
-        </SafeAreaView>
+                <ResultModal
+                    visible={isResultVisible}
+                    onClose={() => setIsResultVisible(false)}
+                    state={resultState}
+                />
+
+                <CollectionModal
+                    isVisible={isCollectionVisible}
+                    onCancel={() => setIsCollectionVisible(false)}
+                    collections={collections}
+                    onConfirm={() => {
+                        setIsCollectionVisible(false);
+                        setResultState("save");
+                        setIsResultVisible(true);
+                    }}
+                    onAdd={() => {
+                        setIsCollectionVisible(false);
+                        setIsAddModalVisible(true);
+                    }}
+                />
+
+                <AddCollectionModal
+                    isVisible={isAddModalVisible}
+                    onCancel={() => setIsAddModalVisible(false)}
+                    onAdd={() => {
+                        setIsAddModalVisible(false);
+                        setResultState("add");
+                        setIsResultVisible(true);
+                    }}
+                />
+            </SafeAreaView>
+        </KeyboardAvoidingView >
     );
 };
 
 export default Index;
 
 const styles = StyleSheet.create({
+
     container: {
         flex: 1,
         backgroundColor: "#2C6AEF"

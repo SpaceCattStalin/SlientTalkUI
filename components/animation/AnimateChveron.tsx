@@ -40,16 +40,14 @@ const AnimateChveron = ({ onPress }: Props) => {
     return (
         <TouchableOpacity
             style={{ ...styles.iconContainer, backgroundColor: buttonPressed ? colors.primary400 : 'transparent' }}
-            onPress={() => {
-                setButtonPressed(!buttonPressed);
-            }}
+            onPress={onPress}
         >
             <AnimatedComponent
                 size={size}
                 style={animatedStyle}
                 color={buttonPressed ? colors.gray50 : colors.primary400}
             />
-        </TouchableOpacity>
+        </TouchableOpacity >
     );
 };
 
