@@ -10,7 +10,8 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
-  Dimensions
+  Dimensions,
+  Linking
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CameraView, Camera, CameraType } from "expo-camera";
@@ -20,6 +21,7 @@ import Flip from '@/assets/images/flip.svg';
 import Search from "@/components/Searchbar";
 import { Searchbar } from "react-native-paper";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+
 
 const { width } = Dimensions.get("window");
 
@@ -69,13 +71,32 @@ const Index = () => {
     }
   };
 
-  if (hasPermission === null) {
-    return <Text>Requesting camera permission...</Text>;
-  }
-  if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
-  }
+  // if (hasPermission === null) {
+  //   return <Text>Requesting camera permission...</Text>;
+  // }
 
+  if (hasPermission === false) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <Ionicons name="camera-off" size={64} color="#666" />
+        <Text style={{ fontSize: 16, marginTop: 12, color: "#444", textAlign: "center" }}>
+          Ứng dụng cần quyền truy cập máy ảnh để sử dụng tính năng này.
+        </Text>
+        <TouchableOpacity
+          style={{
+            marginTop: 20,
+            backgroundColor: "#2C6AEF",
+            paddingHorizontal: 20,
+            paddingVertical: 12,
+            borderRadius: 8,
+          }}
+          onPress={() => Linking.openSettings()} 
+        >
+          <Text style={{ color: "#fff", fontWeight: "bold" }}>Mở Cài đặt</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -176,7 +197,7 @@ export default Index;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.primary200,
+    backgroundColor: colors.gray400,
   },
   header: {
     flexDirection: "row",

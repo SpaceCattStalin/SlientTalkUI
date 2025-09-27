@@ -12,6 +12,7 @@ import { useLocalSearchParams } from "expo-router";
 import { useVideoPlayer, VideoView } from "expo-video";
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import Animated, { FadeInLeft } from "react-native-reanimated";
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const collections: Collection[] = [
@@ -43,7 +44,10 @@ export default function WordScreen() {
                 <View style={{ paddingHorizontal: spacing.sm, marginTop: spacing.md }}>
                     <BackButton color={colors.gray300} />
                 </View>
-                <View style={styles.definitionContainer}>
+                <Animated.View
+                    style={styles.definitionContainer}
+                    entering={FadeInLeft.duration(500).springify()}
+                >
                     <View style={{
                         flexDirection: 'row',
                         alignItems: 'center',
@@ -65,7 +69,7 @@ export default function WordScreen() {
                         thường xuyên chia sẻ, trò chuyện
                         và hỗ trợ nhau trong học tập hoặc cuộc sống.
                     </Text>
-                </View>
+                </Animated.View>
 
 
                 <View style={styles.main}>
@@ -77,7 +81,10 @@ export default function WordScreen() {
                         showsVerticalScrollIndicator={false}
                     >
                         <View style={{ paddingTop: spacing.md, flex: 1, gap: spacing.lg }}>
-                            <View style={styles.videoContainer}>
+                            <Animated.View
+                                style={styles.videoContainer}
+                                entering={FadeInLeft.delay(200).duration(500).springify()}
+                            >
                                 {/* <VideoView
                                     player={player}
                                     style={{ width: '100%', aspectRatio: 16 / 9 }}
@@ -91,13 +98,26 @@ export default function WordScreen() {
                                         resizeMode: 'contain',
                                     }}
                                 />
-                            </View>
+                            </Animated.View>
 
                             <View style={{ gap: spacing.sm }}>
-                                <Text style={{ fontSize: fontSizes.md * 1.4, fontWeight: 600, color: colors.primary500 }}>Ví dụ sử dụng:</Text>
-                                <Text style={{ fontSize: fontSizes.sm * 1.2, fontStyle: 'italic', fontWeight: 500, color: colors.primary700 }}>&quot;Tôi có nhiều bạn bè trong lớp học.&quot;</Text>
+                                <Animated.View
+                                    entering={FadeInLeft.delay(300).duration(500).springify()}
+                                >
+                                    <Text style={{ fontSize: fontSizes.md * 1.4, fontWeight: 600, color: colors.primary500 }}>Ví dụ sử dụng:</Text>
+                                </Animated.View>
+                                <Animated.View
+                                    entering={FadeInLeft.delay(400).duration(500).springify()}
+                                >
+                                    <Text style={{ fontSize: fontSizes.sm * 1.2, fontStyle: 'italic', fontWeight: 500, color: colors.primary700 }}>
+                                        &quot;Tôi có nhiều bạn bè trong lớp học.&quot;
+                                    </Text>
+                                </Animated.View>
                             </View>
-                            <View style={styles.videoContainer}>
+                            <Animated.View
+                                style={styles.videoContainer}
+                                entering={FadeInLeft.delay(500).duration(500).springify()}
+                            >
                                 {/* <VideoView
                                     player={player2}
                                     style={{ width: '100%', aspectRatio: 16 / 9 }}
@@ -111,7 +131,7 @@ export default function WordScreen() {
                                         resizeMode: 'contain',
                                     }}
                                 />
-                            </View>
+                            </Animated.View>
                             <View style={{ flex: 1, gap: spacing.sm }}>
                                 <Text style={{ fontSize: fontSizes.md, fontWeight: 600, color: colors.primary500 }}>Các ký hiệu liên quan</Text>
                                 <View style={{ flexDirection: 'row', gap: spacing.sm }}>
@@ -137,6 +157,7 @@ export default function WordScreen() {
                         </View>
                     </ScrollView>
                 </View>
+
                 <ResultModal
                     visible={isResultVisible}
                     onClose={() => setIsResultVisible(false)}
@@ -145,7 +166,7 @@ export default function WordScreen() {
 
                 <CollectionModal
                     isVisible={isCollectionVisible}
-                    onCancel={() => setLikePressed(false)}
+                    onCancel={() => setIsCollectionVisible(false)}
                     collections={collections}
                     onConfirm={() => {
                         setIsCollectionVisible(false);

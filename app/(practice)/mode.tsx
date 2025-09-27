@@ -11,6 +11,7 @@ import Boy from '@/assets/images/boy.svg';
 import VTBackground from '@/assets/images/vt_bg.svg';
 import AnimatedArrowButton from '@/components/animation/AnimatedArrowButton';
 import AnimatedText from '@/components/animation/AnimatedText';
+import Animated, { FadeInLeft, FadeInRight, } from 'react-native-reanimated';
 
 
 const Mode = () => {
@@ -31,26 +32,37 @@ const Mode = () => {
                 <BackButton color={colors.primary600} />
 
                 <View style={{ gap: spacing.sm, marginBottom: spacing.md * 1.5 }}>
-                    <Text style={styles.word}>Luyện tập</Text>
-                    <Text style={{
-                        fontSize: fontSizes.xl,
-                        fontWeight: 400,
-                        color: colors.primary500
-                    }}>
-                        Bộ sưu tập: <Text style={{
-                            fontSize: fontSizes['2xl'],
-                            fontWeight: 600,
-                            color: colors.primary600
+                    <Animated.View
+                        entering={FadeInLeft.duration(500).springify()}
+                    >
+                        <Text style={styles.word}>Luyện tập</Text>
+                    </Animated.View>
+
+                    <Animated.View
+                        entering={FadeInLeft.delay(200).duration(500).springify()}
+                    >
+                        <Text style={{
+                            fontSize: fontSizes.xl,
+                            fontWeight: 400,
+                            color: colors.primary500
                         }}>
-                            &quot;{name}&quot;
+                            Bộ sưu tập: <Text style={{
+                                fontSize: fontSizes['2xl'],
+                                fontWeight: 600,
+                                color: colors.primary600
+                            }}>
+                                &quot;{name}&quot;
+                            </Text>
                         </Text>
-                    </Text>
+                    </Animated.View>
                 </View>
             </View>
-            <View style={{
+            <Animated.View style={{
                 flex: 1,
                 paddingBottom: 420,
-            }}>
+            }}
+                entering={FadeInRight.delay(400).duration(500).springify()}
+            >
                 <Pressable
                     style={[
                         styles.modeCard,
@@ -220,7 +232,7 @@ const Mode = () => {
                         <Boy />
                     </View>
                 </Pressable>
-            </View>
+            </Animated.View>
             <NavBar />
         </SafeAreaView >
     );

@@ -49,7 +49,7 @@ type OnboardingProps = {
   onDone: () => void;
 };
 
-const Onboarding = ({ onDone }: OnboardingProps) => {
+const Index = ({ onDone }: OnboardingProps) => {
   const route = useRoute();
   console.log("Currently on route:", route.name);
 
@@ -66,7 +66,7 @@ const Onboarding = ({ onDone }: OnboardingProps) => {
   );
 };
 
-export default Onboarding;
+export default Index;
 
 const styles = StyleSheet.create({
   container: {

@@ -1,5 +1,5 @@
 import ThemedView from '@/components/ThemedView';
-import React from 'react';
+import React, { useState } from 'react';
 import { Image, Text, TouchableOpacity, TextInput, View, StyleSheet } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 
@@ -14,6 +14,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const Login = () => {
     const router = useRouter();
     const route = useRoute();
+
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
     console.log("Currently on route:", route.name);
 
     return (
@@ -32,10 +38,21 @@ const Login = () => {
 
                 <ThemedView className='flex-1 flex items-center pt-20 mx-4 gap-4' transparent={true}>
                     <Animated.View entering={FadeInUp.duration(1000).springify()} className='bg-gray-200 p-1.5 rounded-2xl w-full border-solid'>
-                        <TextInput placeholder='Email' className='text-lg text-black' />
+                        <TextInput
+                            placeholder='Email'
+                            className='text-lg text-black'
+                            value={email}
+                            onChangeText={setEmail}
+                        />
                     </Animated.View>
                     <Animated.View entering={FadeInUp.delay(200).duration(1000).springify()} className='bg-gray-200 p-1.5 rounded-2xl w-full mb-5'>
-                        <TextInput placeholder='Mật khẩu' className='text-lg text-black' secureTextEntry />
+                        <TextInput
+                            placeholder='Mật khẩu'
+                            className='text-lg text-black'
+                            secureTextEntry
+                            value={password}
+                            onChangeText={setPassword}
+                        />
                     </Animated.View>
 
                     <Animated.View entering={FadeInUp.delay(600).duration(1000).springify()} className='w-full'>

@@ -12,6 +12,7 @@ import CollectionModal from "@/components/CollectionModal";
 import AddCollectionModal from "@/components/AddModal";
 import { Collection } from "@/types/Types";
 import BackButton from "@/components/BackButton";
+import Animated, { FadeInLeft, FadeInUp } from "react-native-reanimated";
 
 const collections: Collection[] = [
     { id: 'randomstring', name: 'Tất cả từ đã lưu', wordCount: 120 },
@@ -78,28 +79,39 @@ export default function TopicDetailScreen() {
                         <View style={{ marginLeft: spacing.sm, marginBottom: spacing.sm }}>
                             <BackButton color={colors.gray50} />
                         </View>
-                        <Text
-                            style={{
-                                paddingHorizontal: spacing.md,
-                                fontSize: fontSizes.xl,
-                                fontWeight: 700,
-                                color: colors.gray50
-                            }}>
-                            Tìm kiếm trong chủ đề &quot;{topic}&quot;
-                        </Text>
-                        <Search value={query} onChange={setQuery} />
+                        <Animated.View
+                            entering={FadeInLeft.duration(500).springify()}
+                        >
+                            <Text
+                                style={{
+                                    paddingHorizontal: spacing.md,
+                                    fontSize: fontSizes.xl,
+                                    fontWeight: 700,
+                                    color: colors.gray50
+                                }}>
+                                Tìm kiếm trong chủ đề &quot;{topic}&quot;
+                            </Text>
+                        </Animated.View>
+                        <Animated.View
+                            entering={FadeInLeft.delay(200).duration(500).springify()}
+                        >
+                            <Search value={query} onChange={setQuery} />
+                        </Animated.View>
                     </View>
                 </View>
                 <View style={styles.main}>
-                    
+
                     {results.length > 0 ? (
                         <View style={{ marginTop: spacing.lg, paddingHorizontal: spacing.md, marginBottom: spacing.lg * 4 }}>
                             <FlatList
                                 style={{ marginTop: 10 }}
                                 data={results.length > 0 ? results : wordsForTopic}
                                 keyExtractor={(item) => item}
-                                renderItem={({ item }) => (
-                                    <View style={styles.card}>
+                                renderItem={({ item,index }) => (
+                                    <Animated.View
+                                        entering={FadeInUp.delay(100 * index).duration(200)}
+                                        style={styles.card}
+                                    >
                                         <TouchableOpacity
                                             style={styles.searchItem}
                                         // onPress={() => {
@@ -130,12 +142,12 @@ export default function TopicDetailScreen() {
                                                 />
                                             </View>
                                         </TouchableOpacity>
-                                    </View>
+                                    </Animated.View>
                                 )}
                             />
                         </View>
                     ) :
-                        <View style={{ flex: 1, gap: spacing.md, justifyContent: 'flex-start'  }}>
+                        <View style={{ flex: 1, gap: spacing.md, justifyContent: 'flex-start' }}>
                             <Image source={require('@/assets/images/empty.png')}
                                 style={{
                                     width: 200,

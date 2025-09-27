@@ -5,6 +5,7 @@ import { colors, fontSizes, spacing } from '@/global/theme';
 import BackButton from '@/components/BackButton';
 import { Ionicons } from '@expo/vector-icons';
 import NavBar from '@/components/NavBar';
+import Animated, { FadeInDown, FadeInLeft } from 'react-native-reanimated';
 
 const PlanCard = ({
     title,
@@ -26,7 +27,10 @@ const PlanCard = ({
     onApply?: () => void;
 }) => {
     return (
-        <View style={styles.card}>
+        <Animated.View
+            style={styles.card}
+            entering={FadeInDown.duration(500)}
+        >
             <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle}>{title}</Text>
                 {isPremium && (
@@ -37,7 +41,9 @@ const PlanCard = ({
             {price && <Text style={styles.price}>{price}</Text>}
             {discount && <Text style={styles.discount}>{discount}</Text>}
 
-            <Text style={styles.subtitle}>{subtitle}</Text>
+            <Text style={styles.subtitle}>
+                {subtitle}
+            </Text>
 
             <View style={{ marginTop: spacing.md }}>
                 {features.map((f, idx) => (
@@ -62,20 +68,23 @@ const PlanCard = ({
                     </TouchableOpacity>
                 </View>
             )}
-        </View>
+        </Animated.View>
     );
 };
 
 const PaymentPlans = () => {
     return (
-        <View style={{ flex: 1 }}>
-            <SafeAreaView style={styles.container}>
+        <SafeAreaView style={{
+            flex: 1
+        }}>
+            <View style={styles.container}>
+
                 <BackButton color={colors.gray200} />
 
-                <View>
+                <Animated.View entering={FadeInLeft.duration(500).springify()}>
+                    <Text style={styles.header}>Chọn gói phù hợp cho bạn</Text>
+                </Animated.View>
 
-                </View>
-                <Text style={styles.header}>Chọn gói phù hợp cho bạn</Text>
 
                 <PlanCard
                     title="Gói Cơ bản"
@@ -85,7 +94,6 @@ const PaymentPlans = () => {
                         'Dùng chế độ Luyện tập với số lượng giới hạn',
                     ]}
                 />
-
                 <PlanCard
                     title="Gói Cao cấp"
                     subtitle="Người khiếm thính, sinh viên ngành Giáo dục, Y tế và Công tác xã hội"
@@ -100,11 +108,10 @@ const PaymentPlans = () => {
                     onSubscribe={() => {
                     }}
                 />
-            </SafeAreaView>
-            <View style={{ position: 'absolute', bottom: 0, width: '100%' }}>
-                <NavBar />
+
             </View>
-        </View>
+            <NavBar />
+        </SafeAreaView>
     );
 };
 

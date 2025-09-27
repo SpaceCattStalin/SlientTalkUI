@@ -41,7 +41,7 @@ const NavBar = ({ style }: NavbarProps) => {
                 </TouchableOpacity>
             </Link>
 
-            <Link href="/(practice)" asChild>
+            {/* <Link href="/(practice)" asChild>
                 <TouchableOpacity style={styles.button} onPress={() => setActiveTab("practice")}>
                     <View style={styles.wrapper}>
                         <Book
@@ -52,7 +52,7 @@ const NavBar = ({ style }: NavbarProps) => {
                         <Text style={{ color: activeTab === "practice" ? colors.primary400 : colors.gray500, ...styles.text }}>Luyện tập</Text>
                     </View>
                 </TouchableOpacity>
-            </Link>
+            </Link> */}
 
             {/* <Button style={styles.button}>
                 <Wave width={ICON_SIZE} height={ICON_SIZE} />

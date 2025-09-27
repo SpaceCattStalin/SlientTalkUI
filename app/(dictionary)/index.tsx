@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View, Image, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Image, FlatList, KeyboardAvoidingView, Platform, Pressable} from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Search from '@/components/Searchbar';
 import NavBar from '@/components/NavBar';
@@ -13,6 +13,9 @@ import ResultModal from '@/components/ResultModal';
 import CollectionModal from '@/components/CollectionModal';
 import AddCollectionModal from '@/components/AddModal';
 import { Collection } from '@/types/Types';
+import Animated, { FadeInLeft, FadeInRight, FadeInDown, FadeInUp, useSharedValue, withSpring } from 'react-native-reanimated';
+
+import TwoLine from '@/assets/images/two_lines.svg';
 
 const categories = ["Triệu chứng", "Bộ phận cơ thể", "Điều trị", "Trường học"];
 
@@ -39,6 +42,7 @@ const Index = () => {
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
     const [isResultVisible, setIsResultVisible] = useState(false);
     const [resultState, setResultState] = useState<"add" | "save">("save");
+    const scale = useSharedValue(1);
 
     useEffect(() => {
         if (query.length > 0) {
@@ -60,17 +64,51 @@ const Index = () => {
             <SafeAreaView style={styles.container}>
                 {/* <Header /> */}
                 <View style={{ flex: 1 }}>
-                    <View style={styles.searchContainer}>
-                        <Text
-                            style={{
-                                paddingHorizontal: spacing.md,
-                                fontSize: fontSizes['2xl'],
-                                fontWeight: 700,
-                                color: colors.gray50
+                    <Animated.View
+                        style={styles.searchContainer}
+                        entering={FadeInLeft.duration(500).springify()}
+                    >
+                        <View style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                        }}>
+                            <Text
+                                style={{
+                                    paddingHorizontal: spacing.md,
+                                    fontSize: fontSizes['2xl'],
+                                    fontWeight: 700,
+                                    color: colors.gray50
+                                }}>
+                                Bạn cần kiếm ký hiệu gì?
+                            </Text>
+{/* 
+                            <View style={{
+                                alignItems: 'center',
+                                padding: spacing.sm * 1.2,
+                                borderRadius: 5,
+                                backgroundColor: '#4B7FF2',
+                                alignSelf: 'center',
+                                marginRight: spacing.sm,
                             }}>
-                            Bạn cần kiếm ký hiệu gì?
-                        </Text>
-                        <Search value={query} onChange={setQuery} />
+                                <TwoLine height={20} width={20} preserveAspectRatio="xMidYMid meet" />
+                            </View> */}
+
+                            <Pressable
+                                onPressIn={() => { scale.value = withSpring(0.95); }}
+                                onPressOut={() => { scale.value = withSpring(1); }}
+                                // onPress={() => { console.log('Button pressed'); }}
+                            >
+                                <Animated.View style={[styles.buttonStyle, { transform: [{ scale: scale.value }] }]}>
+                                    <TwoLine height={20} width={20} preserveAspectRatio="xMidYMid meet" />
+                                </Animated.View>
+                            </Pressable>
+                        </View>
+                        <Animated.View
+                            entering={FadeInLeft.delay(200).duration(500).springify()}
+                        >
+                            <Search value={query} onChange={setQuery} />
+                        </Animated.View>
                         {/* <FlatList
                         style={{ alignSelf: 'auto', padding: spacing.sm }}
                         horizontal
@@ -95,17 +133,25 @@ const Index = () => {
                
                         <CTAButton />
                     </View> */}
-                    </View>
+                    </Animated.View>
+
                     <View style={styles.main}>
                         {query ? (
                             results.length > 0 ? (
-                                <View style={{ marginTop: spacing.lg, paddingHorizontal: spacing.md }}>
+                                <View
+                                    style={{
+                                        marginTop: spacing.lg,
+                                        paddingHorizontal: spacing.md
+                                    }}>
                                     <FlatList
                                         style={{ marginTop: 10 }}
                                         data={results}
                                         keyExtractor={(item) => item}
-                                        renderItem={({ item }) => (
-                                            <View style={styles.card}>
+                                        renderItem={({ item, index }) => (
+                                            <Animated.View
+                                                entering={FadeInUp.delay(100 * index).duration(200)}
+                                                style={styles.card}
+                                            >
                                                 <TouchableOpacity
                                                     style={styles.searchItem}
                                                     onPress={() => {
@@ -137,7 +183,7 @@ const Index = () => {
                                                         />
                                                     </View>
                                                 </TouchableOpacity>
-                                            </View>
+                                            </Animated.View>
                                         )}
                                     />
                                 </View>
@@ -160,83 +206,98 @@ const Index = () => {
                                     Không tìm thấy kết quả cho &quot;{query}&quot;
                                 </Text>
                             </View>
-                        ) : (<View style={{ flex: 1, gap: spacing.md, justifyContent: 'flex-start' }}>
-                            <Text style={{
-                                textAlign: 'center',
-                                color: colors.primary700,
-                                fontSize: fontSizes['2xl'],
-                                fontWeight: 700,
-                                marginTop: spacing.lg,
-                            }}>Khám phá theo chủ đề</Text>
-                            <View style={styles.topicsContainer}>
-                                <View style={styles.topicContainer}>
-                                    <TouchableOpacity style={styles.topic}
-                                        onPress={() => {
-                                            // router.push('./family');
-                                            router.push(`./${encodeURIComponent("Gia đình")}`);
-                                        }}
+                        ) : (
+                            <View style={{ flex: 1, gap: spacing.md, justifyContent: 'flex-start' }}>
+                                <Animated.View
+                                    entering={FadeInDown.delay(300).duration(500).springify()}
+                                >
+                                    <Text style={{
+                                        textAlign: 'center',
+                                        color: colors.primary700,
+                                        fontSize: fontSizes['2xl'],
+                                        fontWeight: 700,
+                                        marginTop: spacing.lg,
+                                    }}>
+                                        Khám phá theo chủ đề
+                                    </Text>
+                                </Animated.View>
+
+                                <View style={styles.topicsContainer}>
+                                    <Animated.View
+                                        style={styles.topicContainer}
+                                        entering={FadeInDown.delay(400).duration(500).springify()}
                                     >
-                                        <View style={styles.topicImage}>
-                                            <Image
-                                                source={require('@/assets/images/family.png')}
-                                                style={styles.image}
-                                                resizeMode='contain'
-                                            />
-                                        </View>
-                                        <Text style={styles.topicTitle}>Gia đình</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={styles.topic}
-                                        onPress={() => {
-                                            router.push(`./${encodeURIComponent("Y tế")}`);
-                                        }}
+                                        <TouchableOpacity style={styles.topic}
+                                            onPress={() => {
+                                                // router.push('./family');
+                                                router.push(`./${encodeURIComponent("Gia đình")}`);
+                                            }}
+                                        >
+                                            <View style={styles.topicImage}>
+                                                <Image
+                                                    source={require('@/assets/images/family.png')}
+                                                    style={styles.image}
+                                                    resizeMode='contain'
+                                                />
+                                            </View>
+                                            <Text style={styles.topicTitle}>Gia đình</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={styles.topic}
+                                            onPress={() => {
+                                                router.push(`./${encodeURIComponent("Y tế")}`);
+                                            }}
+                                        >
+                                            <View style={styles.topicImage}>
+                                                <Image
+                                                    source={require('@/assets/images/doctor.png')}
+                                                    style={styles.image}
+                                                    resizeMode='contain'
+                                                />
+                                            </View>
+                                            <Text style={styles.topicTitle}>Y tế</Text>
+                                        </TouchableOpacity>
+                                    </Animated.View>
+
+                                    <Animated.View
+                                        style={styles.topicContainer}
+                                        entering={FadeInDown.delay(500).duration(500).springify()}
                                     >
-                                        <View style={styles.topicImage}>
-                                            <Image
-                                                source={require('@/assets/images/doctor.png')}
-                                                style={styles.image}
-                                                resizeMode='contain'
-                                            />
-                                        </View>
-                                        <Text style={styles.topicTitle}>Y tế</Text>
-                                    </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={styles.topic}
+                                            onPress={() => {
+                                                router.push(`./${encodeURIComponent("Trường học")}`);
+                                            }}
+                                        >
+                                            <View style={styles.topicImage}>
+                                                <Image
+                                                    source={require('@/assets/images/school.png')}
+                                                    style={styles.image}
+                                                    resizeMode='contain'
+                                                />
+                                            </View>
+                                            <Text style={styles.topicTitle}>Trường học</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={styles.topic}
+                                            onPress={() => {
+                                                router.push(`./${encodeURIComponent("Câu hỏi")}`);
+                                            }}
+                                        >
+                                            <View style={styles.topicImage}>
+                                                <Image
+                                                    source={require('@/assets/images/question.png')}
+                                                    style={styles.image}
+                                                    resizeMode='contain'
+                                                />
+                                            </View>
+                                            <Text style={styles.topicTitle}>Câu hỏi</Text>
+                                        </TouchableOpacity>
+                                    </Animated.View>
                                 </View>
-                                <View style={styles.topicContainer}>
-                                    <TouchableOpacity
-                                        style={styles.topic}
-                                        onPress={() => {
-                                            router.push(`./${encodeURIComponent("Trường học")}`);
-                                        }}
-                                    >
-                                        <View style={styles.topicImage}>
-                                            <Image
-                                                source={require('@/assets/images/school.png')}
-                                                style={styles.image}
-                                                resizeMode='contain'
-                                            />
-                                        </View>
-                                        <Text style={styles.topicTitle}>Trường học</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={styles.topic}
-                                        onPress={() => {
-                                            router.push(`./${encodeURIComponent("Câu hỏi")}`);
-                                        }}
-                                    >
-                                        <View style={styles.topicImage}>
-                                            <Image
-                                                source={require('@/assets/images/question.png')}
-                                                style={styles.image}
-                                                resizeMode='contain'
-                                            />
-                                        </View>
-                                        <Text style={styles.topicTitle}>Câu hỏi</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
 
 
-                        </View>)}
+                            </View>)}
 
 
 
@@ -293,6 +354,14 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacing.md,
         gap: spacing.sm,
         marginBottom: spacing.md
+    },
+    buttonStyle: {
+        alignItems: 'center',
+        padding: spacing.sm * 1.2,
+        borderRadius: 5,
+        backgroundColor: '#4B7FF2',
+        alignSelf: 'center',
+        marginRight: spacing.sm,
     },
     main: {
         //flex: 3,

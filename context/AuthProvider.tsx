@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: { children: ReactNode; }) => {
     const authContext: AuthContextType = useMemo(() => (
         {
             signIn: async (data: any) => {
-                dispatch({ type: "SIGN_IN", token: "dummy_token" });
+                dispatch({ type: "SIGN_IN", token: "ada" });
             },
             signOut: async () => {
                 dispatch({ type: "SIGN_OUT" });

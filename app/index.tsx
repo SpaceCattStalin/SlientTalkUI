@@ -4,11 +4,13 @@ import { colors } from '@/global/theme';
 import AnimatedTyping from '@/components/animation/AnimatedTyping';
 import { useRoute } from '@react-navigation/native';
 import { Redirect, router } from 'expo-router';
-import Onboarding from '../(onboarding)/onboarding';
+import Onboarding from './(onboarding)/onboarding';
+
 type Prop = {
     onDone: () => void;
 };
-const Logo = () => {
+
+const Index = () => {
     const [showOnboarding, setShowOnboarding] = useState(false);
     const [readyToRedirect, setReadyToRedirect] = useState(false);
     const [splashDone, setSplashDone] = useState(false);
@@ -47,12 +49,13 @@ const Logo = () => {
             <View style={styles.main}>
                 <AnimatedTyping textToType={["SilentTalk"]} displayLogo={true} />
             </View>
+            {/* <Redirect href="/(auth)/login" />; */}
         </View>
     );
 };
 
 
-export default Logo;
+export default Index;
 
 const styles = StyleSheet.create({
     container: {

@@ -9,6 +9,7 @@ import Camera from '@/assets/images/camera.svg';
 import Speech from '@/assets/images/speech.svg';
 import AdFree from '@/assets/images/ad-free.svg';
 import BackButton from '@/components/BackButton';
+import Animated, { FadeInDown, FadeInLeft } from 'react-native-reanimated';
 
 type Benefit = {
     title: string,
@@ -41,22 +42,36 @@ const PlanIntro = () => {
         <SafeAreaView style={styles.container}>
             <BackButton color={colors.gray200} />
             <View style={styles.main}>
-                <Text
-                    style={{
-                        fontSize: fontSizes['2xl'],
-                        fontWeight: 700,
-                        color: colors.gray50
-                    }}>
-                    Nâng cấp lên Premium
-                </Text>
-                <Text style={styles.subtitle}>
-                    Trải nghiệm đầy đủ tất cả tính năng
-                </Text>
+                <Animated.View
+                    entering={FadeInLeft.duration(500).springify()}
+                >
+                    <Text
+                        style={{
+                            fontSize: fontSizes['2xl'],
+                            fontWeight: 700,
+                            color: colors.gray50
+                        }}>
+                        Nâng cấp lên Premium
+                    </Text>
+                </Animated.View>
+
+                <Animated.View
+                    entering={FadeInLeft.delay(200).duration(500).springify()}
+                >
+
+                    <Text style={styles.subtitle}>
+                        Trải nghiệm đầy đủ tất cả tính năng
+                    </Text>
+                </Animated.View>
 
                 {benefits.map((item, index) => {
                     const Icon = item.icon;
                     return (
-                        <View key={index} style={styles.feature}>
+                        <Animated.View
+                            key={index}
+                            style={styles.feature}
+                            entering={FadeInDown.delay(index * 100).duration(500)}
+                        >
                             <Icon
                                 width={80}
                                 height={80} />
@@ -75,19 +90,21 @@ const PlanIntro = () => {
                                     {item.subtitle}
                                 </Text>
                             </View>
-                        </View>
+                        </Animated.View>
                     );
                 })}
 
-                <TouchableOpacity style={styles.btn} onPress={() => router.push('./plan') }>
-                    <Text style={{
-                        color: colors.gray100,
-                        fontWeight: 600,
-                        fontSize: fontSizes.md
-                    }}>
-                        Xem các gói
-                    </Text>
-                </TouchableOpacity>
+                <Animated.View entering={FadeInDown.delay(500).duration(500)}>
+                    <TouchableOpacity style={styles.btn} onPress={() => router.push('./plan')}>
+                        <Text style={{
+                            color: colors.gray100,
+                            fontWeight: 600,
+                            fontSize: fontSizes.md
+                        }}>
+                            Xem các gói
+                        </Text>
+                    </TouchableOpacity>
+                </Animated.View>
             </View>
         </SafeAreaView>
     );

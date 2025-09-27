@@ -1,13 +1,13 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { colors, fontSizes, spacing } from '@/global/theme';
 import BackButton from '@/components/BackButton';
 import NavBar from '@/components/NavBar';
 import { Link } from 'expo-router';
 import VTBackground from '@/assets/images/vt_bg.svg';
 import Slider from '@/components/Slider';
-import { useSharedValue } from 'react-native-reanimated';
+import Animated, { FadeInLeft, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import AnimatedText from '@/components/animation/AnimatedText';
 import { Collection } from '@/types/Types';
 
@@ -29,6 +29,20 @@ const Index = () => {
   // const [progress, setProgress] = useState(0);
   const progress = useSharedValue(0);
   const [isSelected, setIsSelected] = useState<Collection | null>();
+
+  const translateY = useSharedValue(-20);
+
+
+  useEffect(() => {
+    translateY.value = withSpring(0, {
+      duration: 500,
+      dampingRatio: .7
+    });
+  }, [translateY]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
 
   const handlePress = (id: string) => {
     // setSelectedId((prev) => (prev === id ? null : id));
@@ -58,31 +72,46 @@ const Index = () => {
           {/* <BackButton color={colors.primary600} /> */}
 
           <View style={{ gap: spacing.sm, marginBottom: spacing.md * 1.5 }}>
-            <Text style={styles.word}>Luyện tập</Text>
-            <Text style={{ fontSize: fontSizes.xl, fontWeight: 600, color: colors.primary500 }}>Chọn bộ sưu tập để luyện tập</Text>
+            <Animated.View
+              entering={FadeInLeft.duration(500).springify()}
+            >
+              <Text style={styles.word}>Luyện tập</Text>
+            </Animated.View>
+            <Animated.View
+              entering={FadeInLeft.delay(200).duration(500).springify()}
+            >
+              <Text style={{
+                fontSize: fontSizes.xl,
+                fontWeight: 600,
+                color: colors.primary500
+              }}>
+                Chọn bộ sưu tập để luyện tập
+              </Text>
+            </Animated.View>
           </View>
 
           <View>
             {collections.map((item) => {
               return (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[
-                    styles.collectionCard,
-                    { backgroundColor: selectedId === item.id ? colors.primary400 : colors.gray50 },
-                  ]}
-                  onPress={() => handlePress(item.id)}
-                >
-                  <Text
-                    style={{
-                      textAlign: 'center',
-                      color: selectedId === item.id ? 'white' : 'black',
-                      fontWeight: '600',
-                    }}
+                <Animated.View key={item.id} style={animatedStyle}>
+                  <TouchableOpacity
+                    style={[
+                      styles.collectionCard,
+                      { backgroundColor: selectedId === item.id ? colors.primary400 : colors.gray50 },
+                    ]}
+                    onPress={() => handlePress(item.id)}
                   >
-                    {item.name} ({item.wordCount} từ)
-                  </Text>
-                </TouchableOpacity>
+                    <Text
+                      style={{
+                        textAlign: 'center',
+                        color: selectedId === item.id ? 'white' : 'black',
+                        fontWeight: '600',
+                      }}
+                    >
+                      {item.name} ({item.wordCount} từ)
+                    </Text>
+                  </TouchableOpacity>
+                </Animated.View>
               );
             })}
           </View>

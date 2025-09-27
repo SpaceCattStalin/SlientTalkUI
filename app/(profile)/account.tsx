@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TextInput, View, Pressable } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fontSizes, spacing } from '@/global/theme';
 import { ChevronLeft } from 'lucide-react-native';
@@ -13,9 +13,11 @@ import EditPen from '@/assets/images/edit-icon.svg';
 import BackButton from '@/components/BackButton';
 import AnimatedButton from '@/components/animation/AnimatedButton';
 import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeIn, FadeInDown, FadeInLeft } from 'react-native-reanimated';
 
 const Account = () => {
     const [isEditing, setIsEditing] = useState(false);
+   
 
     return (
         <SafeAreaView style={{
@@ -30,7 +32,10 @@ const Account = () => {
                     style={StyleSheet.absoluteFillObject}
                 /> */}
                 <BackButton color={colors.primary800} />
-                <View style={styles.header}>
+                <Animated.View
+                    style={styles.header}
+                    entering={FadeInLeft.duration(500).springify()}
+                >
                     <Text
                         style={{
                             fontSize: fontSizes['2xl'],
@@ -47,8 +52,9 @@ const Account = () => {
                             color={colors.primary800}
                         />
                     </Pressable>
-                </View>
-                <View
+                </Animated.View>
+                <Animated.View
+                    entering={FadeInDown.delay(100).duration(500).springify()}
                     style={styles.card}>
                     <View style={styles.avatarSection}>
                         <View>
@@ -58,7 +64,7 @@ const Account = () => {
                             />
                             <View style={styles.penButton}>
                                 {/* <EditPen style={styles.penButton} /> */}
-                                <EditPen/>
+                                <EditPen />
                             </View>
                         </View>
                     </View>
@@ -126,7 +132,7 @@ const Account = () => {
                                     Hủy
                                 </Text>
                             </AnimatedButton>
-                        
+
                             <AnimatedButton
                                 style={[styles.actionBtn, styles.saveBtn]}
                                 onPress={() => console.log("Save changes")}
@@ -136,7 +142,7 @@ const Account = () => {
                         </View>
                     )}
 
-                </View>
+                </Animated.View>
             </View>
             <NavBar />
         </SafeAreaView>

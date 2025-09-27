@@ -12,14 +12,13 @@ const RootNavigation = () => {
   const { authState } = useAuth();
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(logo)" />
-      <Stack.Screen name="(onboarding)" />
-      <Stack.Screen name="(main)" />
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(dictionary)" />
-      <Stack.Screen name="(practice)" />
+    // <Stack screenOptions={{ headerShown: false }} initialRouteName="logo">
+    //   <Stack.Screen name="logo" />
+    // </Stack>
+    <Stack screenOptions={{ headerShown: false }} initialRouteName="index">
+      <Stack.Screen name="index" />
     </Stack>
+
   );
 };
 

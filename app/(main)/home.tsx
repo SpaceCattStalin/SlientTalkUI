@@ -12,6 +12,7 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 import BackgroundDecoration from '@/components/BackgroundDecoration';
 import AnimatedTyping from '@/components/animation/AnimatedTyping';
 import { router } from 'expo-router';
+import Animated, { FadeInLeft } from 'react-native-reanimated';
 
 const Home = () => {
     const player = useVideoPlayer('https://www.w3schools.com/html/mov_bbb.mp4');
@@ -32,9 +33,12 @@ const Home = () => {
                             displayLogo={false}
                             textStyle={styles.greeting}
                         />
-                        {/* <Text style={styles.greeting}>Xin chào, An</Text> */}
                     </View>
-                    <View style={styles.summary}>
+
+                    <Animated.View
+                        style={styles.summary}
+                        entering={FadeInLeft.delay(200).duration(1000).springify()}
+                    >
                         <View style={{
                             flex: 1,
                             gap: 8,
@@ -110,41 +114,50 @@ const Home = () => {
                                 </View>
                             </View>
                         </View>
-                    </View>
-                    <View className='gap-4 mt-1'>
-                        <Text
+                    </Animated.View>
+
+                    <View
+                        className='gap-4 mt-1'
+                    >
+                        <Animated.View
+                            entering={FadeInLeft.delay(300).duration(500).springify()}
+                        >
+                            <Text
+                                style={{
+                                    fontSize: fontSizes.xl,
+                                    fontWeight: 600,
+                                    color: colors.primary600
+                                    //color: colors.gray50
+                                }}>
+                                Từ của ngày hôm nay
+                            </Text>
+                        </Animated.View>
+                        <Animated.View
+                            entering={FadeInLeft.delay(400).duration(500).springify()}
                             style={{
-                                fontSize: fontSizes.xl,
-                                fontWeight: 600,
-                                color: colors.primary600
-                                //color: colors.gray50
+                                borderWidth: .75,
+                                borderColor: colors.gray500,
+                                borderRadius: 10,
+                                backgroundColor: colors.gray100,
+                                padding: spacing.md,
+                                alignSelf: 'stretch',
+                                gap: 8,
+                                ...Platform.select({
+                                    ios: {
+                                        shadowColor: '#ddd',
+                                        shadowOffset: { width: 0, height: 2 },
+                                        shadowOpacity: 0.1,
+                                        shadowRadius: 4
+                                    },
+                                    android: { elevation: 2 },
+                                }),
                             }}>
-                            Từ của ngày hôm nay
-                        </Text>
-                        <View style={{
-                            borderWidth: .75,
-                            borderColor: colors.gray500,
-                            borderRadius: 10,
-                            backgroundColor: colors.gray100,
-                            padding: spacing.md,
-                            alignSelf: 'stretch',
-                            gap: 8,
-                            ...Platform.select({
-                                ios: {
-                                    shadowColor: '#ddd',
-                                    shadowOffset: { width: 0, height: 2 },
-                                    shadowOpacity: 0.1,
-                                    shadowRadius: 4
-                                },
-                                android: { elevation: 2 },
-                            }),
-                        }}>
                             <View>
                                 <Image
                                     source={require('@/assets/images/3d.png')}
                                     style={{
-                                        width: 200,
-                                        height: 220,
+                                        width: 150,
+                                        height: 150,
                                         alignSelf: 'center',
                                         resizeMode: 'contain',
                                         marginTop: spacing.lg
@@ -194,7 +207,7 @@ const Home = () => {
                                     </Text>
                                 </View>
                             </View>
-                        </View>
+                        </Animated.View>
                     </View>
                     {/* <View className='gap-4'>
                         <View className='flex flex-row gap-7'>
