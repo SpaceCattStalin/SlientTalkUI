@@ -16,10 +16,11 @@ type Props = {
     onCancel: () => void;
     collections: Collection[];
     onConfirm: (collectionId: string) => void;
-    onAdd: () => void;
+    onAdd?: () => void;
+    isMove?: boolean;
 };
 
-const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd }: Props) => {
+const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd, isMove = false }: Props) => {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [newName, setNewName] = useState("");
 
@@ -54,19 +55,22 @@ const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd }:
                     style={styles.backdrop}
                 >
                     <View style={styles.container}>
-                        <Text style={styles.title}>Lưu vào bộ sưu tập</Text>
+                        <Text style={styles.title}>
+                            {isMove ? "Di chuyển vào bộ sưu tập" : "Lưu vào bộ sưu tập"}
+                        </Text>
 
                         <FlatList
                             data={collections}
                             renderItem={renderItem}
                             keyExtractor={(item) => item.id}
                         />
-                        <TouchableOpacity
+                        {!isMove && <TouchableOpacity
                             style={[styles.collectionItem, styles.addNew]}
                             onPress={onAdd}
                         >
                             <Text style={styles.addNewText}>+ Lưu vào bộ sưu tập mới</Text>
-                        </TouchableOpacity>
+                        </TouchableOpacity>}
+
                         {selectedId && (
                             <View style={styles.buttonsRow}>
                                 <TouchableOpacity
@@ -85,7 +89,9 @@ const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd }:
                                         setSelectedId(null);
                                     }}
                                 >
-                                    <Text style={styles.buttonText}>Lưu</Text>
+                                    <Text style={styles.buttonText}>
+                                        {isMove ? "Di chuyển" : "Lưu"}
+                                    </Text>
                                 </TouchableOpacity>
                             </View>
                         )}

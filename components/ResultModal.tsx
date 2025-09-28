@@ -3,15 +3,22 @@ import { Check } from "lucide-react-native";
 import React, { useEffect } from "react";
 import { Modal, View, Text, TouchableOpacity, TextInput, StyleSheet, TouchableWithoutFeedback } from "react-native";
 
+const titles: Record<Props["state"], string> = {
+    add: "Tạo thành công!",
+    save: "Lưu thành công!",
+    move: "Di chuyển thành công!",
+    delete: "Xóa thành công!",
+};
+
 type Props = {
     visible: boolean;
     onClose: () => void;
-    state: "add" | "save";
+    state: "add" | "save" | "move" | "delete";
 };
 
 const ResultModal = ({ visible, onClose, state }: Props) => {
     const isAdd = state === "add";
-    
+
     useEffect(() => {
         let timer: NodeJS.Timeout;
         if (visible) {
@@ -33,9 +40,10 @@ const ResultModal = ({ visible, onClose, state }: Props) => {
             }}>
                 <View style={styles.overlay}>
                     <View style={styles.container}>
-                        <Text style={styles.title}>
+                        {/* <Text style={styles.title}>
                             {isAdd ? "Tạo thành công!" : "Lưu thành công!"}
-                        </Text>
+                        </Text> */}
+                        <Text style={styles.title}>{titles[state]}</Text>
 
                         <View style={styles.checkBtn}>
                             <Check size={50} strokeWidth={4} color={colors.gray50} />

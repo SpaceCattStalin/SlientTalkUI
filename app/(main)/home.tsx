@@ -5,7 +5,7 @@ import Header from '@/components/Header';
 import NavBar from '@/components/NavBar';
 import { spacing, colors, fontSizes } from '@/global/theme';
 import { useRoute } from '@react-navigation/native';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, View, Text, Pressable, Platform, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useVideoPlayer, VideoView } from 'expo-video';
@@ -13,14 +13,49 @@ import BackgroundDecoration from '@/components/BackgroundDecoration';
 import AnimatedTyping from '@/components/animation/AnimatedTyping';
 import { router } from 'expo-router';
 import Animated, { FadeInLeft } from 'react-native-reanimated';
+import WelcomeMessageOverlay from '@/components/walkthrough/WelcomeMessageOverlay';
+import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
+import HomeScreenOverlay from '@/components/walkthrough/HomeScreenOverlay';
+import WordOfTheDayOverlay from '@/components/walkthrough/HomeScreenOverlay2';
+import WordOfTheDayButtonOverlay from '@/components/walkthrough/HomeScreenOverlay3';
 
 const Home = () => {
-    const player = useVideoPlayer('https://www.w3schools.com/html/mov_bbb.mp4');
 
-    const route = useRoute();
+    const { isWalkthroughOn: step1On, start: startStep1 } = useWalkthroughStep({
+        number: 1,
+        OverlayComponent: WelcomeMessageOverlay,
+        fullScreen: true,
+    });
+
+    const { onLayout: step2OnLayout } = useWalkthroughStep({
+        number: 2,
+        fullScreen: false,
+        OverlayComponent: HomeScreenOverlay,
+    });
+
+    const { onLayout: step3OnLayout } = useWalkthroughStep({
+        number: 3,
+        fullScreen: false,
+        OverlayComponent: WordOfTheDayOverlay,
+    });
+
+    const { onLayout: step4OnLayout } = useWalkthroughStep({
+        number: 4,
+        fullScreen: false,
+        maskAllowInteraction: true,
+        OverlayComponent: WordOfTheDayButtonOverlay,
+    });
+
+
+    useEffect(
+        () => {
+            startStep1();
+        },
+        [startStep1],
+    );
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container} >
             <BackgroundDecoration />
             {/* <View className='flex flex-1' style={styles.background}> */}
             <Header />
@@ -38,6 +73,8 @@ const Home = () => {
                     <Animated.View
                         style={styles.summary}
                         entering={FadeInLeft.delay(200).duration(1000).springify()}
+                        //onLayout={onLayout}
+                        onLayout={step2OnLayout}
                     >
                         <View style={{
                             flex: 1,
@@ -77,7 +114,7 @@ const Home = () => {
                                 </Text>
                             </View>
                             <View style={{ flexDirection: 'row', gap: 10 }}>
-                                <View style={{ flex: 1 }}>
+                                {/* <View style={{ flex: 1 }}>
                                     <Text style={{
                                         color: colors.primary400,
                                         textAlign: 'center',
@@ -91,7 +128,7 @@ const Home = () => {
                                         fontSize: fontSizes.md,
                                         color: colors.gray500
                                     }}>phút luyện tập</Text>
-                                </View>
+                                </View> */}
                                 <View style={{ flex: 1 }}>
                                     <Text style={{ fontWeight: 700, color: colors.orange400, textAlign: 'center', fontSize: fontSizes.lg }}>12</Text>
                                     <Text style={{
@@ -118,6 +155,8 @@ const Home = () => {
 
                     <View
                         className='gap-4 mt-1'
+                        onLayout={step3OnLayout}
+                    //onLayout={onLayout}
                     >
                         <Animated.View
                             entering={FadeInLeft.delay(300).duration(500).springify()}
@@ -153,49 +192,34 @@ const Home = () => {
                                 }),
                             }}>
                             <View>
-                                <Image
-                                    source={require('@/assets/images/3d.png')}
-                                    style={{
-                                        width: 150,
-                                        height: 150,
-                                        alignSelf: 'center',
-                                        resizeMode: 'contain',
-                                        marginTop: spacing.lg
-                                    }}
-                                />
-                                {/* <VideoView
-                                    player={player}
-                                    style={{ width: '100%', aspectRatio: 16 / 9 }}
-                                /> */}
-                                {/* <Video
-                                    source={{ uri: 'https://www.w3schools.com/html/mov_bbb.mp4' }}
-                                    style={{ width: '100%', aspectRatio: 16 / 9 }}
-                                    controls
-                                /> */}
-                            </View>
-                            <View>
                                 <View className='gap-4'>
                                     <View className='flex-row'>
                                         <View style={{ flex: 1 }}>
                                             <Text style={{ fontSize: fontSizes['2xl'], fontWeight: 600, color: colors.gray800 }}>Bạn bè</Text>
-                                            <Text style={{ fontSize: fontSizes.xs, color: colors.blueAccent550, fontWeight: 400 }}>Danh từ</Text>
+                                            {/* <Text style={{ fontSize: fontSizes.xs, color: colors.blueAccent550, fontWeight: 400 }}>Danh từ</Text> */}
                                         </View>
                                         {/* <AnimatedLikeIcon
                                             primary={colors.red500}
                                             accent={colors.blueAccent500}
                                             onPress={() => console.log("Hi")}
                                         /> */}
-                                        <AnimateChveron
-                                            onPress={() =>
-                                                router.push({
-                                                    pathname: "../(dictionary)/word/[word]",
-                                                    params: { word: "friend" },
-                                                })
-                                            }
-                                        />
+                                        <View
+                                            onLayout={step4OnLayout}
+                                        //onLayout={onLayout}
+                                        >
+                                            <AnimateChveron
+                                                onPress={() => {
+                                                    // setCurrentStep(5);
+                                                    router.push({
+                                                        pathname: "../(dictionary)/word/[word]",
+                                                        params: { word: "friend" },
+                                                    });
+                                                }}
+                                            />
+                                        </View>
                                     </View>
 
-                                    <Text style={{
+                                    {/* <Text style={{
                                         fontSize: fontSizes.sm,
                                         flexShrink: 1,
                                         flexWrap: 'wrap',
@@ -204,98 +228,28 @@ const Home = () => {
                                         Người có mối quan hệ thân thiết,
                                         thường xuyên chia sẻ, trò chuyện
                                         và hỗ trợ nhau trong học tập hoặc cuộc sống.
-                                    </Text>
+                                    </Text> */}
                                 </View>
                             </View>
+                            <View>
+                                <Image
+                                    source={require('@/assets/images/3d.png')}
+                                    style={{
+                                        width: 230,
+                                        height: 230,
+                                        alignSelf: 'center',
+                                        resizeMode: 'contain',
+                                        marginTop: spacing.lg
+                                    }}
+                                />
+
+                            </View>
+
                         </Animated.View>
                     </View>
-                    {/* <View className='gap-4'>
-                        <View className='flex flex-row gap-7'>
-                            <View className='flex-1'>
-                                <Card
-                                    icon={require('@/assets/images/flame.png')}
-                                    iconSize={{ width: 70, height: 70 }}
-                                    title={<Text style={{ fontSize: fontSizes.lg, fontWeight: 'semibold' }}>Chuỗi</Text>}
-                                    content={<Text style={{ fontSize: fontSizes.sm, fontWeight: 'bold' }}>2 ngày</Text>}
-                                    gradientColors={[colors.orange400, colors.gray100]}
-                                    width='100%'
-                                    height={80} />
-                            </View>
 
-                            <View className='flex-1'>
-                                <Card
-                                    icon={require('@/assets/images/eye.png')}
-                                    iconSize={{ width: 70, height: 70 }}
-                                    title={<Text style={{ fontSize: fontSizes.lg, fontWeight: 'semibold' }}>Luyện tập</Text>}
-                                    content={<Text style={{ fontSize: fontSizes.sm, fontWeight: 'bold' }}>16 giờ 23 phút</Text>}
-                                    gradientColors={[colors.blueAccent400, colors.gray100]}
-                                    width='100%'
-                                    height={80} />
-                            </View>
-                        </View>
-                    </View> */}
-
-
-                    {/* <View className='gap-4'>
-                        <Text className='text-[20px] font-bold'>Mỗi ngày một ký hiệu</Text>
-
-                        <Card
-                            justifyContent='center'
-                            icon={require('@/assets/images/star.png')}
-                            // iconSize={{ width: 30, height: 30 }}
-                            title={
-                                <Pressable onPress={() => console.log("Xem chi tiết Dũng cảm")}>
-                                    <Text style={{ fontSize: 24, fontWeight: '600', textDecorationLine: 'underline' }}>
-                                        Dũng cảm
-                                    </Text>
-                                </Pressable>
-                            }
-                            gradientColors={['#FFC342', '#FFFFFF']}
-                            width='100%'
-                            height={120} />
-                    </View> */}
-
-                    {/* <View className='flex-1 gap-4'>
-                        <Card
-                            justifyContent='flex-start'
-                            promo={require('@/assets/images/promo.png')}
-                            title={
-                                <Pressable onPress={() => console.log("Xem chi tiết Dũng cảm")}>
-                                    <Text style={{ fontSize: 24, fontWeight: '600', textDecorationLine: 'underline' }}>
-                                        Nâng cấp gói của bạn
-                                    </Text>
-                                </Pressable>
-                            }
-                            content={
-                                <Text style={{ fontSize: 16, fontWeight: 'semibold' }}>
-                                    Dùng thử 1 tháng, hủy bất cứ lúc nào
-                                </Text>
-                            }
-                            gradientColors={['#FFC342', '#FFFFFF']}
-                            width="100%"
-                            height={130} />
-                    </View> */}
                 </View>
-                {/* Logo, chuông thông báo, tài khoản */}
-                {/* <Header className='flex-0'/> */}
-
-                {/* Lời chào cá nhân + hình chào ngôn ngữ ký hiệu, chuỗi học icon */}
-                {/* <View className='flex-1'>
-
-                </View> */}
-
-                {/* <Hero /> */}
-
-                {/* 4 nút "Khám phá", "Tra từ", "Luyện nhớ", "About us" */}
-                {/* <View className='flex-1 bg-blue-300'>
-
-            </View> */}
-
-                {/* Thanh navbar */}
-                {/* <View className='flex-1 bg-black'>
-            </View> */}
                 <NavBar />
-                {/* <Navigation /> */}
             </View>
         </SafeAreaView>
     );

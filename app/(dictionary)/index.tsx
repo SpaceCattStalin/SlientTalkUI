@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View, Image, FlatList, KeyboardAvoidingView, Platform, Pressable} from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Image, FlatList, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Search from '@/components/Searchbar';
 import NavBar from '@/components/NavBar';
@@ -13,7 +13,7 @@ import ResultModal from '@/components/ResultModal';
 import CollectionModal from '@/components/CollectionModal';
 import AddCollectionModal from '@/components/AddModal';
 import { Collection } from '@/types/Types';
-import Animated, { FadeInLeft, FadeInRight, FadeInDown, FadeInUp, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, { FadeInLeft, FadeInRight, FadeInDown, FadeInUp, useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated';
 
 import TwoLine from '@/assets/images/two_lines.svg';
 
@@ -55,6 +55,10 @@ const Index = () => {
         }
     }, [query]);
 
+    const animatedStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: scale.value }],
+    }));
+
     return (
         <KeyboardAvoidingView
             style={{ flex: 1 }}
@@ -82,24 +86,16 @@ const Index = () => {
                                 }}>
                                 Bạn cần kiếm ký hiệu gì?
                             </Text>
-{/* 
-                            <View style={{
-                                alignItems: 'center',
-                                padding: spacing.sm * 1.2,
-                                borderRadius: 5,
-                                backgroundColor: '#4B7FF2',
-                                alignSelf: 'center',
-                                marginRight: spacing.sm,
-                            }}>
-                                <TwoLine height={20} width={20} preserveAspectRatio="xMidYMid meet" />
-                            </View> */}
 
                             <Pressable
                                 onPressIn={() => { scale.value = withSpring(0.95); }}
                                 onPressOut={() => { scale.value = withSpring(1); }}
-                                // onPress={() => { console.log('Button pressed'); }}
+                                onPress={() => router.push('./collections')}
                             >
-                                <Animated.View style={[styles.buttonStyle, { transform: [{ scale: scale.value }] }]}>
+                                <Animated.View style={[
+                                    styles.buttonStyle,
+                                    animatedStyle]}
+                                >
                                     <TwoLine height={20} width={20} preserveAspectRatio="xMidYMid meet" />
                                 </Animated.View>
                             </Pressable>
@@ -155,7 +151,6 @@ const Index = () => {
                                                 <TouchableOpacity
                                                     style={styles.searchItem}
                                                     onPress={() => {
-                                                        console.log(item);
                                                         // router.push(`./word/${item}`);
                                                         router.push(`./word/${encodeURIComponent(item)}`);
                                                     }}
@@ -295,12 +290,7 @@ const Index = () => {
                                         </TouchableOpacity>
                                     </Animated.View>
                                 </View>
-
-
                             </View>)}
-
-
-
                     </View>
                     <NavBar />
                 </View>
@@ -342,7 +332,6 @@ const Index = () => {
 export default Index;
 
 const styles = StyleSheet.create({
-
     container: {
         flex: 1,
         backgroundColor: "#2C6AEF"
@@ -439,10 +428,5 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         padding: spacing.md,
-        // borderWidth: 1,
-        // borderRadius: 10,
-        // borderColor: colors.gray100,
-        // paddingHorizontal: spacing.md,
-        // paddingVertical: spacing.sm,
     }
 });

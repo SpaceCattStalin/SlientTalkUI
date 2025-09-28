@@ -6,12 +6,14 @@ import BackButton from "@/components/BackButton";
 import CollectionModal from "@/components/CollectionModal";
 import NavBar from "@/components/NavBar";
 import ResultModal from "@/components/ResultModal";
+import WordDefinitionOverlay from "@/components/walkthrough/WordDefinitionOverlay";
 import { colors, fontSizes, spacing } from "@/global/theme";
 import { Collection } from "@/types/Types";
 import { useLocalSearchParams } from "expo-router";
 import { useVideoPlayer, VideoView } from "expo-video";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { useWalkthroughStep } from "react-native-interactive-walkthrough";
 import Animated, { FadeInLeft } from "react-native-reanimated";
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -34,9 +36,17 @@ export default function WordScreen() {
     const [isResultVisible, setIsResultVisible] = useState(false);
     const [resultState, setResultState] = useState<"add" | "save">("save");
 
+    // const currentStep = 5;
 
-    const player = useVideoPlayer('https://www.w3schools.com/html/mov_bbb.mp4');
-    const player2 = useVideoPlayer('https://www.w3schools.com/html/mov_bbb.mp4');
+    const { onLayout: step5OnLayout, start, goTo } = useWalkthroughStep({
+        number: 5,
+        fullScreen: false,
+        OverlayComponent: WordDefinitionOverlay,
+    });
+
+    useEffect(() => {
+        goTo(5)
+    }, [start]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -47,6 +57,7 @@ export default function WordScreen() {
                 <Animated.View
                     style={styles.definitionContainer}
                     entering={FadeInLeft.duration(500).springify()}
+                    onLayout={step5OnLayout}
                 >
                     <View style={{
                         flexDirection: 'row',
@@ -85,15 +96,11 @@ export default function WordScreen() {
                                 style={styles.videoContainer}
                                 entering={FadeInLeft.delay(200).duration(500).springify()}
                             >
-                                {/* <VideoView
-                                    player={player}
-                                    style={{ width: '100%', aspectRatio: 16 / 9 }}
-                                /> */}
                                 <Image
                                     source={require('@/assets/images/3d.png')}
                                     style={{
-                                        width: 200,
-                                        height: 200,
+                                        width: 280,
+                                        height: 280,
                                         alignSelf: 'center',
                                         resizeMode: 'contain',
                                     }}
@@ -114,14 +121,11 @@ export default function WordScreen() {
                                     </Text>
                                 </Animated.View>
                             </View>
-                            <Animated.View
+                            {/* <Animated.View
                                 style={styles.videoContainer}
                                 entering={FadeInLeft.delay(500).duration(500).springify()}
                             >
-                                {/* <VideoView
-                                    player={player2}
-                                    style={{ width: '100%', aspectRatio: 16 / 9 }}
-                                /> */}
+                              
                                 <Image
                                     source={require('@/assets/images/3d.png')}
                                     style={{
@@ -131,7 +135,7 @@ export default function WordScreen() {
                                         resizeMode: 'contain',
                                     }}
                                 />
-                            </Animated.View>
+                            </Animated.View> */}
                             <View style={{ flex: 1, gap: spacing.sm }}>
                                 <Text style={{ fontSize: fontSizes.md, fontWeight: 600, color: colors.primary500 }}>Các ký hiệu liên quan</Text>
                                 <View style={{ flexDirection: 'row', gap: spacing.sm }}>

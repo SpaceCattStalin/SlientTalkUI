@@ -5,16 +5,15 @@ import { AuthProvider } from "@/context/AuthProvider";
 import { ThemeProvider } from "@/context/ThemeProvider";
 import { useAuth } from "@/hooks/useAuth";
 import ThemedView from "@/components/ThemedView";
-import NavBar from "@/components/NavBar";
+import { enableExperimentalLayoutAnimation, WalkthroughProvider } from "react-native-interactive-walkthrough";
 import { NavProvider } from "@/context/NavContext";
+import { Home } from "lucide-react-native";
+import MainLayout from "./(main)/_layout";
 
 const RootNavigation = () => {
   const { authState } = useAuth();
 
   return (
-    // <Stack screenOptions={{ headerShown: false }} initialRouteName="logo">
-    //   <Stack.Screen name="logo" />
-    // </Stack>
     <Stack screenOptions={{ headerShown: false }} initialRouteName="index">
       <Stack.Screen name="index" />
     </Stack>
@@ -24,11 +23,16 @@ const RootNavigation = () => {
 
 
 export default function RootLayout() {
+  enableExperimentalLayoutAnimation();
+
   return (
     <AuthProvider>
       <ThemeProvider>
         <NavProvider>
-          <RootNavigation />
+          {/* <RootNavigation /> */}
+          <WalkthroughProvider>
+            <RootNavigation />
+          </WalkthroughProvider>
         </NavProvider>
       </ThemeProvider>
     </AuthProvider>

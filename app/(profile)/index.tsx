@@ -64,13 +64,18 @@ const Index = () => {
           </View>
 
           <View style={{ marginTop: spacing.lg }}>
-            <Text style={{
-              fontSize: fontSizes.lg,
-              fontWeight: 500,
-              color: colors.primary700
-            }}>
-              Trợ giúp
-            </Text>
+            <Animated.View
+              entering={FadeInLeft.delay(250).duration(500).springify()}
+            >
+
+              <Text style={{
+                fontSize: fontSizes.lg,
+                fontWeight: 500,
+                color: colors.primary700
+              }}>
+                Trợ giúp
+              </Text>
+            </Animated.View>
 
             <Animated.View
               entering={FadeInLeft.delay(300).duration(500).springify()}

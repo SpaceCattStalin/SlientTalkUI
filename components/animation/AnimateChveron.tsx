@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { ChevronRight } from 'lucide-react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import { colors } from '@/global/theme';
+import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
+import WordOfTheDayButtonOverlay from '../walkthrough/HomeScreenOverlay3';
 
 export const APP_ICON_SIZE = 12;
 const size = APP_ICON_SIZE * 2;
@@ -25,6 +27,8 @@ const AnimateChveron = ({ onPress }: Props) => {
             transform: [{ translateX: offset.value }]
         };
     }, []);
+
+
 
     useEffect(() => {
         offset.value = withRepeat(
