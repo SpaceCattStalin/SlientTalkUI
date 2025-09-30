@@ -1,5 +1,5 @@
 import { FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { colors, fontSizes, spacing } from '@/global/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BackButton from '@/components/BackButton';
@@ -8,13 +8,27 @@ import { usePathname, useSearchParams } from 'expo-router/build/hooks';
 import NavBar from '@/components/NavBar';
 import Search from '@/components/Searchbar';
 import { Collection } from '@/types/Types';
-import { router } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
 import ThreeDots from '@/assets/images/three_dots.svg';
 import WordOptionModal from '@/components/WordOptionModal';
 import CollectionModal from '@/components/CollectionModal';
 import ResultModal from '@/components/ResultModal';
 import ConfirmDeleteModal from '@/components/ConfirmDeleteModal';
+import CollectionWordsOverlay from '@/components/walkthrough/CollectionScreenOverlay2';
+import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
+import CollectionOptionOverlay from '@/components/walkthrough/CollectionScreenOverlay3';
+import CollectionOption4Overlay from '@/components/walkthrough/CollectionScreenOverlay4';
+import { useNav } from '@/context/NavContext';
+
+import HomeIcon from '@/assets/images/home.svg';
+import Book from '@/assets/images/book.svg';
+import SearchIcon from '@/assets/images/search.svg';
+import Profile from '@/assets/images/profile.svg';
+// import Wave from '@/assets/images/wave.svg';
+import Scan from '@/assets/images/scan.svg';
+
+const ICON_SIZE = 20;
 
 const collectionDictionary: Record<string, string[]> = {
     "Tất cả từ đã lưu": [
@@ -39,6 +53,8 @@ const collections: Collection[] = [
 ];
 
 const CollectionScreen = () => {
+    const { activeTab, setActiveTab } = useNav();
+
     const [query, setQuery] = useState("");
     const pathname = usePathname();
     const params = useSearchParams();
@@ -51,6 +67,31 @@ const CollectionScreen = () => {
     const [isResultVisible, setIsResultVisible] = useState(false);
     const [resultState, setResultState] = useState<"move" | "delete">("move");
     const [selectedWord, setSelectedWord] = useState<string | null>(null);
+
+    const { onLayout: step14OnLayout, goTo: goTo15, start: startStep15 } = useWalkthroughStep({
+        number: 15,
+        fullScreen: false,
+        OverlayComponent: CollectionWordsOverlay,
+    });
+
+
+    const { onLayout: step15OnLayout, next } = useWalkthroughStep({
+        number: 16,
+        fullScreen: false,
+        OverlayComponent: CollectionOptionOverlay,
+    });
+
+    const { onLayout: step16OnLayout} = useWalkthroughStep({
+        number: 17,
+        fullScreen: false,
+        maskAllowInteraction: true,
+        OverlayComponent: CollectionOption4Overlay,
+    });
+
+
+    useEffect(() => {
+        goTo15(15);
+    }, [startStep15, goTo15]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -82,58 +123,149 @@ const CollectionScreen = () => {
                     </Animated.View>
                 </Animated.View>
                 <View style={styles.main}>
-                    <FlatList
-                        style={{ marginTop: 10 }}
-                        data={words}
-                        keyExtractor={(item) => item}
-                        renderItem={({ item, index }) => (
-                            <Animated.View
-                                entering={FadeInUp.delay(100 * index).duration(200)}
-                                style={styles.card}
-                            >
-                                <TouchableOpacity
-                                    style={styles.searchItem}
-                                    onPress={() => {
-                                        router.push(`../word/${encodeURIComponent(item)}`);
-                                    }}
+                    <View>
+                        <FlatList
+                            onLayout={step14OnLayout}
+                            style={{
+                                marginTop: 10, marginHorizontal: spacing.lg,
+                            }}
+                            data={words}
+                            keyExtractor={(item) => item}
+                            renderItem={({ item, index }) => (
+                                <Animated.View
+                                    entering={FadeInUp.delay(100 * index).duration(200)}
+                                    style={styles.card}
                                 >
-                                    <Text style={{
-                                        fontSize: fontSizes.lg,
-                                        color: colors.primary600,
-                                        fontWeight: 500,
-                                        flex: 1,
-                                    }}>
-                                        {item}
-                                    </Text>
-                                    <Pressable
+                                    <TouchableOpacity
+                                        style={styles.searchItem}
                                         onPress={() => {
-                                            setSelectedWord(item);
-                                            setIsOptionModalVisible(true);
+                                            router.push(`../word/${encodeURIComponent(item)}`);
                                         }}
-                                        hitSlop={10}
-                                        style={{ padding: 4, alignSelf: 'center' }}
                                     >
-                                        <ThreeDots width={18} height={18} />
-                                    </Pressable>
-                                    {/* <View style={{
+                                        <Text style={{
+                                            fontSize: fontSizes.lg,
+                                            color: colors.primary600,
+                                            fontWeight: 500,
+                                            flex: 1,
+                                        }}>
+                                            {item}
+                                        </Text>
+                                        <Pressable
+                                            onLayout={step15OnLayout}
+                                            onPress={() => {
+                                                setSelectedWord(item);
+                                                setIsOptionModalVisible(true);
+                                            }}
+                                            hitSlop={10}
+                                            style={{ padding: 4, alignSelf: 'center' }}
+                                        >
+                                            <ThreeDots width={18} height={18} />
+                                        </Pressable>
+                                        {/* <View style={{
                                         flexDirection: 'row',
                                         gap: spacing.xs,
                                         alignItems: 'center',
                                         backgroundColor: 'red',
                                     }}> */}
 
-                                    <ChevronRight
-                                        color={colors.primary700}
-                                        size={28}
-                                    />
-                                    {/* </View> */}
-                                </TouchableOpacity>
-                            </Animated.View>
-                        )}
-                    />
+                                        <ChevronRight
+                                            color={colors.primary700}
+                                            size={28}
+                                        />
+                                        {/* </View> */}
+                                    </TouchableOpacity>
+                                </Animated.View>
+                            )}
+                        />
+                    </View>
                 </View>
-                <NavBar />
+                {/* <NavBar /> */}
+                <View style={{ ...styles.containerNav }}>
+                    <Link href="/(main)/home" asChild>
+                        <TouchableOpacity style={styles.button} onPress={() => setActiveTab("home")}>
+                            {/* <View style={{ backgroundColor: activeTab === "home" ? "red" : "transparent", ...styles.wrapper }}> */}
+                            <View style={styles.wrapper}>
+                                <HomeIcon
+                                    width={ICON_SIZE}
+                                    height={ICON_SIZE}
+                                    stroke={activeTab === "home" ? colors.primary400 : colors.gray500}
+                                    fill={activeTab === "home" ? colors.primary400 : colors.gray500}
+                                />
+                                <Text style={{ color: activeTab === "home" ? colors.primary400 : colors.gray500, ...styles.text }}>Trang chủ</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </Link>
 
+                    {/* <Link href="/(practice)" asChild>
+                <TouchableOpacity style={styles.button} onPress={() => setActiveTab("practice")}>
+                    <View style={styles.wrapper}>
+                        <Book
+                            width={ICON_SIZE}
+                            height={ICON_SIZE}
+                            stroke={activeTab === "practice" ? colors.primary400 : colors.gray500}
+                        />
+                        <Text style={{ color: activeTab === "practice" ? colors.primary400 : colors.gray500, ...styles.text }}>Luyện tập</Text>
+                    </View>
+                </TouchableOpacity>
+            </Link> */}
+
+                    {/* <Button style={styles.button}>
+                <Wave width={ICON_SIZE} height={ICON_SIZE} />
+            </Button> */}
+
+                    <Link href="/(translate)" asChild>
+                        <TouchableOpacity
+                            style={styles.translateBtn}
+                            onPress={() => {
+                                next();
+                                setActiveTab("translate");
+                                //stop();
+                            }}
+                            onLayout={step16OnLayout}
+                        >
+                            <View style={{ ...styles.wrapper, }}>
+                                <Scan
+                                    width={ICON_SIZE}
+                                    height={ICON_SIZE}
+                                    stroke={activeTab === "translate" ? colors.primary400 : colors.gray500}
+                                />
+                                <Text style={{ color: activeTab === "translate" ? colors.primary400 : colors.gray500, ...styles.text }}>
+                                    Phiên dịch
+                                </Text>
+                            </View>
+                        </TouchableOpacity>
+                    </Link>
+
+                    <Link href="/(dictionary)" asChild>
+                        <TouchableOpacity
+                            style={styles.button}
+                            onPress={() => setActiveTab("dictionary")}
+                        // onLayout={step8OnLayout}
+                        >
+                            <View style={{ ...styles.wrapper, }}>
+                                <SearchIcon
+                                    width={ICON_SIZE}
+                                    height={ICON_SIZE}
+                                    stroke={activeTab === "dictionary" ? colors.primary400 : colors.gray500}
+                                />
+                                <Text style={{ color: activeTab === "dictionary" ? colors.primary400 : colors.gray500, ...styles.text }}>Từ điển</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </Link>
+
+                    <Link href="/(profile)" asChild>
+                        <TouchableOpacity style={styles.button} onPress={() => setActiveTab("profile")}>
+                            <View style={{ ...styles.wrapper }}>
+                                <Profile
+                                    width={ICON_SIZE}
+                                    height={ICON_SIZE}
+                                    stroke={activeTab === "profile" ? colors.primary400 : colors.gray500}
+                                />
+                                <Text style={{ color: activeTab === "profile" ? colors.primary400 : colors.gray500, ...styles.text }}>Tài khoản</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </Link>
+                </View>
                 <WordOptionModal
                     visible={isOptionModalVisible}
                     onClose={() => setIsOptionModalVisible(false)}
@@ -148,6 +280,7 @@ const CollectionScreen = () => {
                 />
 
                 <CollectionModal
+                    inDictionary={true}
                     isVisible={isCollectionVisible}
                     onCancel={() => setIsCollectionVisible(false)}
                     collections={collections}
@@ -202,9 +335,11 @@ const styles = StyleSheet.create({
         backgroundColor: colors.gray50,
         // gray50: #FDFDFE
         paddingTop: spacing.md,
+
         paddingHorizontal: spacing.md,
         gap: spacing.lg
-    }, card: {
+    },
+    card: {
         backgroundColor: colors.gray50,
         borderRadius: 10,
         borderWidth: .5,
@@ -223,5 +358,50 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         padding: spacing.md,
+    },
+    containerNav: {
+        width: '100%',
+        flexDirection: 'row',
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        justifyContent: "space-around",
+        alignItems: "center",
+        backgroundColor: "white",
+        paddingVertical: 10,
+        borderTopWidth: 1,
+        borderTopColor: "#ddd",
+        height: 70
+    },
+    button: {
+
+    },
+    translateBtn: {
+        // position: 'relative',
+        // bottom: 20,
+        // backgroundColor: colors.gray50,
+        // padding: spacing.sm,
+        // borderRadius: 999,
+        // borderColor: '#ddd',
+        // borderWidth: 1
+    },
+    wrapper: {
+        borderRadius: 10,
+        padding: spacing.sm,
+        justifyContent: "center",
+        alignItems: 'center'
+    },
+    image: {
+        width: "100%",
+        height: "100%",
+        objectFit: "contain"
+    },
+    text: {
+        fontSize: fontSizes.sm,
+        fontWeight: 500
+    },
+    link: {
+        position: 'absolute'
     }
 });

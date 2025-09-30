@@ -7,20 +7,31 @@ import CollectionModal from "@/components/CollectionModal";
 import NavBar from "@/components/NavBar";
 import ResultModal from "@/components/ResultModal";
 import WordDefinitionOverlay from "@/components/walkthrough/WordDefinitionOverlay";
+import WordDefinitionVideoOverlay from "@/components/walkthrough/WordDefinitionOverlay2";
+import WordDefinitionLikeButtonOverlay from "@/components/walkthrough/WordDefinitionOverlay3";
 import { colors, fontSizes, spacing } from "@/global/theme";
 import { Collection } from "@/types/Types";
-import { useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import { useVideoPlayer, VideoView } from "expo-video";
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
 import { useWalkthroughStep } from "react-native-interactive-walkthrough";
 import Animated, { FadeInLeft } from "react-native-reanimated";
 import { SafeAreaView } from 'react-native-safe-area-context';
+import HomeIcon from '@/assets/images/home.svg';
+import Book from '@/assets/images/book.svg';
+import Search from '@/assets/images/search.svg';
+import Profile from '@/assets/images/profile.svg';
+// import Wave from '@/assets/images/wave.svg';
+import Scan from '@/assets/images/scan.svg';
+import { useNav } from "@/context/NavContext";
+import WordDefinition6Overlay from "@/components/walkthrough/WordDefinitionOverlay6";
+const ICON_SIZE = 20;
 
 const collections: Collection[] = [
-    { id: 'randomstring', name: 'Tất cả từ đã lưu', wordCount: 120 },
-    { id: 'randomstring1', name: 'Y tế', wordCount: 45 },
-    { id: 'randomstring3', name: 'fafa', wordCount: 10 },
+    { id: 'randomstring', name: 'Tất cả từ đã lưu', wordCount: 12 },
+    // { id: 'randomstring1', name: 'Y tế', wordCount: 45 },
+    // { id: 'randomstring3', name: 'fafa', wordCount: 10 },
 ];
 
 const relatedWords = [
@@ -28,8 +39,11 @@ const relatedWords = [
 ];
 
 export default function WordScreen() {
+    const { activeTab, setActiveTab } = useNav();
+
     const { word } = useLocalSearchParams<{ word: string; }>();
 
+    const [walkthroughCompleted, setWalkthroughCompleted] = useState(false);
     const [likePressed, setLikePressed] = useState(false);
     const [isCollectionVisible, setIsCollectionVisible] = useState(false);
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
@@ -38,15 +52,30 @@ export default function WordScreen() {
 
     // const currentStep = 5;
 
-    const { onLayout: step5OnLayout, start, goTo } = useWalkthroughStep({
+    const { onLayout: step5OnLayout, goTo: goTo5, start: startStep5 } = useWalkthroughStep({
         number: 5,
         fullScreen: false,
         OverlayComponent: WordDefinitionOverlay,
     });
 
+    const { onLayout: step6OnLayout } = useWalkthroughStep({
+        number: 6,
+        fullScreen: false,
+        OverlayComponent: WordDefinitionVideoOverlay,
+    });
+
+    const { onLayout: step7OnLayout, stop } = useWalkthroughStep({
+        number: 7,
+        fullScreen: false,
+        maskAllowInteraction: true,
+        OverlayComponent: WordDefinitionLikeButtonOverlay,
+    });
+
     useEffect(() => {
-        goTo(5)
-    }, [start]);
+        if (!isCollectionVisible) {
+            goTo5(5);
+        }
+    }, [startStep5, goTo5, isCollectionVisible]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -67,13 +96,19 @@ export default function WordScreen() {
                         <Text style={styles.word}>
                             Bạn bè
                         </Text>
-                        <AnimatedLikeIcon
-                            primary={colors.red300}
-                            accent={colors.gray200}
-                            // onPress={() => setLikePressed(true)}
-                            onPress={() => setIsCollectionVisible(true)}
-                            sizeModifier={1.1}
-                        />
+
+                        <View onLayout={step7OnLayout}>
+                            <AnimatedLikeIcon
+                                primary={colors.red300}
+                                accent={colors.gray200}
+                                // onPress={() => setLikePressed(true)}
+                                onPress={() => {
+                                    setIsCollectionVisible(true);
+                                    stop();
+                                }}
+                                sizeModifier={1.1}
+                            />
+                        </View>
                     </View>
                     <Text style={styles.definition}>
                         Người có mối quan hệ thân thiết,
@@ -95,6 +130,7 @@ export default function WordScreen() {
                             <Animated.View
                                 style={styles.videoContainer}
                                 entering={FadeInLeft.delay(200).duration(500).springify()}
+                                onLayout={step6OnLayout}
                             >
                                 <Image
                                     source={require('@/assets/images/3d.png')}
@@ -192,7 +228,85 @@ export default function WordScreen() {
                         setIsResultVisible(true);
                     }}
                 />
-                <NavBar />
+                {/* <NavBar /> */}
+                <View style={{ ...styles.containerNav }}>
+                    <Link href="/(main)/home" asChild>
+                        <TouchableOpacity style={styles.button} onPress={() => setActiveTab("home")}>
+                            {/* <View style={{ backgroundColor: activeTab === "home" ? "red" : "transparent", ...styles.wrapper }}> */}
+                            <View style={styles.wrapper}>
+                                <HomeIcon
+                                    width={ICON_SIZE}
+                                    height={ICON_SIZE}
+                                    stroke={activeTab === "home" ? colors.primary400 : colors.gray500}
+                                    fill={activeTab === "home" ? colors.primary400 : colors.gray500}
+                                />
+                                <Text style={{ color: activeTab === "home" ? colors.primary400 : colors.gray500, ...styles.text }}>Trang chủ</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </Link>
+
+                    {/* <Link href="/(practice)" asChild>
+                <TouchableOpacity style={styles.button} onPress={() => setActiveTab("practice")}>
+                    <View style={styles.wrapper}>
+                        <Book
+                            width={ICON_SIZE}
+                            height={ICON_SIZE}
+                            stroke={activeTab === "practice" ? colors.primary400 : colors.gray500}
+                        />
+                        <Text style={{ color: activeTab === "practice" ? colors.primary400 : colors.gray500, ...styles.text }}>Luyện tập</Text>
+                    </View>
+                </TouchableOpacity>
+            </Link> */}
+
+                    {/* <Button style={styles.button}>
+                <Wave width={ICON_SIZE} height={ICON_SIZE} />
+            </Button> */}
+
+                    <Link href="/(translate)" asChild>
+                        <TouchableOpacity style={styles.translateBtn} onPress={() => setActiveTab("translate")}>
+                            <View style={{ ...styles.wrapper, }}>
+                                <Scan
+                                    width={ICON_SIZE}
+                                    height={ICON_SIZE}
+                                    stroke={activeTab === "translate" ? colors.primary400 : colors.gray500}
+                                />
+                                <Text style={{ color: activeTab === "translate" ? colors.primary400 : colors.gray500, ...styles.text }}>
+                                    Phiên dịch
+                                </Text>
+                            </View>
+                        </TouchableOpacity>
+                    </Link>
+
+                    <Link href="/(dictionary)" asChild>
+                        <TouchableOpacity
+                            style={styles.button}
+                            onPress={() => setActiveTab("dictionary")}
+                        // onLayout={step8OnLayout}
+                        >
+                            <View style={{ ...styles.wrapper, }}>
+                                <Search
+                                    width={ICON_SIZE}
+                                    height={ICON_SIZE}
+                                    stroke={activeTab === "dictionary" ? colors.primary400 : colors.gray500}
+                                />
+                                <Text style={{ color: activeTab === "dictionary" ? colors.primary400 : colors.gray500, ...styles.text }}>Từ điển</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </Link>
+
+                    <Link href="/(profile)" asChild>
+                        <TouchableOpacity style={styles.button} onPress={() => setActiveTab("profile")}>
+                            <View style={{ ...styles.wrapper }}>
+                                <Profile
+                                    width={ICON_SIZE}
+                                    height={ICON_SIZE}
+                                    stroke={activeTab === "profile" ? colors.primary400 : colors.gray500}
+                                />
+                                <Text style={{ color: activeTab === "profile" ? colors.primary400 : colors.gray500, ...styles.text }}>Tài khoản</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </Link>
+                </View>
             </View>
         </SafeAreaView >
     );
@@ -251,5 +365,50 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
 
         elevation: 2,
+    },
+    containerNav: {
+        width: '100%',
+        flexDirection: 'row',
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        justifyContent: "space-around",
+        alignItems: "center",
+        backgroundColor: "white",
+        paddingVertical: 10,
+        borderTopWidth: 1,
+        borderTopColor: "#ddd",
+        height: 70
+    },
+    button: {
+
+    },
+    translateBtn: {
+        // position: 'relative',
+        // bottom: 20,
+        // backgroundColor: colors.gray50,
+        // padding: spacing.sm,
+        // borderRadius: 999,
+        // borderColor: '#ddd',
+        // borderWidth: 1
+    },
+    wrapper: {
+        borderRadius: 10,
+        padding: spacing.sm,
+        justifyContent: "center",
+        alignItems: 'center'
+    },
+    image: {
+        width: "100%",
+        height: "100%",
+        objectFit: "contain"
+    },
+    text: {
+        fontSize: fontSizes.sm,
+        fontWeight: 500
+    },
+    link: {
+        position: 'absolute'
     }
 });

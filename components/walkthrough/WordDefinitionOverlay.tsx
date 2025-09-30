@@ -18,29 +18,33 @@ const WordDefinitionOverlay = ({
     <Animated.View
       style={{
         ...styles.container,
-        top: mask.y - styles.overlay.padding - 160,
+        top: mask.y + mask.height ,
         left: 50
       }}
       entering={FadeInDown.duration(300)}
       exiting={FadeOutUp.duration(200)}
     >
-      <Text style={styles.subtitle}>
-        Bạn có thể xem định nghĩa của từ ở đây
-      </Text>
-      <Pressable
-        onPressIn={() => { scale.value = withSpring(0.95); }}
-        onPressOut={() => { scale.value = withSpring(1); }}
-        onPress={next}
-      >
-        <Animated.View style={[
-          styles.button,
-          animatedStyle]}
+      <View style={styles.pointer} />
+
+      <View style={styles.overlay}>
+        <Text style={styles.subtitle}>
+          Bạn có thể xem định nghĩa của từ ở đây
+        </Text>
+        <Pressable
+          onPressIn={() => { scale.value = withSpring(0.95); }}
+          onPressOut={() => { scale.value = withSpring(1); }}
+          onPress={next}
         >
-          <Text style={styles.buttonText}>
-            Tiếp theo
-          </Text>
-        </Animated.View>
-      </Pressable>
+          <Animated.View style={[
+            styles.button,
+            animatedStyle]}
+          >
+            <Text style={styles.buttonText}>
+              Tiếp theo
+            </Text>
+          </Animated.View>
+        </Pressable>
+      </View>
     </Animated.View>
   );
 };
@@ -57,11 +61,13 @@ const styles = StyleSheet.create({
     height: 0,
     borderLeftWidth: 12,
     borderRightWidth: 12,
-    borderTopWidth: 16,
+    borderBottomWidth: 16,
+    borderStyle: "solid",
+    backgroundColor: "transparent",
     borderLeftColor: "transparent",
     borderRightColor: "transparent",
-    borderTopColor: colors.primary300,
-    marginLeft: 20,
+    borderBottomColor: colors.primary300, // same as bubble background
+    marginLeft: 20, // move pointer horizontally
   },
   overlay: {
     backgroundColor: colors.primary300,

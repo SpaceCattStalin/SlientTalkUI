@@ -5,6 +5,8 @@ import AnimatedTyping from '@/components/animation/AnimatedTyping';
 import { useRoute } from '@react-navigation/native';
 import { Redirect, router } from 'expo-router';
 import Onboarding from './(onboarding)/onboarding';
+import testRender from '../components/animation/testRender';
+import TestRender from '../components/animation/testRender';
 
 type Prop = {
     onDone: () => void;
@@ -37,6 +39,7 @@ const Index = () => {
                 setShowOnboarding(false);
                 setReadyToRedirect(true);
             }} />
+            // <TestRender/>
         );
     }
 

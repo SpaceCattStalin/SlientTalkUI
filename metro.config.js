@@ -6,6 +6,7 @@ const config = getDefaultConfig(__dirname);
 const { transformer, resolver } = config;
 
 config.transformer = {
+  resetCache: true,
   ...transformer,
   getTransformOptions: async () => ({
     transform: {
@@ -17,7 +18,11 @@ config.transformer = {
 };
 config.resolver = {
   ...resolver,
-  assetExts: [...resolver.assetExts.filter((ext) => ext !== 'svg'), 'lottie'],
+  assetExts: [...resolver.assetExts.filter((ext) => ext !== 'svg'),
+    'lottie',
+    'glb',   
+    'gltf'
+  ],
   sourceExts: [...resolver.sourceExts, 'svg'],
 };
 module.exports = withNativeWind(config, { input: './app/global.css' });

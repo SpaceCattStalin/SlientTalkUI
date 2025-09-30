@@ -6,12 +6,12 @@ import {
   TouchableOpacity,
   TextInput,
   FlatList,
-  Animated,
   Image,
   KeyboardAvoidingView,
   Platform,
   Dimensions,
-  Linking
+  Linking,
+  ActivityIndicator
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CameraView, Camera, CameraType } from "expo-camera";
@@ -21,27 +21,52 @@ import Flip from '@/assets/images/flip.svg';
 import Search from "@/components/Searchbar";
 import { Searchbar } from "react-native-paper";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import Animated, { FadeInDown, FadeInRight, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import { useWalkthroughStep } from "react-native-interactive-walkthrough";
+import TranslateScreenOverlay from "@/components/walkthrough/TranslateScreenOverlay";
+import TranslateScreen2Overlay from "@/components/walkthrough/TranslateScreenOverlay2";
+import TranslateScreen3Overlay from "@/components/walkthrough/TranslateScreenOverlay3";
+import TranslateScreen4Overlay from "@/components/walkthrough/TranslateScreenOverlay4";
+import TranslateScreen5Overlay from "@/components/walkthrough/TranslateScreenOverlay5";
 
+import HomeIcon from '@/assets/images/home.svg';
+import Book from '@/assets/images/book.svg';
+import SearchIcon from '@/assets/images/search.svg';
+import Profile from '@/assets/images/profile.svg';
+// import Wave from '@/assets/images/wave.svg';
+import Scan from '@/assets/images/scan.svg';
+import { useNav } from "@/context/NavContext";
+import { Link } from "expo-router";
+import { useFonts } from "expo-font";
+
+const ICON_SIZE = 20;
 
 const { width } = Dimensions.get("window");
 
 const Index = () => {
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(true);
   const [facing, setFacing] = useState<CameraType>('back');
   const [mode, setMode] = useState<"camera" | "text">("camera");
   const [input, setInput] = useState("");
   const [log, setLog] = useState<string[]>([]);
   const [text, setText] = useState("");
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [fontsLoaded] = useFonts({
+    ...MaterialIcons.font,
+  });
 
-  const sidebarAnim = useRef(new Animated.Value(-width * 0.8)).current;
-  useEffect(() => {
-    (async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      setHasPermission(status === "granted");
-    })();
-  }, []);
+  const { activeTab, setActiveTab } = useNav();
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const sidebarX = useSharedValue(-width * 0.8);
+  const overlayOpacity = useSharedValue(0);
+
+  // useEffect(() => {
+  //   (async () => {
+  //     const { status } = await Camera.requestCameraPermissionsAsync();
+  //     setHasPermission(status === "granted");
+  //   })();
+  // }, []);
 
   const toggleCameraType = () => {
     setFacing((prev: CameraType) =>
@@ -56,47 +81,90 @@ const Index = () => {
 
   const toggleSidebar = () => {
     if (sidebarOpen) {
-      Animated.timing(sidebarAnim, {
-        toValue: -width * 0.8,
-        duration: 250,
-        useNativeDriver: false,
-      }).start(() => setSidebarOpen(false));
+      // close sidebar
+      sidebarX.value = withTiming(-width * 0.8, { duration: 250 });
+      overlayOpacity.value = withTiming(0, { duration: 250 });
+      setSidebarOpen(false);
     } else {
+      // open sidebar
+      sidebarX.value = withTiming(0, { duration: 250 });
+      overlayOpacity.value = withTiming(1, { duration: 250 });
       setSidebarOpen(true);
-      Animated.timing(sidebarAnim, {
-        toValue: 0,
-        duration: 250,
-        useNativeDriver: false,
-      }).start();
     }
   };
 
-  // if (hasPermission === null) {
-  //   return <Text>Requesting camera permission...</Text>;
-  // }
+  const sidebarStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: sidebarX.value }],
+  }));
 
-  if (hasPermission === false) {
+  const overlayStyle = useAnimatedStyle(() => ({
+    opacity: overlayOpacity.value,
+  }));
+
+  const { onLayout: step18OnLayout, goTo: goTo18, start: startStep18 } = useWalkthroughStep({
+    number: 18,
+    fullScreen: false,
+    OverlayComponent: TranslateScreenOverlay,
+  });
+
+  const { onLayout: step19OnLayout, stop } = useWalkthroughStep({
+    number: 19,
+    fullScreen: false,
+    OverlayComponent: TranslateScreen3Overlay,
+  });
+
+  const { onLayout: step20OnLayout } = useWalkthroughStep({
+    number: 20,
+    fullScreen: false,
+    OverlayComponent: TranslateScreen4Overlay,
+  });
+
+  const { onLayout: step21OnLayout } = useWalkthroughStep({
+    number: 21,
+    fullScreen: false,
+    maskAllowInteraction: true,
+    OverlayComponent: TranslateScreen5Overlay,
+  });
+
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      setHasPermission(status === "granted");
+    })();
+    goTo18(18);
+  }, [goTo18, startStep18]);
+
+
+  if (!fontsLoaded) {
     return (
-      <SafeAreaView style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
-        <Ionicons name="camera-off" size={64} color="#666" />
-        <Text style={{ fontSize: 16, marginTop: 12, color: "#444", textAlign: "center" }}>
-          Ứng dụng cần quyền truy cập máy ảnh để sử dụng tính năng này.
-        </Text>
-        <TouchableOpacity
-          style={{
-            marginTop: 20,
-            backgroundColor: "#2C6AEF",
-            paddingHorizontal: 20,
-            paddingVertical: 12,
-            borderRadius: 8,
-          }}
-          onPress={() => Linking.openSettings()} 
-        >
-          <Text style={{ color: "#fff", fontWeight: "bold" }}>Mở Cài đặt</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
     );
   }
+  // if (hasPermission === false) {
+  //   return (
+  //     <SafeAreaView style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+  //       <Ionicons name="camera-off" size={64} color="#666" />
+  //       <Text style={{ fontSize: 16, marginTop: 12, color: "#444", textAlign: "center" }}>
+  //         Ứng dụng cần quyền truy cập máy ảnh để sử dụng tính năng này.
+  //       </Text>
+  //       <TouchableOpacity
+  //         style={{
+  //           marginTop: 20,
+  //           backgroundColor: "#2C6AEF",
+  //           paddingHorizontal: 20,
+  //           paddingVertical: 12,
+  //           borderRadius: 8,
+  //         }}
+  //         onPress={() => Linking.openSettings()}
+  //       >
+  //         <Text style={{ color: "#fff", fontWeight: "bold" }}>Mở Cài đặt</Text>
+  //       </TouchableOpacity>
+  //     </SafeAreaView>
+  //   );
+  // }
 
   return (
     <KeyboardAvoidingView
@@ -104,10 +172,11 @@ const Index = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
     >
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container}
+      >
         <View style={styles.header}>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.button}
             onPress={() =>
               setMode((prev) => (prev === "camera" ? "text" : "camera"))
@@ -118,15 +187,26 @@ const Index = () => {
             ) : (
               <Ionicons name="camera" size={24} color="#fff" />
             )}
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, { marginLeft: 10 }]} onPress={toggleSidebar}>
-            <MaterialIcons name="menu" size={24} color="#fff" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
+          <Animated.View
+            entering={FadeInRight.delay(200).duration(500).springify()}
+          >
+            <TouchableOpacity
+              style={[styles.button, { marginLeft: 10 }]}
+              onPress={toggleSidebar}
+              onLayout={step20OnLayout}
+            >
+              <MaterialIcons name="menu" size={24} color="#fff" />
+            </TouchableOpacity>
+          </Animated.View>
         </View>
 
-        <View style={styles.main}>
-          {mode === "camera" ? (
-            <View style={{ flex: 1 }}>
+        <Animated.View
+          entering={FadeInDown.delay(300).duration(500).springify()}
+          style={styles.main}
+        >
+          {/* {mode === "camera" ? (
+            <View style={{ flex: 1 }} >
               <Text style={styles.cameraTitle}>
                 Đưa tay vào camera để bắt đầu nhé!
               </Text>
@@ -134,9 +214,15 @@ const Index = () => {
               <CameraView
                 style={styles.camera}
                 facing={facing}
+                onLayout={step16OnLayout}
+
               >
                 {mode === "camera" && (
-                  <TouchableOpacity style={styles.cameraSwitchBtn} onPress={toggleCameraType}>
+                  <TouchableOpacity
+                    style={styles.cameraSwitchBtn}
+                    onPress={toggleCameraType}
+                    onLayout={step18OnLayout}
+                  >
                     <Text style={styles.buttonText}>
                       <Flip width={18} height={18} />
                     </Text>
@@ -144,7 +230,8 @@ const Index = () => {
                 )}
               </CameraView>
             </View>
-          ) : (
+          )
+          : (
             <View style={styles.textMode}>
               <View style={styles.modelPlaceholder}>
                 <Image
@@ -165,21 +252,126 @@ const Index = () => {
                 placeholderTextColor={colors.gray500}
               />
             </View>
-          )}
+          )} */}
 
+          <View style={{ flex: 1 }} >
+            {/* <Text style={styles.cameraTitle}>
+              Đưa tay vào camera để bắt đầu nhé!
+            </Text> */}
+            <CameraView
+              style={styles.camera}
+              //facing={facing}
+              onLayout={step18OnLayout}
 
+            >
+              {mode === "camera" && (
+                <TouchableOpacity
+                  style={styles.cameraSwitchBtn}
+                  onPress={toggleCameraType}
+                  onLayout={step19OnLayout}
+                >
+                  <Text style={styles.buttonText}>
+                    <Flip width={18} height={18} />
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </CameraView>
+          </View>
+
+        </Animated.View>
+        <View style={{ ...styles.containerNav }}>
+          <Link href="/(main)/home" asChild>
+            <TouchableOpacity onPress={() => setActiveTab("home")}>
+              {/* <View style={{ backgroundColor: activeTab === "home" ? "red" : "transparent", ...styles.wrapper }}> */}
+              <View style={styles.wrapper}>
+                <HomeIcon
+                  width={ICON_SIZE}
+                  height={ICON_SIZE}
+                  stroke={activeTab === "home" ? colors.primary400 : colors.gray500}
+                  fill={activeTab === "home" ? colors.primary400 : colors.gray500}
+                />
+                <Text style={{ color: activeTab === "home" ? colors.primary400 : colors.gray500, ...styles.text }}>Trang chủ</Text>
+              </View>
+            </TouchableOpacity>
+          </Link>
+
+          {/* <Link href="/(practice)" asChild>
+                <TouchableOpacity style={styles.button} onPress={() => setActiveTab("practice")}>
+                    <View style={styles.wrapper}>
+                        <Book
+                            width={ICON_SIZE}
+                            height={ICON_SIZE}
+                            stroke={activeTab === "practice" ? colors.primary400 : colors.gray500}
+                        />
+                        <Text style={{ color: activeTab === "practice" ? colors.primary400 : colors.gray500, ...styles.text }}>Luyện tập</Text>
+                    </View>
+                </TouchableOpacity>
+            </Link> */}
+
+          {/* <Button style={styles.button}>
+                <Wave width={ICON_SIZE} height={ICON_SIZE} />
+            </Button> */}
+
+          <Link href="/(translate)" asChild>
+            <TouchableOpacity
+              style={styles.translateBtn}
+              onPress={() => setActiveTab("translate")}
+            >
+              <View style={{ ...styles.wrapper, }}>
+                <Scan
+                  width={ICON_SIZE}
+                  height={ICON_SIZE}
+                  stroke={activeTab === "translate" ? colors.primary400 : colors.gray500}
+                />
+                <Text style={{ color: activeTab === "translate" ? colors.primary400 : colors.gray500, ...styles.text }}>
+                  Phiên dịch
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </Link>
+
+          <Link href="/(dictionary)" asChild>
+            <TouchableOpacity
+              onPress={() => setActiveTab("dictionary")}
+            // onLayout={step8OnLayout}
+            >
+              <View style={{ ...styles.wrapper, }}>
+                <SearchIcon
+                  width={ICON_SIZE}
+                  height={ICON_SIZE}
+                  stroke={activeTab === "dictionary" ? colors.primary400 : colors.gray500}
+                />
+                <Text style={{ color: activeTab === "dictionary" ? colors.primary400 : colors.gray500, ...styles.text }}>Từ điển</Text>
+              </View>
+            </TouchableOpacity>
+          </Link>
+
+          <Link href="/(profile)" asChild>
+            <TouchableOpacity
+              onLayout={step21OnLayout}
+              onPress={() => setActiveTab("profile")}>
+              <View style={{ ...styles.wrapper }}>
+                <Profile
+                  width={ICON_SIZE}
+                  height={ICON_SIZE}
+                  stroke={activeTab === "profile" ? colors.primary400 : colors.gray500}
+                />
+                <Text style={{ color: activeTab === "profile" ? colors.primary400 : colors.gray500, ...styles.text }}>Tài khoản</Text>
+              </View>
+            </TouchableOpacity>
+          </Link>
         </View>
-        <NavBar />
 
-        {/* Sidebar overlay */}
         {sidebarOpen && (
           <TouchableOpacity
-            style={styles.overlay}
-            onPress={toggleSidebar}
+            style={StyleSheet.absoluteFillObject}
             activeOpacity={1}
-          />
+            onPress={toggleSidebar}
+          >
+            <Animated.View style={[styles.overlay, overlayStyle]} />
+          </TouchableOpacity>
         )}
-        <Animated.View style={[styles.sidebar, { left: sidebarAnim }]}>
+        <Animated.View style={[styles.sidebar, sidebarStyle]}>
           <Text style={styles.logTitle}>Lịch sử dịch</Text>
           <FlatList
             data={log}
@@ -197,7 +389,7 @@ export default Index;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray400,
+    backgroundColor: colors.gray100,
   },
   header: {
     flexDirection: "row",
@@ -210,7 +402,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignSelf: 'flex-end'
   },
-
   cameraSwitchBtn: {
     position: "absolute",
     top: 10,
@@ -255,8 +446,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     bottom: 0,
-    width: width * 0.8,
-    backgroundColor: colors.primary800,
+    width: width * 0.5,
+    backgroundColor: '#2C6AEF',
     padding: 20,
     zIndex: 20,
   },
@@ -312,5 +503,52 @@ const styles = StyleSheet.create({
   logItem: {
     color: "#ccc",
     fontSize: 12,
+  }, containerNav: {
+    width: '100%',
+    flexDirection: 'row',
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    justifyContent: "space-around",
+    alignItems: "center",
+    backgroundColor: "white",
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#ddd",
+    height: 70
+  },
+  translateBtn: {
+    // position: 'relative',
+    // bottom: 20,
+    // backgroundColor: colors.gray50,
+    // padding: spacing.sm,
+    // borderRadius: 999,
+    // borderColor: '#ddd',
+    // borderWidth: 1
+  },
+  wrapper: {
+    borderRadius: 10,
+    padding: spacing.sm,
+    justifyContent: "center",
+    alignItems: 'center'
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+    objectFit: "contain"
+  },
+  text: {
+    fontSize: fontSizes.sm,
+    fontWeight: 500
+  },
+  link: {
+    position: 'absolute'
+  },
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "white", // or your theme background
   },
 });
