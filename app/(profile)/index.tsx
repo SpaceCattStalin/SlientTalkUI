@@ -1,5 +1,5 @@
-import { StyleSheet, Text, View, Image, ImageBackground, Pressable, TouchableOpacity } from 'react-native';
-import React, { useState, useContext } from 'react';
+import { StyleSheet, Text, View, Image, ImageBackground, Pressable, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useState, useContext, useEffect } from 'react';
 import { colors, fontSizes, spacing } from '@/global/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronRight } from 'lucide-react-native';
@@ -19,13 +19,59 @@ import Animated, { FadeInDown, FadeInLeft, FadeInUp, useAnimatedStyle, useShared
 import { Link, router } from 'expo-router';
 import LogoutModal from '@/components/LogoutModal';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
+import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
+import ProfileScreenOverlay from '@/components/walkthrough/ProfileScreenOverlay';
+import ProfileScreen2Overlay from '@/components/walkthrough/ProfileScreenOverlay2';
+import ProfileScreen3Overlay from '@/components/walkthrough/ProfileScreenOverlay3';
+import EndingMessageOverlay from '@/components/walkthrough/EndingMessageOverlay';
+import { useFonts } from "expo-font";
 
 const Index = () => {
   const [logoutVisible, setLogoutVisible] = useState(false);
 
   const { authState, signIn } = useContext(AuthContext);
 
-  console.log(authState);
+  const [fontsLoaded] = useFonts({
+    ...Ionicons.font,
+    ...FontAwesome5.font,
+  });
+
+  const { onLayout: step22OnLayout, goTo: goTo22, start: startStep22 } = useWalkthroughStep({
+    number: 22,
+    fullScreen: false,
+    OverlayComponent: ProfileScreenOverlay,
+  });
+
+  const { onLayout: step23OnLayout } = useWalkthroughStep({
+    number: 23,
+    fullScreen: false,
+    OverlayComponent: ProfileScreen2Overlay,
+  });
+
+  const { onLayout: step24OnLayout, } = useWalkthroughStep({
+    number: 24,
+    fullScreen: false,
+    OverlayComponent: ProfileScreen3Overlay,
+  });
+
+  const { onLayout: step25OnLayout, stop } = useWalkthroughStep({
+    number: 25,
+    fullScreen: true,
+    OverlayComponent: EndingMessageOverlay,
+  });
+
+  useEffect(() => {
+    goTo22(22);
+  }, [goTo22, startStep22]);
+
+  if (!fontsLoaded) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
+
   if (!authState.userToken) {
     return (
       <SafeAreaView style={{
@@ -35,7 +81,8 @@ const Index = () => {
         <View style={{
           paddingHorizontal: spacing.md,
           flex: 1
-        }}>
+        }}
+        >
           <View style={{ marginTop: spacing.lg * 2, gap: spacing.md }}>
             <Text style={{
               fontSize: fontSizes.lg,
@@ -46,8 +93,10 @@ const Index = () => {
             </Text>
             <Animated.View
               entering={FadeInLeft.delay(300).duration(500).springify()}
+              onLayout={step22OnLayout}
             >
-              <AnimatedButton onPress={() => router.push('./login')}>
+              <AnimatedButton
+                onPress={() => router.push('./login')}>
                 <View style={styles.optionWrapper}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
                     <View style={{ ...styles.iconContainer, backgroundColor: '#E6F0FB' }}>
@@ -79,6 +128,7 @@ const Index = () => {
 
             <Animated.View
               entering={FadeInLeft.delay(300).duration(500).springify()}
+              onLayout={step23OnLayout}
             >
               <AnimatedButton>
                 <View style={{
@@ -131,6 +181,7 @@ const Index = () => {
           </View>
 
         </View>
+
         <View
           style={{
             flexDirection: "row",
@@ -144,12 +195,14 @@ const Index = () => {
           <View style={{ flex: 1, backgroundColor: "#FACC15" }} />
           <View style={{ flex: 1, backgroundColor: "#3B82F6" }} />
         </View>
-        <View style={{
-          paddingHorizontal: spacing.md,
-          backgroundColor: colors.gray400,
-          alignSelf: 'auto',
-          paddingBottom: spacing.lg * 4
-        }}>
+
+        <View
+          style={{
+            paddingHorizontal: spacing.md,
+            backgroundColor: colors.gray400,
+            alignSelf: 'auto',
+            paddingBottom: spacing.lg * 4
+          }}>
           <Animated.View
             entering={FadeInDown.delay(300).duration(500).springify()}
           >
@@ -164,6 +217,7 @@ const Index = () => {
           </Animated.View>
 
           <Animated.View
+            onLayout={step24OnLayout}
             style={{
               flexDirection: 'row',
               justifyContent: 'space-evenly'
@@ -186,6 +240,7 @@ const Index = () => {
           </Animated.View>
 
         </View>
+
         <NavBar />
       </SafeAreaView>
     );
@@ -205,7 +260,7 @@ const Index = () => {
         </View>
       )}
       <View className='flex-1'>
-        <View style={styles.profileContainer}>
+        {/* <View style={styles.profileContainer}>
           <Background
             style={StyleSheet.absoluteFillObject}
             width="100%"
@@ -242,18 +297,10 @@ const Index = () => {
                 gap: spacing.xs,
                 marginTop: spacing.md
               }}>
-              <Text
-                style={{
-                  fontSize: fontSizes.lg * 1.25,
-                  fontWeight: 600,
-                  color: colors.gray50
-                }}
-              >
-                Nguyễn Văn A
-              </Text>
+
             </View>
           </Animated.View>
-        </View>
+        </View> */}
         <View style={styles.main}>
           <Animated.View
             entering={FadeInLeft.delay(200).duration(500).springify()}
@@ -356,7 +403,129 @@ const Index = () => {
               </AnimatedButton>
             </Animated.View>
 
+            <View style={{ marginTop: spacing.sm }}>
+              <Animated.View
+                entering={FadeInLeft.delay(250).duration(500).springify()}
+              >
+
+                <Text style={{
+                  fontSize: fontSizes.lg,
+                  fontWeight: 500,
+                  color: colors.primary700
+                }}>
+                  Trợ giúp
+                </Text>
+              </Animated.View>
+
+              <Animated.View
+                entering={FadeInLeft.delay(300).duration(500).springify()}
+              >
+                <AnimatedButton>
+                  <View style={{
+                    ...styles.optionWrapper,
+                    paddingVertical: spacing.md,
+                    marginVertical: spacing.md
+                  }}>
+                    <Text style={{ ...styles.optionTitle, marginLeft: spacing.sm }}>Hướng dẫn sử dụng</Text>
+                    <View>
+                      <ChevronRight />
+                    </View>
+                  </View>
+                </AnimatedButton>
+              </Animated.View>
+
+
+              <Animated.View
+                entering={FadeInLeft.delay(300).duration(500).springify()}
+              >
+                <AnimatedButton>
+                  <View style={{
+                    ...styles.optionWrapper,
+                    marginBottom: spacing.md,
+                    paddingVertical: spacing.md, paddingRight: spacing.md
+                  }}>
+                    <Text style={{ ...styles.optionTitle, marginLeft: spacing.sm }}>Câu hỏi thường gặp</Text>
+                    <View>
+                      <ExternalLink size={20} color="#629BEE" />
+                    </View>
+                  </View>
+                </AnimatedButton>
+              </Animated.View>
+
+              <Animated.View
+                entering={FadeInLeft.delay(300).duration(500).springify()}
+              >
+                <AnimatedButton>
+                  <View style={{
+                    ...styles.optionWrapper,
+                    marginBottom: spacing.md,
+                    paddingVertical: spacing.md, paddingRight: spacing.md
+                  }}>
+                    <Text style={{ ...styles.optionTitle, marginLeft: spacing.sm }}>Điều khoản sử dụng</Text>
+                    <View>
+                      <ExternalLink size={20} color="#629BEE" />
+                    </View>
+                  </View>
+                </AnimatedButton>
+              </Animated.View>
+            </View>
           </View>
+        </View>
+        <View
+          style={{
+            flexDirection: "row",
+            height: 6,
+            width: "100%",
+          }}
+        >
+          <View style={{ flex: 1, backgroundColor: "#10B981" }} />
+          <View style={{ flex: 1, backgroundColor: "#F97316" }} />
+          <View style={{ flex: 1, backgroundColor: "#6366F1" }} />
+          <View style={{ flex: 1, backgroundColor: "#FACC15" }} />
+          <View style={{ flex: 1, backgroundColor: "#3B82F6" }} />
+        </View>
+
+        <View style={{
+          paddingHorizontal: spacing.md,
+          backgroundColor: colors.gray400,
+          alignSelf: 'auto',
+          paddingBottom: spacing.lg * 4
+        }}>
+          <Animated.View
+            entering={FadeInDown.delay(300).duration(500).springify()}
+          >
+            <Text style={{
+              fontSize: fontSizes.lg,
+              fontWeight: 500,
+              marginTop: spacing.md,
+              color: colors.gray700
+            }}>
+              Mạng xã hội của chúng tôi
+            </Text>
+          </Animated.View>
+
+          <Animated.View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-evenly'
+            }}
+            entering={FadeInDown.delay(500).duration(500).springify()}
+          >
+            <TouchableOpacity className='p-3 rounded-2xl border border-gray-300 flex justify-center items-center'>
+              <Ionicons name="logo-google" size={28} color="#DB4437" />
+            </TouchableOpacity>
+
+            <TouchableOpacity className='p-3 rounded-2xl border border-gray-300 flex justify-center items-center'>
+              <FontAwesome5 name="facebook" size={28} color="blue" />
+            </TouchableOpacity>
+
+            <TouchableOpacity className='p-3 rounded-2xl border border-gray-300 flex justify-center items-center'>
+              <Image source={require('@/assets/images/zalo.png')}
+                className="w-8 h-8"
+                resizeMode="contain" />
+            </TouchableOpacity>
+          </Animated.View>
+
         </View>
         <LogoutModal isVisible={logoutVisible} onCancel={() => setLogoutVisible((prev) => !prev)} />
         <NavBar />
@@ -370,14 +539,14 @@ export default Index;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#2C6AEF"
+    backgroundColor: "#fff"
   },
   profileContainer: {
-    flex: 2,
+    flex: 1.5,
   },
   main: {
-    flex: 4,
-    borderRadius: 40,
+    //flex: 4,
+    //borderRadius: 40,
     backgroundColor: colors.gray50,
     paddingTop: spacing.lg * 1.25,
     paddingHorizontal: spacing.md,
@@ -409,5 +578,11 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.5)',
     zIndex: 1,
+  },
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "white", // or your theme background
   },
 });

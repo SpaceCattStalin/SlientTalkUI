@@ -1,15 +1,28 @@
-import React, { useState } from "react";
+//import React, { useEffect, useState } from "react";
+import * as React from "react";
 import {
-    Modal,
-    View,
+    FlatList,
+    StyleSheet,
     Text,
     TouchableOpacity,
-    StyleSheet,
-    FlatList,
     TouchableWithoutFeedback,
+    View
 } from "react-native";
-import { spacing, colors } from "@/global/theme";
+//import Modal from "react-native-modal";
+import HomeIcon from '@/assets/images/home.svg';
+import Profile from '@/assets/images/profile.svg';
+import Search from '@/assets/images/search.svg';
+import { useNav } from "@/context/NavContext";
+import { colors, fontSizes, spacing } from "@/global/theme";
 import { Collection } from "@/types/Types";
+import { Link } from "expo-router";
+import { useEffect, useState } from "react";
+import { useWalkthroughStep } from "react-native-interactive-walkthrough";
+import WordDefinitionOverlay4 from "./walkthrough/WordDefinitionOverlay4";
+import WordDefinitionOverlay5 from "./walkthrough/WordDefinitionOverlay5";
+// import Wave from '@/assets/images/wave.svg';
+import Scan from '@/assets/images/scan.svg';
+import WordDefinitionOverlay6 from "./walkthrough/WordDefinitionOverlay6";
 
 type Props = {
     isVisible: boolean;
@@ -18,11 +31,46 @@ type Props = {
     onConfirm: (collectionId: string) => void;
     onAdd?: () => void;
     isMove?: boolean;
+    inDictionary?: boolean;
 };
+const ICON_SIZE = 20;
 
-const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd, isMove = false }: Props) => {
+const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd, isMove = false, inDictionary = false, walkthroughDone }: Props) => {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [newName, setNewName] = useState("");
+    const { activeTab, setActiveTab } = useNav();
+
+    const { onLayout: step5OnLayout, goTo: goTo8, start: startStep8 } = useWalkthroughStep({
+        number: 8,
+        fullScreen: false,
+        OverlayComponent: WordDefinitionOverlay4,
+    });
+
+    const { onLayout: step6OnLayout, } = useWalkthroughStep({
+        number: 9,
+        fullScreen: false,
+        OverlayComponent: WordDefinitionOverlay5,
+    });
+
+    const { onLayout: step10OnLayout, } = useWalkthroughStep({
+        number: 10,
+        fullScreen: false,
+        maskAllowInteraction: true,
+        OverlayComponent: WordDefinitionOverlay6,
+    });
+
+    // useEffect(() => {
+    //     if (!inDictionary)
+    //         goTo(8);
+    // }, [start]);
+
+    useEffect(() => {
+        if (!inDictionary)
+            goTo8(8);
+    }, [goTo8, inDictionary, startStep8]);
+
+
+    if (!isVisible) return null;
 
     const renderItem = ({ item }: { item: Collection; }) => {
         const isSelected = item.id === selectedId;
@@ -46,11 +94,22 @@ const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd, i
     };
 
     return (
-        <Modal visible={isVisible} transparent animationType="fade">
-            <TouchableWithoutFeedback onPress={() => {
-                onCancel();
-                setSelectedId(null);
-            }}>
+        // <Modal
+        //     visible={isVisible}
+        //     transparent
+        //     animationType="fade"
+        //     style={{ zIndex: 2 }}
+        // >
+        <View style={styles.overlayContainer}>
+
+            <TouchableWithoutFeedback
+                style={{
+                    zIndex: 10
+                }}
+                onPress={() => {
+                    onCancel();
+                    setSelectedId(null);
+                }}>
                 <View
                     style={styles.backdrop}
                 >
@@ -60,6 +119,7 @@ const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd, i
                         </Text>
 
                         <FlatList
+                            onLayout={step5OnLayout}
                             data={collections}
                             renderItem={renderItem}
                             keyExtractor={(item) => item.id}
@@ -67,6 +127,7 @@ const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd, i
                         {!isMove && <TouchableOpacity
                             style={[styles.collectionItem, styles.addNew]}
                             onPress={onAdd}
+                            onLayout={step6OnLayout}
                         >
                             <Text style={styles.addNewText}>+ Lưu vào bộ sưu tập mới</Text>
                         </TouchableOpacity>}
@@ -98,15 +159,111 @@ const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd, i
                     </View>
                 </View>
             </TouchableWithoutFeedback>
-        </Modal>
+            {/* -------------------------------------------------- */}
+            <View style={{ ...styles.containerNav }}>
+                <Link href="/(main)/home" asChild>
+                    <TouchableOpacity onPress={() => setActiveTab("home")}>
+                        {/* <View style={{ backgroundColor: activeTab === "home" ? "red" : "transparent", ...styles.wrapper }}> */}
+                        <View style={styles.wrapper}>
+                            <HomeIcon
+                                width={ICON_SIZE}
+                                height={ICON_SIZE}
+                                stroke={activeTab === "home" ? colors.primary400 : colors.gray500}
+                                fill={activeTab === "home" ? colors.primary400 : colors.gray500}
+                            />
+                            <Text style={{ color: activeTab === "home" ? colors.primary400 : colors.gray500, ...styles.text }}>Trang chủ</Text>
+                        </View>
+                    </TouchableOpacity>
+                </Link>
+
+                {/* <Link href="/(practice)" asChild>
+                                <TouchableOpacity style={styles.button} onPress={() => setActiveTab("practice")}>
+                                    <View style={styles.wrapper}>
+                                        <Book
+                                            width={ICON_SIZE}
+                                            height={ICON_SIZE}
+                                            stroke={activeTab === "practice" ? colors.primary400 : colors.gray500}
+                                        />
+                                        <Text style={{ color: activeTab === "practice" ? colors.primary400 : colors.gray500, ...styles.text }}>Luyện tập</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            </Link> */}
+
+                {/* <Button style={styles.button}>
+                                <Wave width={ICON_SIZE} height={ICON_SIZE} />
+                            </Button> */}
+
+                <Link href="/(translate)" asChild>
+                    <TouchableOpacity style={styles.translateBtn} onPress={() => setActiveTab("translate")}>
+                        <View style={{ ...styles.wrapper, }}>
+                            <Scan
+                                width={ICON_SIZE}
+                                height={ICON_SIZE}
+                                stroke={activeTab === "translate" ? colors.primary400 : colors.gray500}
+                            />
+                            <Text style={{ color: activeTab === "translate" ? colors.primary400 : colors.gray500, ...styles.text }}>
+                                Phiên dịch
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
+                </Link>
+
+                <Link href="/(dictionary)" asChild>
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={() => setActiveTab("dictionary")}
+                        onLayout={step10OnLayout}
+                    >
+                        <View style={{ ...styles.wrapper, }}>
+                            <Search
+                                width={ICON_SIZE}
+                                height={ICON_SIZE}
+                                stroke={activeTab === "dictionary" ? colors.primary400 : colors.gray500}
+                            />
+                            <Text style={{ color: activeTab === "dictionary" ? colors.primary400 : colors.gray500, ...styles.text }}>Từ điển</Text>
+                        </View>
+                    </TouchableOpacity>
+                </Link>
+
+                <Link href="/(profile)" asChild>
+                    <TouchableOpacity style={styles.button} onPress={() => setActiveTab("profile")}>
+                        <View style={{ ...styles.wrapper }}>
+                            <Profile
+                                width={ICON_SIZE}
+                                height={ICON_SIZE}
+                                stroke={activeTab === "profile" ? colors.primary400 : colors.gray500}
+                            />
+                            <Text style={{ color: activeTab === "profile" ? colors.primary400 : colors.gray500, ...styles.text }}>Tài khoản</Text>
+                        </View>
+                    </TouchableOpacity>
+                </Link>
+            </View>
+
+            {/* </Modal> */}
+        </View>
     );
 };
 
 export default CollectionModal;
 
 const styles = StyleSheet.create({
+    overlayContainer: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 998,
+        justifyContent: "center",
+        alignItems: "center",
+    },
     backdrop: {
-        flex: 1,
+        // flex: 1,
+        // backgroundColor: "rgba(0,0,0,0.5)",
+        // justifyContent: "center",
+        // alignItems: "center",
+        // zIndex: 10
+        ...StyleSheet.absoluteFillObject,
         backgroundColor: "rgba(0,0,0,0.5)",
         justifyContent: "center",
         alignItems: "center",
@@ -189,5 +346,47 @@ const styles = StyleSheet.create({
         textAlign: "center",
         color: colors.primary700,
         fontWeight: "bold",
+    }, containerNav: {
+        width: '100%',
+        flexDirection: 'row',
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        justifyContent: "space-around",
+        alignItems: "center",
+        backgroundColor: "white",
+        paddingVertical: 10,
+        borderTopWidth: 1,
+        borderTopColor: "#ddd",
+        height: 70
     },
+
+    translateBtn: {
+        // position: 'relative',
+        // bottom: 20,
+        // backgroundColor: colors.gray50,
+        // padding: spacing.sm,
+        // borderRadius: 999,
+        // borderColor: '#ddd',
+        // borderWidth: 1
+    },
+    wrapper: {
+        borderRadius: 10,
+        padding: spacing.sm,
+        justifyContent: "center",
+        alignItems: 'center'
+    },
+    image: {
+        width: "100%",
+        height: "100%",
+        objectFit: "contain"
+    },
+    text: {
+        fontSize: fontSizes.sm,
+        fontWeight: 500
+    },
+    link: {
+        position: 'absolute'
+    }
 });

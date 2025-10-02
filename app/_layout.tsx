@@ -23,13 +23,10 @@ const RootNavigation = () => {
 
 
 export default function RootLayout() {
-  enableExperimentalLayoutAnimation();
-
   return (
     <AuthProvider>
       <ThemeProvider>
         <NavProvider>
-          {/* <RootNavigation /> */}
           <WalkthroughProvider>
             <RootNavigation />
           </WalkthroughProvider>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Button } from 'react-native-paper';
 
@@ -11,6 +11,8 @@ import Scan from '@/assets/images/scan.svg';
 import { colors, fontSizes, spacing } from '../global/theme';
 import { Link } from 'expo-router';
 import { useNav } from '@/context/NavContext';
+import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
+import TranslateScreen5Overlay from './walkthrough/TranslateScreenOverlay5';
 
 type NavbarProps = {
     style?: object;
@@ -23,6 +25,17 @@ const ICON_SIZE = 20;
 const NavBar = ({ style }: NavbarProps) => {
     // const [activeTab, setActiveTab] = useState("home");
     const { activeTab, setActiveTab } = useNav();
+
+    // const { onLayout: step16OnLayout, goTo, start } = useWalkthroughStep({
+    //     number: 16,
+    //     fullScreen: false,
+    //     OverlayComponent: TranslateScreen5Overlay,
+    // });
+
+
+    // useEffect(() => {
+    //     goTo(16);
+    // }, [start, goTo]);
 
     return (
         <View style={{ ...styles.container, ...style }}>

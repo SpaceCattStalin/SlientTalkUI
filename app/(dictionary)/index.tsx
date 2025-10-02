@@ -16,13 +16,17 @@ import { Collection } from '@/types/Types';
 import Animated, { FadeInLeft, FadeInRight, FadeInDown, FadeInUp, useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated';
 
 import TwoLine from '@/assets/images/two_lines.svg';
+import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
+import DictionarySearchOverlay from '@/components/walkthrough/DictionaryScreenOverlay';
+import DictionaryCategoryOverlay from '../../components/walkthrough/DictionaryScreenOverlay2';
+import DictionarySaveOverlay from '@/components/walkthrough/DictionaryScreenOverlay3';
 
 const categories = ["Triệu chứng", "Bộ phận cơ thể", "Điều trị", "Trường học"];
 
 const collections: Collection[] = [
-    { id: 'randomstring', name: 'Tất cả từ đã lưu', wordCount: 120 },
-    { id: 'randomstring1', name: 'Y tế', wordCount: 45 },
-    { id: 'randomstring3', name: 'fafa', wordCount: 10 },
+    { id: 'randomstring', name: 'Tất cả từ đã lưu', wordCount: 12 },
+    // { id: 'randomstring1', name: 'Y tế', wordCount: 4 },
+    // { id: 'randomstring3', name: 'fafa', wordCount: 4 },
 ];
 
 const dictionary = [
@@ -44,6 +48,26 @@ const Index = () => {
     const [resultState, setResultState] = useState<"add" | "save">("save");
     const scale = useSharedValue(1);
 
+
+    const { onLayout: step11OnLayout, goTo: goTo11, start: startStep11 } = useWalkthroughStep({
+        number: 11,
+        fullScreen: false,
+        OverlayComponent: DictionarySearchOverlay,
+    });
+
+    const { onLayout: step12OnLayout } = useWalkthroughStep({
+        number: 12,
+        fullScreen: false,
+        OverlayComponent: DictionaryCategoryOverlay,
+    });
+
+    const { onLayout: step13OnLayout } = useWalkthroughStep({
+        number: 13,
+        fullScreen: false,
+        maskAllowInteraction: true,
+        OverlayComponent: DictionarySaveOverlay,
+    });
+
     useEffect(() => {
         if (query.length > 0) {
             const filtered = dictionary.filter((word) =>
@@ -59,7 +83,11 @@ const Index = () => {
         transform: [{ scale: scale.value }],
     }));
 
-    return (
+    useEffect(() => {
+        goTo11(11);
+    }, [startStep11, goTo11]);
+
+    return ( 
         <KeyboardAvoidingView
             style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -95,12 +123,14 @@ const Index = () => {
                                 <Animated.View style={[
                                     styles.buttonStyle,
                                     animatedStyle]}
+                                    onLayout={step13OnLayout}
                                 >
                                     <TwoLine height={20} width={20} preserveAspectRatio="xMidYMid meet" />
                                 </Animated.View>
                             </Pressable>
                         </View>
                         <Animated.View
+                            onLayout={step11OnLayout}
                             entering={FadeInLeft.delay(200).duration(500).springify()}
                         >
                             <Search value={query} onChange={setQuery} />
@@ -138,7 +168,8 @@ const Index = () => {
                                     style={{
                                         marginTop: spacing.lg,
                                         paddingHorizontal: spacing.md
-                                    }}>
+                                    }}
+                                >
                                     <FlatList
                                         style={{ marginTop: 10 }}
                                         data={results}
@@ -202,7 +233,9 @@ const Index = () => {
                                 </Text>
                             </View>
                         ) : (
-                            <View style={{ flex: 1, gap: spacing.md, justifyContent: 'flex-start' }}>
+                            <View
+                                style={{ flex: 1, gap: spacing.md, justifyContent: 'flex-start' }}
+                            >
                                 <Animated.View
                                     entering={FadeInDown.delay(300).duration(500).springify()}
                                 >
@@ -221,6 +254,7 @@ const Index = () => {
                                     <Animated.View
                                         style={styles.topicContainer}
                                         entering={FadeInDown.delay(400).duration(500).springify()}
+                                        onLayout={step12OnLayout}
                                     >
                                         <TouchableOpacity style={styles.topic}
                                             onPress={() => {
@@ -301,6 +335,7 @@ const Index = () => {
                 />
 
                 <CollectionModal
+                    inDictionary={true}
                     isVisible={isCollectionVisible}
                     onCancel={() => setIsCollectionVisible(false)}
                     collections={collections}
@@ -372,6 +407,7 @@ const styles = StyleSheet.create({
         // backgroundColor: 'red',
         flexDirection: 'row',
         gap: spacing.lg,
+
     },
     topic: {
         flex: 0.5,

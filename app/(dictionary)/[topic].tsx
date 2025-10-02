@@ -15,9 +15,9 @@ import BackButton from "@/components/BackButton";
 import Animated, { FadeInLeft, FadeInUp } from "react-native-reanimated";
 
 const collections: Collection[] = [
-    { id: 'randomstring', name: 'Tất cả từ đã lưu', wordCount: 120 },
-    { id: 'randomstring1', name: 'Y tế', wordCount: 45 },
-    { id: 'randomstring3', name: 'fafa', wordCount: 10 },
+    { id: 'randomstring', name: 'Tất cả từ đã lưu', wordCount: 12 },
+    // { id: 'randomstring1', name: 'Y tế', wordCount: 45 },
+    // { id: 'randomstring3', name: 'fafa', wordCount: 10 },
 ];
 
 const topicDictionary: Record<string, string[]> = {
@@ -177,6 +177,7 @@ export default function TopicDetailScreen() {
                 />
 
                 <CollectionModal
+                    inDictionary={true}
                     isVisible={isCollectionVisible}
                     onCancel={() => setIsCollectionVisible(false)}
                     collections={collections}
