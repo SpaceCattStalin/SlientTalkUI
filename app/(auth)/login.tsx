@@ -1,15 +1,20 @@
 import ThemedView from '@/components/ThemedView';
-import React, { useState } from 'react';
-import { Image, Text, TouchableOpacity, TextInput, View, StyleSheet } from 'react-native';
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
+import { FontAwesome5, Ionicons } from '@expo/vector-icons';
+import * as React from 'react';
+import { useState } from 'react';
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import SunAnimation from '@/components/animation/SunAnimation';
 import ThemedText from '@/components/ThemedText';
+import { colors } from '@/global/theme';
+import { useRoute } from '@react-navigation/native';
 import { Link, useRouter } from 'expo-router';
 import Animated, { FadeInLeft, FadeInUp } from 'react-native-reanimated';
-import { useRoute } from '@react-navigation/native';
-import { colors } from '@/global/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { AuthContext } from '@/context/AuthProvider';
+import { login } from '@/services/auth';
+import { useContext } from 'react';
 
 const Login = () => {
     const router = useRouter();
@@ -19,8 +24,28 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const { signIn } = useContext(AuthContext);
 
     console.log("Currently on route:", route.name);
+
+    const handleLogin = async () => {
+    setLoading(true);
+    setError('');
+    try {
+        const result = await login(email, password);
+        console.log('Login success:', result);
+
+        if (result?.accessToken) {
+            await signIn(result.accessToken);
+            router.push('/home');
+        }
+    } catch (err: any) {
+        console.error(err);
+        setError('Đăng nhập thất bại. Vui lòng thử lại.');
+    } finally {
+        setLoading(false);
+    }
+};
 
     return (
         // <ThemedView safe={true} className='relative h-full' style={styles.container}>
@@ -56,8 +81,11 @@ const Login = () => {
                     </Animated.View>
 
                     <Animated.View entering={FadeInUp.delay(600).duration(1000).springify()} className='w-full'>
-                        <TouchableOpacity className='w-full bg-brand-400 p-3 rounded-2xl bg-brand-500'>
-                            <ThemedText className='text-xl font-bold text-white text-center'>Đăng nhập</ThemedText>
+                        <TouchableOpacity 
+                        className='w-full bg-brand-400 p-3 rounded-2xl bg-brand-500'
+                        onPress={handleLogin}
+                        >
+                            <Text className='text-xl font-bold text-white text-center'>Đăng nhập</Text>
                         </TouchableOpacity>
                     </Animated.View>
 

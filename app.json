@@ -48,7 +48,8 @@
         {
           "cameraPermission": "Cho phép SilentTalk truy cập camera của bạn"
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

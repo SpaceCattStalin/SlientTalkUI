@@ -1,25 +1,24 @@
-import { StyleSheet, Text, TouchableOpacity, View, Image, FlatList, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import Search from '@/components/Searchbar';
 import NavBar from '@/components/NavBar';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import Search from '@/components/Searchbar';
 import { colors, fontSizes, spacing } from '@/global/theme';
-import Header from '@/components/Header';
 import { ChevronRight } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
+import { FlatList, Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import AnimatedLikeIcon from '@/components/animation/AnimatedLikeIcon';
-import { useRouter } from 'expo-router';
-import ResultModal from '@/components/ResultModal';
-import CollectionModal from '@/components/CollectionModal';
 import AddCollectionModal from '@/components/AddModal';
+import AnimatedLikeIcon from '@/components/animation/AnimatedLikeIcon';
+import CollectionModal from '@/components/CollectionModal';
+import ResultModal from '@/components/ResultModal';
 import { Collection } from '@/types/Types';
-import Animated, { FadeInLeft, FadeInRight, FadeInDown, FadeInUp, useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated';
+import { useRouter } from 'expo-router';
+import Animated, { FadeInDown, FadeInLeft, FadeInUp, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 import TwoLine from '@/assets/images/two_lines.svg';
-import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
 import DictionarySearchOverlay from '@/components/walkthrough/DictionaryScreenOverlay';
-import DictionaryCategoryOverlay from '../../components/walkthrough/DictionaryScreenOverlay2';
 import DictionarySaveOverlay from '@/components/walkthrough/DictionaryScreenOverlay3';
+import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
+import DictionaryCategoryOverlay from '../../components/walkthrough/DictionaryScreenOverlay2';
 
 const categories = ["Triệu chứng", "Bộ phận cơ thể", "Điều trị", "Trường học"];
 
@@ -83,9 +82,9 @@ const Index = () => {
         transform: [{ scale: scale.value }],
     }));
 
-    useEffect(() => {
+/*     useEffect(() => {
         goTo11(11);
-    }, [startStep11, goTo11]);
+    }, [startStep11, goTo11]); */
 
     return ( 
         <KeyboardAvoidingView

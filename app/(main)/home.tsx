@@ -1,28 +1,22 @@
+import HomeIcon from '@/assets/images/home.svg';
+import Profile from '@/assets/images/profile.svg';
+import Search from '@/assets/images/search.svg';
 import AnimateChveron from '@/components/animation/AnimateChveron';
-import AnimatedLikeIcon from '@/components/animation/AnimatedLikeIcon';
-import Card from '@/components/Card';
-import Header from '@/components/Header';
-import NavBar from '@/components/NavBar';
-import { spacing, colors, fontSizes } from '@/global/theme';
-import { useRoute } from '@react-navigation/native';
-import React, { useEffect } from 'react';
-import { StyleSheet, View, Text, Pressable, Platform, Image, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useVideoPlayer, VideoView } from 'expo-video';
-import BackgroundDecoration from '@/components/BackgroundDecoration';
 import AnimatedTyping from '@/components/animation/AnimatedTyping';
-import { Link, router } from 'expo-router';
-import Animated, { FadeInLeft } from 'react-native-reanimated';
-import WelcomeMessageOverlay from '@/components/walkthrough/WelcomeMessageOverlay';
-import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
+import BackgroundDecoration from '@/components/BackgroundDecoration';
+import Header from '@/components/Header';
 import HomeScreenOverlay from '@/components/walkthrough/HomeScreenOverlay';
 import WordOfTheDayOverlay from '@/components/walkthrough/HomeScreenOverlay2';
 import WordOfTheDayButtonOverlay from '@/components/walkthrough/HomeScreenOverlay3';
+import WelcomeMessageOverlay from '@/components/walkthrough/WelcomeMessageOverlay';
 import { useNav } from '@/context/NavContext';
-import HomeIcon from '@/assets/images/home.svg';
-import Book from '@/assets/images/book.svg';
-import Search from '@/assets/images/search.svg';
-import Profile from '@/assets/images/profile.svg';
+import { colors, fontSizes, spacing } from '@/global/theme';
+import { Link, router } from 'expo-router';
+import React from 'react';
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
+import Animated, { FadeInLeft } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
 // import Wave from '@/assets/images/wave.svg';
 import Scan from '@/assets/images/scan.svg';
 const ICON_SIZE = 20;
@@ -56,12 +50,12 @@ const Home = () => {
     });
 
 
-    useEffect(
+/*     useEffect(
         () => {
             startStep1();
         },
         [startStep1],
-    );
+    ); */
 
     return (
         <SafeAreaView style={styles.container} >

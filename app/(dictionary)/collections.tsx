@@ -1,19 +1,17 @@
-import { FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { colors, fontSizes, spacing } from '@/global/theme';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeInLeft, FadeInUp, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import AddCollectionModal from '@/components/AddModal';
 import BackButton from '@/components/BackButton';
 import NavBar from '@/components/NavBar';
 import ResultModal from '@/components/ResultModal';
-import CollectionModal from '@/components/CollectionModal';
-import { Collection } from '@/types/Types';
-import AddCollectionModal from '@/components/AddModal';
-import AnimatedLikeIcon from '@/components/animation/AnimatedLikeIcon';
-import { router } from 'expo-router';
-import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
 import CollectionScreenOverlay from '@/components/walkthrough/CollectionScreenOverlay';
 import { useNav } from '@/context/NavContext';
+import { colors, fontSizes, spacing } from '@/global/theme';
+import { Collection } from '@/types/Types';
+import { router } from 'expo-router';
+import React, { useState } from 'react';
+import { FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
+import Animated, { FadeInLeft, FadeInUp, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const collections: Collection[] = [
     { id: 'randomstring', name: 'Tất cả từ đã lưu', wordCount: 12 },
@@ -41,9 +39,9 @@ const Collections = () => {
         maskAllowInteraction: true
     });
 
-    useEffect(() => {
+/*     useEffect(() => {
         goTo(14);
-    }, [goTo, start]);
+    }, [goTo, start]); */
 
     return (
         <SafeAreaView style={styles.container}>

@@ -1,10 +1,11 @@
 // app/(dictionary)/[word].tsx
+import HomeIcon from '@/assets/images/home.svg';
+import Profile from '@/assets/images/profile.svg';
+import Search from '@/assets/images/search.svg';
 import AddCollectionModal from "@/components/AddModal";
-import AnimateChveron from "@/components/animation/AnimateChveron";
 import AnimatedLikeIcon from "@/components/animation/AnimatedLikeIcon";
 import BackButton from "@/components/BackButton";
 import CollectionModal from "@/components/CollectionModal";
-import NavBar from "@/components/NavBar";
 import ResultModal from "@/components/ResultModal";
 import WordDefinitionOverlay from "@/components/walkthrough/WordDefinitionOverlay";
 import WordDefinitionVideoOverlay from "@/components/walkthrough/WordDefinitionOverlay2";
@@ -12,20 +13,14 @@ import WordDefinitionLikeButtonOverlay from "@/components/walkthrough/WordDefini
 import { colors, fontSizes, spacing } from "@/global/theme";
 import { Collection } from "@/types/Types";
 import { Link, useLocalSearchParams } from "expo-router";
-import { useVideoPlayer, VideoView } from "expo-video";
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import React, { useState } from "react";
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useWalkthroughStep } from "react-native-interactive-walkthrough";
 import Animated, { FadeInLeft } from "react-native-reanimated";
 import { SafeAreaView } from 'react-native-safe-area-context';
-import HomeIcon from '@/assets/images/home.svg';
-import Book from '@/assets/images/book.svg';
-import Search from '@/assets/images/search.svg';
-import Profile from '@/assets/images/profile.svg';
 // import Wave from '@/assets/images/wave.svg';
 import Scan from '@/assets/images/scan.svg';
 import { useNav } from "@/context/NavContext";
-import WordDefinition6Overlay from "@/components/walkthrough/WordDefinitionOverlay6";
 const ICON_SIZE = 20;
 
 const collections: Collection[] = [
@@ -71,11 +66,11 @@ export default function WordScreen() {
         OverlayComponent: WordDefinitionLikeButtonOverlay,
     });
 
-    useEffect(() => {
+/*     useEffect(() => {
         if (!isCollectionVisible) {
             goTo5(5);
         }
-    }, [startStep5, goTo5, isCollectionVisible]);
+    }, [startStep5, goTo5, isCollectionVisible]); */
 
     return (
         <SafeAreaView style={styles.container}>

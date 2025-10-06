@@ -1,30 +1,28 @@
-import { FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { colors, fontSizes, spacing } from '@/global/theme';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import BackButton from '@/components/BackButton';
-import Animated, { FadeInLeft, FadeInUp, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
-import { usePathname, useSearchParams } from 'expo-router/build/hooks';
-import NavBar from '@/components/NavBar';
-import Search from '@/components/Searchbar';
-import { Collection } from '@/types/Types';
-import { Link, router } from 'expo-router';
-import { ChevronRight } from 'lucide-react-native';
 import ThreeDots from '@/assets/images/three_dots.svg';
-import WordOptionModal from '@/components/WordOptionModal';
+import BackButton from '@/components/BackButton';
 import CollectionModal from '@/components/CollectionModal';
-import ResultModal from '@/components/ResultModal';
 import ConfirmDeleteModal from '@/components/ConfirmDeleteModal';
+import ResultModal from '@/components/ResultModal';
+import Search from '@/components/Searchbar';
 import CollectionWordsOverlay from '@/components/walkthrough/CollectionScreenOverlay2';
-import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
 import CollectionOptionOverlay from '@/components/walkthrough/CollectionScreenOverlay3';
 import CollectionOption4Overlay from '@/components/walkthrough/CollectionScreenOverlay4';
+import WordOptionModal from '@/components/WordOptionModal';
 import { useNav } from '@/context/NavContext';
+import { colors, fontSizes, spacing } from '@/global/theme';
+import { Collection } from '@/types/Types';
+import { Link, router } from 'expo-router';
+import { usePathname, useSearchParams } from 'expo-router/build/hooks';
+import { ChevronRight } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
+import Animated, { FadeInLeft, FadeInUp } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import HomeIcon from '@/assets/images/home.svg';
-import Book from '@/assets/images/book.svg';
-import SearchIcon from '@/assets/images/search.svg';
 import Profile from '@/assets/images/profile.svg';
+import SearchIcon from '@/assets/images/search.svg';
 // import Wave from '@/assets/images/wave.svg';
 import Scan from '@/assets/images/scan.svg';
 
@@ -89,9 +87,9 @@ const CollectionScreen = () => {
     });
 
 
-    useEffect(() => {
+/*     useEffect(() => {
         goTo15(15);
-    }, [startStep15, goTo15]);
+    }, [startStep15, goTo15]); */
 
     return (
         <SafeAreaView style={styles.container}>
