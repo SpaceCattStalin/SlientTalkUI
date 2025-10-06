@@ -26,6 +26,7 @@ import Profile from '@/assets/images/profile.svg';
 import Scan from '@/assets/images/scan.svg';
 import { useNav } from "@/context/NavContext";
 import WordDefinition6Overlay from "@/components/walkthrough/WordDefinitionOverlay6";
+import ModelViewer from "@/components/animation/ModelViewer";
 const ICON_SIZE = 20;
 
 const collections: Collection[] = [
@@ -71,11 +72,11 @@ export default function WordScreen() {
         OverlayComponent: WordDefinitionLikeButtonOverlay,
     });
 
-    useEffect(() => {
-        if (!isCollectionVisible) {
-            goTo5(5);
-        }
-    }, [startStep5, goTo5, isCollectionVisible]);
+    // useEffect(() => {
+    //     if (!isCollectionVisible) {
+    //         goTo5(5);
+    //     }
+    // }, [startStep5, goTo5, isCollectionVisible]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -132,7 +133,7 @@ export default function WordScreen() {
                                 entering={FadeInLeft.delay(200).duration(500).springify()}
                                 onLayout={step6OnLayout}
                             >
-                                <Image
+                                {/* <Image
                                     source={require('@/assets/images/3d.png')}
                                     style={{
                                         width: 280,
@@ -140,7 +141,8 @@ export default function WordScreen() {
                                         alignSelf: 'center',
                                         resizeMode: 'contain',
                                     }}
-                                />
+                                /> */}
+                                {/* <ModelViewer /> */}
                             </Animated.View>
 
                             <View style={{ gap: spacing.sm }}>

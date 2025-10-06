@@ -41,9 +41,9 @@ const Collections = () => {
         maskAllowInteraction: true
     });
 
-    useEffect(() => {
-        goTo(14);
-    }, [goTo, start]);
+    // useEffect(() => {
+    //     goTo(14);
+    // }, [goTo, start]);
 
     return (
         <SafeAreaView style={styles.container}>

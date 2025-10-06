@@ -60,9 +60,9 @@ const Index = () => {
     OverlayComponent: EndingMessageOverlay,
   });
 
-  useEffect(() => {
-    goTo22(22);
-  }, [goTo22, startStep22]);
+  // useEffect(() => {
+  //   goTo22(22);
+  // }, [goTo22, startStep22]);
 
   if (!fontsLoaded) {
     return (
@@ -78,170 +78,170 @@ const Index = () => {
         flex: 1,
         backgroundColor: "#fff"
       }}>
-        <View style={{
-          paddingHorizontal: spacing.md,
-          flex: 1
-        }}
-        >
-          <View style={{ marginTop: spacing.lg * 2, gap: spacing.md }}>
-            <Text style={{
-              fontSize: fontSizes.lg,
-              fontWeight: 500,
-              color: colors.primary700
-            }}>
-              Thông tin cá nhân
-            </Text>
-            <Animated.View
-              entering={FadeInLeft.delay(300).duration(500).springify()}
-              onLayout={step22OnLayout}
-            >
-              <AnimatedButton
-                onPress={() => router.push('./login')}>
-                <View style={styles.optionWrapper}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-                    <View style={{ ...styles.iconContainer, backgroundColor: '#E6F0FB' }}>
-                      <LogIn size={20} color="#629BEE" />
-                    </View>
-                    <Text style={styles.optionTitle}>Đăng nhập</Text>
-                  </View>
-                  <View>
-                    <ChevronRight />
-                  </View>
-                </View>
-              </AnimatedButton>
-            </Animated.View>
-          </View>
-
-          <View style={{ marginTop: spacing.lg }}>
-            <Animated.View
-              entering={FadeInLeft.delay(250).duration(500).springify()}
-            >
-
+        <View style={{ flex: 1 }}>
+          <View style={{
+            paddingHorizontal: spacing.md,
+            flex: 1
+          }}
+          >
+            <View style={{ marginTop: spacing.lg * 2, gap: spacing.md }}>
               <Text style={{
                 fontSize: fontSizes.lg,
                 fontWeight: 500,
                 color: colors.primary700
               }}>
-                Trợ giúp
+                Thông tin cá nhân
+              </Text>
+              <Animated.View
+                entering={FadeInLeft.delay(300).duration(500).springify()}
+                onLayout={step22OnLayout}
+              >
+                <AnimatedButton
+                  onPress={() => router.push('./login')}>
+                  <View style={styles.optionWrapper}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                      <View style={{ ...styles.iconContainer, backgroundColor: '#E6F0FB' }}>
+                        <LogIn size={20} color="#629BEE" />
+                      </View>
+                      <Text style={styles.optionTitle}>Đăng nhập</Text>
+                    </View>
+                    <View>
+                      <ChevronRight />
+                    </View>
+                  </View>
+                </AnimatedButton>
+              </Animated.View>
+            </View>
+
+            <View style={{ marginTop: spacing.lg }}>
+              <Animated.View
+                entering={FadeInLeft.delay(250).duration(500).springify()}
+              >
+
+                <Text style={{
+                  fontSize: fontSizes.lg,
+                  fontWeight: 500,
+                  color: colors.primary700
+                }}>
+                  Trợ giúp
+                </Text>
+              </Animated.View>
+
+              <Animated.View
+                entering={FadeInLeft.delay(300).duration(500).springify()}
+                onLayout={step23OnLayout}
+              >
+                <AnimatedButton>
+                  <View style={{
+                    ...styles.optionWrapper,
+                    paddingVertical: spacing.md,
+                    marginVertical: spacing.md
+                  }}>
+                    <Text style={{ ...styles.optionTitle, marginLeft: spacing.sm }}>Hướng dẫn sử dụng</Text>
+                    <View>
+                      <ChevronRight />
+                    </View>
+                  </View>
+                </AnimatedButton>
+              </Animated.View>
+
+
+              <Animated.View
+                entering={FadeInLeft.delay(300).duration(500).springify()}
+              >
+                <AnimatedButton>
+                  <View style={{
+                    ...styles.optionWrapper,
+                    marginBottom: spacing.md,
+                    paddingVertical: spacing.md, paddingRight: spacing.md
+                  }}>
+                    <Text style={{ ...styles.optionTitle, marginLeft: spacing.sm }}>Câu hỏi thường gặp</Text>
+                    <View>
+                      <ExternalLink size={20} color="#629BEE" />
+                    </View>
+                  </View>
+                </AnimatedButton>
+              </Animated.View>
+
+              <Animated.View
+                entering={FadeInLeft.delay(300).duration(500).springify()}
+              >
+                <AnimatedButton>
+                  <View style={{
+                    ...styles.optionWrapper,
+                    marginBottom: spacing.md,
+                    paddingVertical: spacing.md, paddingRight: spacing.md
+                  }}>
+                    <Text style={{ ...styles.optionTitle, marginLeft: spacing.sm }}>Điều khoản sử dụng</Text>
+                    <View>
+                      <ExternalLink size={20} color="#629BEE" />
+                    </View>
+                  </View>
+                </AnimatedButton>
+              </Animated.View>
+            </View>
+
+          </View>
+
+          <View
+            style={{
+              flexDirection: "row",
+              height: 6,
+              width: "100%",
+            }}
+          >
+            <View style={{ flex: 1, backgroundColor: "#10B981" }} />
+            <View style={{ flex: 1, backgroundColor: "#F97316" }} />
+            <View style={{ flex: 1, backgroundColor: "#6366F1" }} />
+            <View style={{ flex: 1, backgroundColor: "#FACC15" }} />
+            <View style={{ flex: 1, backgroundColor: "#3B82F6" }} />
+          </View>
+
+          <View
+            style={{
+              paddingHorizontal: spacing.md,
+              backgroundColor: colors.gray400,
+              alignSelf: 'auto',
+              paddingBottom: spacing.lg * 4
+            }}>
+            <Animated.View
+              entering={FadeInDown.delay(300).duration(500).springify()}
+            >
+              <Text style={{
+                fontSize: fontSizes.lg,
+                fontWeight: 500,
+                marginTop: spacing.md,
+                color: colors.gray700
+              }}>
+                Mạng xã hội của chúng tôi
               </Text>
             </Animated.View>
 
             <Animated.View
-              entering={FadeInLeft.delay(300).duration(500).springify()}
-              onLayout={step23OnLayout}
+              onLayout={step24OnLayout}
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-evenly'
+              }}
+              entering={FadeInDown.delay(500).duration(500).springify()}
             >
-              <AnimatedButton>
-                <View style={{
-                  ...styles.optionWrapper,
-                  paddingVertical: spacing.md,
-                  marginVertical: spacing.md
-                }}>
-                  <Text style={{ ...styles.optionTitle, marginLeft: spacing.sm }}>Hướng dẫn sử dụng</Text>
-                  <View>
-                    <ChevronRight />
-                  </View>
-                </View>
-              </AnimatedButton>
-            </Animated.View>
+              <TouchableOpacity className='p-3 rounded-2xl border border-gray-300 flex justify-center items-center'>
+                <Ionicons name="logo-google" size={28} color="#DB4437" />
+              </TouchableOpacity>
 
+              <TouchableOpacity className='p-3 rounded-2xl border border-gray-300 flex justify-center items-center'>
+                <FontAwesome5 name="facebook" size={28} color="blue" />
+              </TouchableOpacity>
 
-            <Animated.View
-              entering={FadeInLeft.delay(300).duration(500).springify()}
-            >
-              <AnimatedButton>
-                <View style={{
-                  ...styles.optionWrapper,
-                  marginBottom: spacing.md,
-                  paddingVertical: spacing.md, paddingRight: spacing.md
-                }}>
-                  <Text style={{ ...styles.optionTitle, marginLeft: spacing.sm }}>Câu hỏi thường gặp</Text>
-                  <View>
-                    <ExternalLink size={20} color="#629BEE" />
-                  </View>
-                </View>
-              </AnimatedButton>
-            </Animated.View>
-
-            <Animated.View
-              entering={FadeInLeft.delay(300).duration(500).springify()}
-            >
-              <AnimatedButton>
-                <View style={{
-                  ...styles.optionWrapper,
-                  marginBottom: spacing.md,
-                  paddingVertical: spacing.md, paddingRight: spacing.md
-                }}>
-                  <Text style={{ ...styles.optionTitle, marginLeft: spacing.sm }}>Điều khoản sử dụng</Text>
-                  <View>
-                    <ExternalLink size={20} color="#629BEE" />
-                  </View>
-                </View>
-              </AnimatedButton>
+              <TouchableOpacity className='p-3 rounded-2xl border border-gray-300 flex justify-center items-center'>
+                <Image source={require('@/assets/images/zalo.png')}
+                  className="w-8 h-8"
+                  resizeMode="contain" />
+              </TouchableOpacity>
             </Animated.View>
           </View>
-
+          <NavBar />
         </View>
-
-        <View
-          style={{
-            flexDirection: "row",
-            height: 6,
-            width: "100%",
-          }}
-        >
-          <View style={{ flex: 1, backgroundColor: "#10B981" }} />
-          <View style={{ flex: 1, backgroundColor: "#F97316" }} />
-          <View style={{ flex: 1, backgroundColor: "#6366F1" }} />
-          <View style={{ flex: 1, backgroundColor: "#FACC15" }} />
-          <View style={{ flex: 1, backgroundColor: "#3B82F6" }} />
-        </View>
-
-        <View
-          style={{
-            paddingHorizontal: spacing.md,
-            backgroundColor: colors.gray400,
-            alignSelf: 'auto',
-            paddingBottom: spacing.lg * 4
-          }}>
-          <Animated.View
-            entering={FadeInDown.delay(300).duration(500).springify()}
-          >
-            <Text style={{
-              fontSize: fontSizes.lg,
-              fontWeight: 500,
-              marginTop: spacing.md,
-              color: colors.gray700
-            }}>
-              Mạng xã hội của chúng tôi
-            </Text>
-          </Animated.View>
-
-          <Animated.View
-            onLayout={step24OnLayout}
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-evenly'
-            }}
-            entering={FadeInDown.delay(500).duration(500).springify()}
-          >
-            <TouchableOpacity className='p-3 rounded-2xl border border-gray-300 flex justify-center items-center'>
-              <Ionicons name="logo-google" size={28} color="#DB4437" />
-            </TouchableOpacity>
-
-            <TouchableOpacity className='p-3 rounded-2xl border border-gray-300 flex justify-center items-center'>
-              <FontAwesome5 name="facebook" size={28} color="blue" />
-            </TouchableOpacity>
-
-            <TouchableOpacity className='p-3 rounded-2xl border border-gray-300 flex justify-center items-center'>
-              <Image source={require('@/assets/images/zalo.png')}
-                className="w-8 h-8"
-                resizeMode="contain" />
-            </TouchableOpacity>
-          </Animated.View>
-
-        </View>
-
-        <NavBar />
       </SafeAreaView>
     );
   }

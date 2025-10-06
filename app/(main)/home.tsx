@@ -56,12 +56,12 @@ const Home = () => {
     });
 
 
-    useEffect(
-        () => {
-            startStep1();
-        },
-        [startStep1],
-    );
+    // useEffect(
+    //     () => {
+    //         startStep1();
+    //     },
+    //     [startStep1],
+    // );
 
     return (
         <SafeAreaView style={styles.container} >
@@ -275,23 +275,6 @@ const Home = () => {
                             </View>
                         </TouchableOpacity>
                     </Link>
-
-                    {/* <Link href="/(practice)" asChild>
-                <TouchableOpacity style={styles.button} onPress={() => setActiveTab("practice")}>
-                    <View style={styles.wrapper}>
-                        <Book
-                            width={ICON_SIZE}
-                            height={ICON_SIZE}
-                            stroke={activeTab === "practice" ? colors.primary400 : colors.gray500}
-                        />
-                        <Text style={{ color: activeTab === "practice" ? colors.primary400 : colors.gray500, ...styles.text }}>Luyện tập</Text>
-                    </View>
-                </TouchableOpacity>
-            </Link> */}
-
-                    {/* <Button style={styles.button}>
-                <Wave width={ICON_SIZE} height={ICON_SIZE} />
-            </Button> */}
 
                     <Link href="/(translate)" asChild>
                         <TouchableOpacity style={styles.translateBtn} onPress={() => setActiveTab("translate")}>

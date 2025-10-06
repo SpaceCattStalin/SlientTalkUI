@@ -21,7 +21,8 @@ config.resolver = {
   assetExts: [...resolver.assetExts.filter((ext) => ext !== 'svg'),
     'lottie',
     'glb',   
-    'gltf'
+    'gltf',
+    'fbx'
   ],
   sourceExts: [...resolver.sourceExts, 'svg'],
 };

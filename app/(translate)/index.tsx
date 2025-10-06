@@ -14,20 +14,23 @@ import {
   ActivityIndicator
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { CameraView, Camera, CameraType } from "expo-camera";
+// import { CameraView, Camera, CameraType } from "expo-camera";
+import { CameraView, CameraType } from "expo-camera";
+
 import NavBar from "@/components/NavBar";
 import { colors, fontSizes, spacing } from "@/global/theme";
 import Flip from '@/assets/images/flip.svg';
 import Search from "@/components/Searchbar";
 import { Searchbar } from "react-native-paper";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import Animated, { FadeInDown, FadeInRight, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import Animated, { FadeInDown, FadeInRight, runOnJS, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useWalkthroughStep } from "react-native-interactive-walkthrough";
 import TranslateScreenOverlay from "@/components/walkthrough/TranslateScreenOverlay";
 import TranslateScreen2Overlay from "@/components/walkthrough/TranslateScreenOverlay2";
 import TranslateScreen3Overlay from "@/components/walkthrough/TranslateScreenOverlay3";
 import TranslateScreen4Overlay from "@/components/walkthrough/TranslateScreenOverlay4";
 import TranslateScreen5Overlay from "@/components/walkthrough/TranslateScreenOverlay5";
+import * as FileSystem from 'expo-file-system/legacy';
 
 import HomeIcon from '@/assets/images/home.svg';
 import Book from '@/assets/images/book.svg';
@@ -38,6 +41,12 @@ import Scan from '@/assets/images/scan.svg';
 import { useNav } from "@/context/NavContext";
 import { Link } from "expo-router";
 import { useFonts } from "expo-font";
+
+
+import { Camera, CameraDevice, useCameraDevice, useFrameProcessor } from "react-native-vision-camera";
+import SocketService from "@/services/socket";
+import { color } from "three/src/nodes/TSL.js";
+
 
 const ICON_SIZE = 20;
 
@@ -50,6 +59,115 @@ const Index = () => {
   const [input, setInput] = useState("");
   const [log, setLog] = useState<string[]>([]);
   const [text, setText] = useState("");
+  const [prediction, setPrediction] = useState<string | null>(null);
+
+  const [currentSentence, setCurrentSentence] = useState("");
+  const [logs, setLogs] = useState<string[]>([]);
+  const predictionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const currentSentenceRef = useRef(currentSentence);
+
+  const cameraRef = useRef<Camera>(null);
+  const device = useCameraDevice('front');
+  const socket = useRef(SocketService.getInstance().getSocket());
+
+  useEffect(() => {
+    (async () => {
+      const cameraPermission = await Camera.requestCameraPermission();
+      console.log("Camera permission:", cameraPermission);
+    })();
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    let failureCount = 0;
+
+    const runCaptureLoop = async () => {
+      while (!cancelled) {
+        try {
+          if (cameraRef.current && socket.current?.connected) {
+            const photo = await cameraRef.current.takePhoto();
+
+            const fileUri = "file://" + photo.path;
+            const fileBuffer = await FileSystem.readAsStringAsync(fileUri, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+
+            const byteArray = Uint8Array.from(
+              atob(fileBuffer),
+              (c) => c.charCodeAt(0)
+            );
+
+            socket.current.emit("frame", byteArray);
+            failureCount = 0;
+          } else {
+            failureCount++;
+            console.log("⚠️ Skipping capture — no socket or camera");
+          }
+        } catch (err: any) {
+          failureCount++;
+          if (failureCount <= 3) {
+            console.warn(`📷 Capture failed (${failureCount}):`, err.message);
+          } else if (failureCount === 4) {
+            console.warn("📷 Capture failing repeatedly, suppressing logs...");
+          }
+          if (failureCount === 5) break;
+        }
+
+        await new Promise((res) => setTimeout(res, 1000));
+      }
+    };
+
+    runCaptureLoop();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // useEffect(() => {
+  //   socket.current!.on("prediction", (data) => {
+  //     console.log("📩 Prediction received:", data.label);
+
+  //     setPrediction(data.label);
+  //     addLog(`Kết quả: ${data.label}`);
+  //   });
+
+  //   return () => {
+  //     socket.current!.off("prediction");
+  //   };
+  // }, []);
+  useEffect(() => {
+    currentSentenceRef.current = currentSentence;
+  }, [currentSentence]);
+
+  useEffect(() => {
+    socket.current!.on("prediction", (data) => {
+      console.log(data.label);
+      const label = data.label?.trim();
+      if (!label) return;
+
+      setCurrentSentence((prev) => {
+        const words = prev.trim().split(" ");
+        if (words[words.length - 1] === label) return prev;
+        return prev ? prev + " " + label : label;
+      });
+
+      if (predictionTimeout.current) clearTimeout(predictionTimeout.current);
+
+      predictionTimeout.current = setTimeout(() => {
+        const sentence = currentSentenceRef.current.trim();
+        if (sentence) {
+          setLogs((prev) => [...prev, sentence]);
+          setCurrentSentence("");
+        }
+      }, 6000);
+    });
+
+    return () => {
+      socket.current!.off("prediction");
+      if (predictionTimeout.current) clearTimeout(predictionTimeout.current);
+    };
+  }, []);
 
   const [fontsLoaded] = useFonts({
     ...MaterialIcons.font,
@@ -126,23 +244,25 @@ const Index = () => {
     OverlayComponent: TranslateScreen5Overlay,
   });
 
+  // useEffect(() => {
+  //   goTo18(18);
+  // }, [goTo18, startStep18]);
 
-  useEffect(() => {
-    (async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      setHasPermission(status === "granted");
-    })();
-    goTo18(18);
-  }, [goTo18, startStep18]);
-
-
-  if (!fontsLoaded) {
+  if (!fontsLoaded && !hasPermission) {
     return (
       <View style={styles.loader}>
         <ActivityIndicator size="large" color="#007AFF" />
       </View>
     );
   }
+
+  // if (!fontsLoaded) {
+  //   return (
+  //     <View style={styles.loader}>
+  //       <ActivityIndicator size="large" color="#007AFF" />
+  //     </View>
+  //   );
+  // }
   // if (hasPermission === false) {
   //   return (
   //     <SafeAreaView style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
@@ -165,18 +285,14 @@ const Index = () => {
   //     </SafeAreaView>
   //   );
   // }
-
+  if (device == null) {
+    return <Text>No camera found</Text>;
+  }
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
-    >
-      <SafeAreaView style={styles.container}
-      >
-        <View style={styles.header}>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
 
-          {/* <TouchableOpacity
+        {/* <TouchableOpacity
             style={styles.button}
             onPress={() =>
               setMode((prev) => (prev === "camera" ? "text" : "camera"))
@@ -188,19 +304,20 @@ const Index = () => {
               <Ionicons name="camera" size={24} color="#fff" />
             )}
           </TouchableOpacity> */}
-          <Animated.View
-            entering={FadeInRight.delay(200).duration(500).springify()}
+        <Animated.View
+          entering={FadeInRight.delay(200).duration(500).springify()}
+        >
+          <TouchableOpacity
+            style={[styles.button, { marginLeft: 10 }]}
+            onPress={toggleSidebar}
+            onLayout={step20OnLayout}
           >
-            <TouchableOpacity
-              style={[styles.button, { marginLeft: 10 }]}
-              onPress={toggleSidebar}
-              onLayout={step20OnLayout}
-            >
-              <MaterialIcons name="menu" size={24} color="#fff" />
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
+            <MaterialIcons name="menu" size={24} color="#fff" />
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
 
+      <View style={{ flex: 1, position: 'relative' }}>
         <Animated.View
           entering={FadeInDown.delay(300).duration(500).springify()}
           style={styles.main}
@@ -254,28 +371,33 @@ const Index = () => {
             </View>
           )} */}
 
-          <View style={{ flex: 1 }} >
-            {/* <Text style={styles.cameraTitle}>
-              Đưa tay vào camera để bắt đầu nhé!
-            </Text> */}
-            <CameraView
-              style={styles.camera}
-              //facing={facing}
-              onLayout={step18OnLayout}
+          {/* <View style={{ flex: 1 }} > */}
+          <View style={{ marginTop: spacing.md }}>
+            {/* {prediction ?
+              <Text>{prediction}</Text>
+              :
+              <Text style={styles.cameraTitle}>
+                Đưa tay vào camera để bắt đầu nhé!
+              </Text>
+            } */}
+            {currentSentence !== "" ? (
+              <View style={styles.translationContainer}>
+                {/* <Text style={styles.translationLabel}>Phiên dịch</Text> */}
+                <Text style={styles.translationText}>{currentSentence || "..."}</Text>
+              </View>
+            ) : (
+              <Text style={styles.cameraTitle}>
+                Đưa tay vào camera để bắt đầu nhé!
+              </Text>
+            )}
 
-            >
-              {mode === "camera" && (
-                <TouchableOpacity
-                  style={styles.cameraSwitchBtn}
-                  onPress={toggleCameraType}
-                  onLayout={step19OnLayout}
-                >
-                  <Text style={styles.buttonText}>
-                    <Flip width={18} height={18} />
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </CameraView>
+            <Camera
+              ref={cameraRef}
+              style={styles.camera}
+              device={device}
+              isActive={true}
+              photo={true}
+            />
           </View>
 
         </Animated.View>
@@ -361,26 +483,26 @@ const Index = () => {
             </TouchableOpacity>
           </Link>
         </View>
+      </View>
+      {sidebarOpen && (
+        <TouchableOpacity
+          style={StyleSheet.absoluteFillObject}
+          activeOpacity={1}
+          onPress={toggleSidebar}
+        >
+          <Animated.View style={[styles.overlay, overlayStyle]} />
+        </TouchableOpacity>
+      )}
+      <Animated.View style={[styles.sidebar, sidebarStyle]}>
+        <Text style={styles.logTitle}>Lịch sử dịch</Text>
+        <FlatList
+          data={log}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) => <Text style={styles.logItem}>{item}</Text>}
+        />
+      </Animated.View>
 
-        {sidebarOpen && (
-          <TouchableOpacity
-            style={StyleSheet.absoluteFillObject}
-            activeOpacity={1}
-            onPress={toggleSidebar}
-          >
-            <Animated.View style={[styles.overlay, overlayStyle]} />
-          </TouchableOpacity>
-        )}
-        <Animated.View style={[styles.sidebar, sidebarStyle]}>
-          <Text style={styles.logTitle}>Lịch sử dịch</Text>
-          <FlatList
-            data={log}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item }) => <Text style={styles.logItem}>{item}</Text>}
-          />
-        </Animated.View>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
@@ -430,7 +552,7 @@ const styles = StyleSheet.create({
   cameraTitle: {
     marginTop: spacing.lg,
     textAlign: 'center',
-    fontSize: fontSizes.md,
+    fontSize: fontSizes.md * 1.2,
     fontWeight: 500,
     color: colors.primary600
   },
@@ -444,12 +566,12 @@ const styles = StyleSheet.create({
   },
   sidebar: {
     position: "absolute",
-    top: 0,
-    bottom: 0,
+    top: 30,
+    bottom: 45,
     width: width * 0.5,
     backgroundColor: '#2C6AEF',
     padding: 20,
-    zIndex: 20,
+    zIndex: 21,
   },
   overlay: {
     position: "absolute",
@@ -499,11 +621,13 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.lg,
     fontWeight: "bold",
     marginBottom: 5,
+    marginTop: 15
   },
   logItem: {
     color: "#ccc",
     fontSize: 12,
-  }, containerNav: {
+  },
+  containerNav: {
     width: '100%',
     flexDirection: 'row',
     position: "absolute",
@@ -550,5 +674,31 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "white", // or your theme background
+  },
+  translationContainer: {
+    marginTop: spacing.lg,
+  },
+  translationLabel: {
+    color: colors.primary400,
+    fontSize: 14,
+    marginBottom: 4,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  translationText: {
+    color: colors.primary400,
+    fontSize: 22,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  translationHistory: {
+    marginTop: 8,
+    maxHeight: 120,
+  },
+  historyLine: {
+    color: "#D0D8FF",
+    fontSize: 16,
+    textAlign: "center",
+    opacity: 0.8,
   },
 });

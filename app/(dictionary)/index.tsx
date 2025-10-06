@@ -83,9 +83,9 @@ const Index = () => {
         transform: [{ scale: scale.value }],
     }));
 
-    useEffect(() => {
-        goTo11(11);
-    }, [startStep11, goTo11]);
+    // useEffect(() => {
+    //     goTo11(11);
+    // }, [startStep11, goTo11]);
 
     return ( 
         <KeyboardAvoidingView
