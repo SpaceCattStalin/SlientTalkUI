@@ -87,9 +87,9 @@ const CollectionScreen = () => {
     });
 
 
-/*     useEffect(() => {
-        goTo15(15);
-    }, [startStep15, goTo15]); */
+    // useEffect(() => {
+    //     goTo15(15);
+    // }, [startStep15, goTo15]);
 
     return (
         <SafeAreaView style={styles.container}>

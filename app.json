@@ -43,13 +43,14 @@
       ],
       "expo-video",
       "expo-audio",
+      "@config-plugins/react-native-webrtc",
       [
         "expo-camera",
         {
           "cameraPermission": "Cho phép SilentTalk truy cập camera của bạn"
         }
       ],
-      "expo-web-browser"
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true

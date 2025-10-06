@@ -5,8 +5,9 @@ import AnimatedTyping from '@/components/animation/AnimatedTyping';
 import { useRoute } from '@react-navigation/native';
 import { Redirect, router } from 'expo-router';
 import Onboarding from './(onboarding)/onboarding';
-import testRender from '../components/animation/testRender';
+import testRender from '../components/animation/ModelViewer';
 import TestRender from '../components/animation/testRender';
+import ModelViewer from '../components/animation/ModelViewer';
 
 type Prop = {
     onDone: () => void;
@@ -35,11 +36,15 @@ const Index = () => {
 
     if (showOnboarding) {
         return (
-            <Onboarding onDone={() => {
-                setShowOnboarding(false);
-                setReadyToRedirect(true);
-            }} />
-            // <TestRender/>
+            // <Onboarding onDone={() => {
+            //     setShowOnboarding(false);
+            //     setReadyToRedirect(true);
+            // }} />
+            // <ModelViewer assetModule={require('@/assets/3d/A.glb')} scale={10} />
+            
+            // <ModelViewer />
+
+            <TestRender/>
         );
     }
 
