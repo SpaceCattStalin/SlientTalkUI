@@ -1,30 +1,27 @@
-import { StyleSheet, Text, View, Image, ImageBackground, Pressable, TouchableOpacity, ActivityIndicator } from 'react-native';
-import React, { useState, useContext, useEffect } from 'react';
 import { colors, fontSizes, spacing } from '@/global/theme';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronRight } from 'lucide-react-native';
+import React, { useContext, useState } from 'react';
+import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import Background from '@/assets/images/bg-1.svg';
-import Avatar from '@/assets/images/avatar.svg';
+import Logout from '@/assets/images/logout.svg';
 import Profile from '@/assets/images/profile.svg';
 import Wallet from '@/assets/images/wallet.svg';
-import Lock from '@/assets/images/lock.svg';
-import Logout from '@/assets/images/logout.svg';
+import { ExternalLink, LogIn } from 'lucide-react-native';
 import { AuthContext } from '../../context/AuthProvider';
-import { LogIn, ExternalLink } from 'lucide-react-native';
 
+import LogoutModal from '@/components/LogoutModal';
 import NavBar from '@/components/NavBar';
 import AnimatedButton from '@/components/animation/AnimatedButton';
-import Animated, { FadeInDown, FadeInLeft, FadeInUp, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { Link, router } from 'expo-router';
-import LogoutModal from '@/components/LogoutModal';
-import { FontAwesome5, Ionicons } from '@expo/vector-icons';
-import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
+import EndingMessageOverlay from '@/components/walkthrough/EndingMessageOverlay';
 import ProfileScreenOverlay from '@/components/walkthrough/ProfileScreenOverlay';
 import ProfileScreen2Overlay from '@/components/walkthrough/ProfileScreenOverlay2';
 import ProfileScreen3Overlay from '@/components/walkthrough/ProfileScreenOverlay3';
-import EndingMessageOverlay from '@/components/walkthrough/EndingMessageOverlay';
+import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { useFonts } from "expo-font";
+import { router } from 'expo-router';
+import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
+import Animated, { FadeInDown, FadeInLeft } from 'react-native-reanimated';
 
 const Index = () => {
   const [logoutVisible, setLogoutVisible] = useState(false);
