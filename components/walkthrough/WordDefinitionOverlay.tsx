@@ -8,21 +8,14 @@ const WordDefinitionOverlay = ({
   next,
   step: { mask },
 }: IOverlayComponentProps) => {
-  const scale = useSharedValue(1);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
 
   return (
-    <Animated.View
+    <View
       style={{
         ...styles.container,
-        top: mask.y + mask.height ,
+        top: mask.y + mask.height,
         left: 50
       }}
-      entering={FadeInDown.duration(300)}
-      exiting={FadeOutUp.duration(200)}
     >
       <View style={styles.pointer} />
 
@@ -31,13 +24,17 @@ const WordDefinitionOverlay = ({
           Bạn có thể xem định nghĩa của từ ở đây
         </Text>
         <Pressable
-          onPressIn={() => { scale.value = withSpring(0.95); }}
-          onPressOut={() => { scale.value = withSpring(1); }}
+          // onPressIn={() => { scale.value = withSpring(0.95); }}
+          // onPressOut={() => { scale.value = withSpring(1); }}
           onPress={next}
         >
-          <Animated.View style={[
+          {/* <Animated.View style={[
             styles.button,
             animatedStyle]}
+          > */}
+          <Animated.View style={[
+            styles.button,
+          ]}
           >
             <Text style={styles.buttonText}>
               Tiếp theo
@@ -45,7 +42,7 @@ const WordDefinitionOverlay = ({
           </Animated.View>
         </Pressable>
       </View>
-    </Animated.View>
+    </View>
   );
 };
 
@@ -54,7 +51,8 @@ export default WordDefinitionOverlay;
 const styles = StyleSheet.create({
   container: {
     alignItems: "flex-start",
-    position: 'absolute'
+    position: 'absolute',
+    backgroundColor: 'red'
   },
   pointer: {
     width: 0,
@@ -73,7 +71,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary300,
     padding: 16,
     borderRadius: 24,
-    maxWidth: "85%",
+    maxWidth: "70%",
     alignSelf: "flex-start",
     marginTop: -1,
   },

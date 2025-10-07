@@ -67,6 +67,7 @@ export default function TopicDetailScreen() {
             setResults(wordsForTopic);
         }
     }, [query]);
+    
     return (
         <KeyboardAvoidingView
             style={{ flex: 1 }}

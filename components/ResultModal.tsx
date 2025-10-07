@@ -19,15 +19,15 @@ type Props = {
 const ResultModal = ({ visible, onClose, state }: Props) => {
     const isAdd = state === "add";
 
-    useEffect(() => {
-        let timer: NodeJS.Timeout;
-        if (visible) {
-            timer = setTimeout(() => {
-                onClose();
-            }, 1400);
-        }
-        return () => clearTimeout(timer);
-    }, [visible]);
+    // useEffect(() => {
+    //     let timer: NodeJS.Timeout;
+    //     if (visible) {
+    //         timer = setTimeout(() => {
+    //             onClose();
+    //         }, 1400);
+    //     }
+    //     return () => clearTimeout(timer);
+    // }, [visible]);
 
     return (
         <Modal

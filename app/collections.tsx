@@ -7,7 +7,7 @@ import { useNav } from '@/context/NavContext';
 import { colors, fontSizes, spacing } from '@/global/theme';
 import { Collection } from '@/types/Types';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
 import Animated, { FadeInLeft, FadeInUp, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
@@ -39,9 +39,9 @@ const Collections = () => {
         maskAllowInteraction: true
     });
 
-    // useEffect(() => {
-    //     goTo(14);
-    // }, [goTo, start]);
+    useEffect(() => {
+        goTo(14);
+    }, [goTo, start]);
 
     return (
         <SafeAreaView style={styles.container}>

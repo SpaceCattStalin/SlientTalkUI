@@ -6,19 +6,16 @@ import { IOverlayComponentProps } from 'react-native-interactive-walkthrough';
 import { router } from 'expo-router';
 
 const WordDefinitionLikeButtonOverlay = ({
-    next,
     step: { mask },
 }: IOverlayComponentProps) => {
 
     return (
-        <Animated.View
+        <View
             style={{
                 ...styles.container,
                 top: mask.y + mask.height,
-                left: 100
+                right: -30
             }}
-            entering={FadeInDown.duration(300)}
-            exiting={FadeOutUp.duration(200)}
         >
             <View style={styles.pointer} />
             <View style={styles.overlay}>
@@ -26,7 +23,7 @@ const WordDefinitionLikeButtonOverlay = ({
                     Hãy thử lưu ký hiệu này lại nào!
                 </Text>
             </View>
-        </Animated.View>
+        </View>
     );
 };
 
@@ -35,7 +32,8 @@ export default WordDefinitionLikeButtonOverlay;
 const styles = StyleSheet.create({
     container: {
         alignItems: "flex-start",
-        position: 'absolute'
+        position: 'absolute',
+        backgroundColor: 'red'
     },
     pointer: {
         width: 0,
@@ -48,7 +46,7 @@ const styles = StyleSheet.create({
         borderLeftColor: "transparent",
         borderRightColor: "transparent",
         borderBottomColor: colors.primary300, // same as bubble background
-        marginLeft: 40, // move pointer horizontally
+        marginLeft: 170, // move pointer horizontally
     },
     overlay: {
         backgroundColor: colors.primary300,

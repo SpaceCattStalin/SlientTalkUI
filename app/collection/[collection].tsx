@@ -14,7 +14,7 @@ import { Collection } from '@/types/Types';
 import { Link, router } from 'expo-router';
 import { usePathname, useSearchParams } from 'expo-router/build/hooks';
 import { ChevronRight } from 'lucide-react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
 import Animated, { FadeInLeft, FadeInUp } from 'react-native-reanimated';
@@ -87,9 +87,9 @@ const CollectionScreen = () => {
     });
 
 
-    // useEffect(() => {
-    //     goTo15(15);
-    // }, [startStep15, goTo15]);
+    useEffect(() => {
+        goTo15(15);
+    }, [startStep15, goTo15]);
 
     return (
         <SafeAreaView style={styles.container}>

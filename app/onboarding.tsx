@@ -1,10 +1,9 @@
-import { StyleSheet, Text, View } from 'react-native';
-import React from 'react';
-import OnboardingScreen from '@/components/OnboardingScreen';
+import OnboardingScreen, { OnboardingPage } from '@/components/OnboardingScreen';
 import { colors } from '@/global/theme';
-import { OnboardingPage } from '../../components/OnboardingScreen';
-import LottieView from 'lottie-react-native';
 import { useRoute } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
 const onboardingPages: OnboardingPage[] = [
   {
     title: 'Phiên dịch trực tiếp',

@@ -1,14 +1,14 @@
 import { colors, fontSizes, spacing } from '@/global/theme';
 import { ChevronRight } from 'lucide-react-native';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Logout from '@/assets/images/logout.svg';
-import Profile from '@/assets/images/profile.svg';
+import ProfileIcon from '@/assets/images/profile.svg';
 import Wallet from '@/assets/images/wallet.svg';
 import { ExternalLink, LogIn } from 'lucide-react-native';
-import { AuthContext } from '../../context/AuthProvider';
+import { AuthContext } from '../context/AuthProvider';
 
 import LogoutModal from '@/components/LogoutModal';
 import NavBar from '@/components/NavBar';
@@ -23,10 +23,17 @@ import { router } from 'expo-router';
 import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
 import Animated, { FadeInDown, FadeInLeft } from 'react-native-reanimated';
 
-const Index = () => {
+import { useSelector } from 'react-redux';
+import { RootState } from '../services/store';
+
+const Profile = () => {
   const [logoutVisible, setLogoutVisible] = useState(false);
 
   const { authState, signIn } = useContext(AuthContext);
+
+  const canStartWalkthrough = useSelector(
+    (state: RootState) => state.walkthrough.canStartWalkthrough
+  );
 
   const [fontsLoaded] = useFonts({
     ...Ionicons.font,
@@ -57,9 +64,10 @@ const Index = () => {
     OverlayComponent: EndingMessageOverlay,
   });
 
-  // useEffect(() => {
-  //   goTo22(22);
-  // }, [goTo22, startStep22]);
+  useEffect(() => {
+    if (canStartWalkthrough)
+      goTo22(22);
+  }, [goTo22, startStep22, canStartWalkthrough]);
 
   if (!fontsLoaded) {
     return (
@@ -319,7 +327,7 @@ const Index = () => {
                 <View style={styles.optionWrapper}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
                     <View style={{ ...styles.iconContainer, backgroundColor: '#E6F0FB' }}>
-                      <Profile
+                      <ProfileIcon
                         width={20}
                         height={20}
                         stroke={'#629BEE'}
@@ -531,7 +539,7 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Profile;
 
 const styles = StyleSheet.create({
   container: {

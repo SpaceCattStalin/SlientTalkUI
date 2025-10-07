@@ -1,4 +1,3 @@
-//import React, { useEffect, useState } from "react";
 import * as React from "react";
 import {
     FlatList,
@@ -8,7 +7,6 @@ import {
     TouchableWithoutFeedback,
     View
 } from "react-native";
-//import Modal from "react-native-modal";
 import HomeIcon from '@/assets/images/home.svg';
 import Profile from '@/assets/images/profile.svg';
 import Search from '@/assets/images/search.svg';
@@ -40,35 +38,28 @@ const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd, i
     const [newName, setNewName] = useState("");
     const { activeTab, setActiveTab } = useNav();
 
-    const { onLayout: step5OnLayout, goTo: goTo8, start: startStep8 } = useWalkthroughStep({
+    const { onLayout: step8OnLayout, goTo: goTo8, start: startStep8 } = useWalkthroughStep({
         number: 8,
         fullScreen: false,
         OverlayComponent: WordDefinitionOverlay4,
     });
 
-    const { onLayout: step6OnLayout, } = useWalkthroughStep({
+    const { onLayout: step9OnLayout } = useWalkthroughStep({
         number: 9,
         fullScreen: false,
         OverlayComponent: WordDefinitionOverlay5,
     });
 
-    const { onLayout: step10OnLayout, } = useWalkthroughStep({
+    const { onLayout: step10OnLayout } = useWalkthroughStep({
         number: 10,
         fullScreen: false,
         maskAllowInteraction: true,
         OverlayComponent: WordDefinitionOverlay6,
     });
-
-    // useEffect(() => {
-    //     if (!inDictionary)
-    //         goTo(8);
-    // }, [start]);
-
     useEffect(() => {
         if (!inDictionary)
             goTo8(8);
     }, [goTo8, inDictionary, startStep8]);
-
 
     if (!isVisible) return null;
 
@@ -78,7 +69,7 @@ const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd, i
             <TouchableOpacity
                 style={[styles.collectionItem, isSelected && styles.selected]}
                 onPress={() => {
-                    if (selectedId == item.id) {
+                    if (selectedId === item.id) {
                         setSelectedId(null);
                     } else {
                         setSelectedId(item.id);
@@ -94,12 +85,6 @@ const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd, i
     };
 
     return (
-        // <Modal
-        //     visible={isVisible}
-        //     transparent
-        //     animationType="fade"
-        //     style={{ zIndex: 2 }}
-        // >
         <View style={styles.overlayContainer}>
 
             <TouchableWithoutFeedback
@@ -119,18 +104,19 @@ const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd, i
                         </Text>
 
                         <FlatList
-                            onLayout={step5OnLayout}
+                            onLayout={step8OnLayout}
                             data={collections}
                             renderItem={renderItem}
                             keyExtractor={(item) => item.id}
                         />
-                        {!isMove && <TouchableOpacity
-                            style={[styles.collectionItem, styles.addNew]}
-                            onPress={onAdd}
-                            onLayout={step6OnLayout}
-                        >
-                            <Text style={styles.addNewText}>+ Lưu vào bộ sưu tập mới</Text>
-                        </TouchableOpacity>}
+                        {!isMove &&
+                            <TouchableOpacity
+                                style={[styles.collectionItem, styles.addNew]}
+                                onPress={onAdd}
+                                onLayout={step9OnLayout}
+                            >
+                                <Text style={styles.addNewText}>+ Lưu vào bộ sưu tập mới</Text>
+                            </TouchableOpacity>}
 
                         {selectedId && (
                             <View style={styles.buttonsRow}>
@@ -161,7 +147,7 @@ const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd, i
             </TouchableWithoutFeedback>
             {/* -------------------------------------------------- */}
             <View style={{ ...styles.containerNav }}>
-                <Link href="/(main)/home" asChild>
+                <Link href="/home" asChild>
                     <TouchableOpacity onPress={() => setActiveTab("home")}>
                         {/* <View style={{ backgroundColor: activeTab === "home" ? "red" : "transparent", ...styles.wrapper }}> */}
                         <View style={styles.wrapper}>
@@ -176,24 +162,7 @@ const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd, i
                     </TouchableOpacity>
                 </Link>
 
-                {/* <Link href="/(practice)" asChild>
-                                <TouchableOpacity style={styles.button} onPress={() => setActiveTab("practice")}>
-                                    <View style={styles.wrapper}>
-                                        <Book
-                                            width={ICON_SIZE}
-                                            height={ICON_SIZE}
-                                            stroke={activeTab === "practice" ? colors.primary400 : colors.gray500}
-                                        />
-                                        <Text style={{ color: activeTab === "practice" ? colors.primary400 : colors.gray500, ...styles.text }}>Luyện tập</Text>
-                                    </View>
-                                </TouchableOpacity>
-                            </Link> */}
-
-                {/* <Button style={styles.button}>
-                                <Wave width={ICON_SIZE} height={ICON_SIZE} />
-                            </Button> */}
-
-                <Link href="/(translate)" asChild>
+                <Link href="/translate" asChild>
                     <TouchableOpacity style={styles.translateBtn} onPress={() => setActiveTab("translate")}>
                         <View style={{ ...styles.wrapper, }}>
                             <Scan
@@ -208,11 +177,11 @@ const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd, i
                     </TouchableOpacity>
                 </Link>
 
-                <Link href="/(dictionary)" asChild>
+                <Link href="/dictionary" asChild>
                     <TouchableOpacity
                         style={styles.button}
-                        onPress={() => setActiveTab("dictionary")}
                         onLayout={step10OnLayout}
+                        onPress={() => setActiveTab("dictionary")}
                     >
                         <View style={{ ...styles.wrapper, }}>
                             <Search
@@ -225,7 +194,7 @@ const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd, i
                     </TouchableOpacity>
                 </Link>
 
-                <Link href="/(profile)" asChild>
+                <Link href="/profile" asChild>
                     <TouchableOpacity style={styles.button} onPress={() => setActiveTab("profile")}>
                         <View style={{ ...styles.wrapper }}>
                             <Profile
@@ -258,11 +227,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     backdrop: {
-        // flex: 1,
-        // backgroundColor: "rgba(0,0,0,0.5)",
-        // justifyContent: "center",
-        // alignItems: "center",
-        // zIndex: 10
         ...StyleSheet.absoluteFillObject,
         backgroundColor: "rgba(0,0,0,0.5)",
         justifyContent: "center",
@@ -346,7 +310,8 @@ const styles = StyleSheet.create({
         textAlign: "center",
         color: colors.primary700,
         fontWeight: "bold",
-    }, containerNav: {
+    },
+    containerNav: {
         width: '100%',
         flexDirection: 'row',
         position: "absolute",

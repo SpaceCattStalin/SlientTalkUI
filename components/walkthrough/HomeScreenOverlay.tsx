@@ -51,7 +51,9 @@ export default DashboardOverlay;
 const styles = StyleSheet.create({
     container: {
         alignItems: "flex-start", // pointer aligns left, you can center or right-align too
-        position: 'absolute'
+        position: 'absolute',
+        backgroundColor: 'red'
+
     },
     pointer: {
         width: 0,

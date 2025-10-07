@@ -8,7 +8,8 @@ import ThemedView from "@/components/ThemedView";
 import { enableExperimentalLayoutAnimation, WalkthroughProvider } from "react-native-interactive-walkthrough";
 import { NavProvider } from "@/context/NavContext";
 import { Home } from "lucide-react-native";
-import MainLayout from "./(main)/_layout";
+import { Provider } from 'react-redux';
+import { store } from '../services/store';
 
 const RootNavigation = () => {
   const { authState } = useAuth();
@@ -16,8 +17,16 @@ const RootNavigation = () => {
   return (
     <Stack screenOptions={{ headerShown: false }} initialRouteName="index">
       <Stack.Screen name="index" />
+      {/* <Stack.Screen name="account" />
+      <Stack.Screen name="collections" />
+      <Stack.Screen name="dictionary" />
+      <Stack.Screen name="home" />
+      <Stack.Screen name="onboarding" />
+      <Stack.Screen name="plan" />
+      <Stack.Screen name="planIntro" />
+      <Stack.Screen name="profile" />
+      <Stack.Screen name="translate" /> */}
     </Stack>
-
   );
 };
 

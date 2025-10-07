@@ -16,14 +16,21 @@ const WordDefinitionVideoOverlay = ({
     }));
 
     return (
-        <Animated.View
+        // <Animated.View
+        //     style={{
+        //         ...styles.container,
+        //         top: mask.y + mask.height,
+        //         left: 50
+        //     }}
+        //     entering={FadeInDown.duration(300)}
+        //     exiting={FadeOutUp.duration(200)}
+        // >
+        <View
             style={{
                 ...styles.container,
                 top: mask.y + mask.height,
                 left: 50
             }}
-            entering={FadeInDown.duration(300)}
-            exiting={FadeOutUp.duration(200)}
         >
             <View style={styles.pointer} />
 
@@ -50,7 +57,7 @@ const WordDefinitionVideoOverlay = ({
                     </Animated.View>
                 </Pressable>
             </View>
-        </Animated.View>
+        </View>
     );
 };
 
@@ -59,7 +66,8 @@ export default WordDefinitionVideoOverlay;
 const styles = StyleSheet.create({
     container: {
         alignItems: "flex-start",
-        position: 'absolute'
+        position: 'absolute',
+        backgroundColor: 'red'
     },
     pointer: {
         width: 0,

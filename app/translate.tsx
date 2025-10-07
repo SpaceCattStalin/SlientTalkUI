@@ -26,7 +26,6 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import Animated, { FadeInDown, FadeInRight, runOnJS, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useWalkthroughStep } from "react-native-interactive-walkthrough";
 import TranslateScreenOverlay from "@/components/walkthrough/TranslateScreenOverlay";
-import TranslateScreen2Overlay from "@/components/walkthrough/TranslateScreenOverlay2";
 import TranslateScreen3Overlay from "@/components/walkthrough/TranslateScreenOverlay3";
 import TranslateScreen4Overlay from "@/components/walkthrough/TranslateScreenOverlay4";
 import TranslateScreen5Overlay from "@/components/walkthrough/TranslateScreenOverlay5";
@@ -45,14 +44,14 @@ import { useFonts } from "expo-font";
 
 import { Camera, CameraDevice, useCameraDevice, useFrameProcessor } from "react-native-vision-camera";
 import SocketService from "@/services/socket";
-import { color } from "three/src/nodes/TSL.js";
-
+import { useSelector } from 'react-redux';
+import { RootState } from '../services/store';
 
 const ICON_SIZE = 20;
 
 const { width } = Dimensions.get("window");
 
-const Index = () => {
+const Translate = () => {
   const [hasPermission, setHasPermission] = useState<boolean | null>(true);
   const [facing, setFacing] = useState<CameraType>('back');
   const [mode, setMode] = useState<"camera" | "text">("camera");
@@ -69,6 +68,10 @@ const Index = () => {
   const cameraRef = useRef<Camera>(null);
   const device = useCameraDevice('front');
   const socket = useRef(SocketService.getInstance().getSocket());
+
+  const canStartWalkthrough = useSelector(
+    (state: RootState) => state.walkthrough.canStartWalkthrough
+  );
 
   useEffect(() => {
     (async () => {
@@ -244,9 +247,10 @@ const Index = () => {
     OverlayComponent: TranslateScreen5Overlay,
   });
 
-  // useEffect(() => {
-  //   goTo18(18);
-  // }, [goTo18, startStep18]);
+  useEffect(() => {
+    if (canStartWalkthrough)
+      goTo18(18);
+  }, [goTo18, startStep18, canStartWalkthrough]);
 
   if (!fontsLoaded && !hasPermission) {
     return (
@@ -506,7 +510,7 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Translate;
 
 const styles = StyleSheet.create({
   container: {

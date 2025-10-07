@@ -1,11 +1,11 @@
-import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { IOverlayComponentProps } from 'react-native-interactive-walkthrough';
-import AnimatedTyping from '../animation/AnimatedTyping';
 import { colors, fontSizes, spacing } from '@/global/theme';
-import Animated, { FadeInDown, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import React from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
+import { IOverlayComponentProps } from 'react-native-interactive-walkthrough';
+import Animated, { FadeInDown, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
+// import { useWalkthroughContext } from '../../context/WalkthroughSlice';
 
 const EndingMessageOverlay = ({ stop }: IOverlayComponentProps) => {
     const scale = useSharedValue(1);
@@ -13,6 +13,10 @@ const EndingMessageOverlay = ({ stop }: IOverlayComponentProps) => {
     const animatedStyle = useAnimatedStyle(() => ({
         transform: [{ scale: scale.value }],
     }));
+
+    const handleEnd = () => {
+        stop();
+    };
 
 
     return (
@@ -45,7 +49,7 @@ const EndingMessageOverlay = ({ stop }: IOverlayComponentProps) => {
                 <Pressable
                     onPressIn={() => { scale.value = withSpring(0.95); }}
                     onPressOut={() => { scale.value = withSpring(1); }}
-                    onPress={stop}
+                    onPress={handleEnd}
                 >
                     <Animated.View style={[
                         styles.button,
@@ -92,7 +96,7 @@ const styles = StyleSheet.create({
         fontSize: fontSizes.lg,
         color: colors.gray400,
         marginBottom: 20,
-        paddingStart: spacing.lg * 2, 
+        paddingStart: spacing.lg * 2,
         lineHeight: 22,
     },
     button: {

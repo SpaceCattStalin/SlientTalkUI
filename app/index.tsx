@@ -1,12 +1,9 @@
-import { StyleSheet, Text, View } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { colors } from '@/global/theme';
 import AnimatedTyping from '@/components/animation/AnimatedTyping';
-import { useRoute } from '@react-navigation/native';
-import { Redirect, router } from 'expo-router';
-import Onboarding from './(onboarding)/onboarding';
-import TestRender from '../components/animation/testRender';
-import ModelViewer from '../components/animation/ModelViewer';
+import { colors } from '@/global/theme';
+import { Redirect } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import Onboarding from './onboarding';
 
 type Prop = {
     onDone: () => void;
@@ -35,18 +32,17 @@ const Index = () => {
 
     if (showOnboarding) {
         return (
-            // <Onboarding onDone={() => {
-            //     setShowOnboarding(false);
-            //     setReadyToRedirect(true);
-            // }} />            
-            // <ModelViewer />
+            <Onboarding onDone={() => {
+                setShowOnboarding(false);
+                setReadyToRedirect(true);
+            }} />
 
-            <TestRender/>
+            // <TestRender/>
         );
     }
 
     if (readyToRedirect) {
-        return <Redirect href="/(main)/home" />;
+        return <Redirect href="/home" />;
     }
 
     return (

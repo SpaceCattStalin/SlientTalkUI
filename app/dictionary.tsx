@@ -18,7 +18,10 @@ import TwoLine from '@/assets/images/two_lines.svg';
 import DictionarySearchOverlay from '@/components/walkthrough/DictionaryScreenOverlay';
 import DictionarySaveOverlay from '@/components/walkthrough/DictionaryScreenOverlay3';
 import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
-import DictionaryCategoryOverlay from '../../components/walkthrough/DictionaryScreenOverlay2';
+import DictionaryCategoryOverlay from '../components/walkthrough/DictionaryScreenOverlay2';
+
+import { useSelector } from 'react-redux';
+import { RootState } from '../services/store';
 
 const categories = ["Triệu chứng", "Bộ phận cơ thể", "Điều trị", "Trường học"];
 
@@ -36,7 +39,7 @@ const dictionary = [
     "Xin chào", "Cảm ơn", "Xin lỗi", "Có", "Không"
 ];
 
-const Index = () => {
+const Dictionary = () => {
     const router = useRouter();
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<string[]>([]);
@@ -47,6 +50,10 @@ const Index = () => {
     const [resultState, setResultState] = useState<"add" | "save">("save");
     const scale = useSharedValue(1);
 
+
+    const canStartWalkthrough = useSelector(
+        (state: RootState) => state.walkthrough.canStartWalkthrough
+    );
 
     const { onLayout: step11OnLayout, goTo: goTo11, start: startStep11 } = useWalkthroughStep({
         number: 11,
@@ -82,11 +89,12 @@ const Index = () => {
         transform: [{ scale: scale.value }],
     }));
 
-    // useEffect(() => {
-    //     goTo11(11);
-    // }, [startStep11, goTo11]);
+    useEffect(() => {
+        if (canStartWalkthrough)
+            goTo11(11);
+    }, [startStep11, goTo11, canStartWalkthrough]);
 
-    return ( 
+    return (
         <KeyboardAvoidingView
             style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -363,7 +371,7 @@ const Index = () => {
     );
 };
 
-export default Index;
+export default Dictionary;
 
 const styles = StyleSheet.create({
     container: {

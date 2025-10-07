@@ -6,7 +6,7 @@ import { Renderer, THREE } from 'expo-three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';  // ✅ Use GLTFLoader
 import { AnimationMixer } from 'three';
 
-const MODEL_URL = 'https://curious-pauline-catchable.ngrok-free.dev/static/3d/A.glb'; // ✅ Replace with your .glb
+const MODEL_URL = 'https://curious-pauline-catchable.ngrok-free.dev/static/3d/test2.glb'; // ✅ Replace with your .glb
 
 const TestRender = () => {
     const onContextCreate = async (gl: ExpoWebGLRenderingContext) => {
@@ -21,6 +21,7 @@ const TestRender = () => {
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
         camera.position.z = 5;
+        camera.position.y = 3;
 
         // Lights
         const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -38,7 +39,7 @@ const TestRender = () => {
                 // console.log('GLB loaded:', gltf);
 
                 const model = gltf.scene;
-                model.scale.set(0.5, 0.5, 0.5);
+                model.scale.set(2, 2, 2);
                 model.position.set(0, -1, 0);
 
                 scene.add(model);
