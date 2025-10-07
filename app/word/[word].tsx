@@ -86,150 +86,149 @@ export default function WordScreen() {
         maskAllowInteraction: true,
         OverlayComponent: WordDefinitionLikeButtonOverlay,
     });
+    // useEffect(() => {
+    //     if (!isCollectionVisible) {
+    //         goToStep5(5);
+    //     }
+    // }, [isCollectionVisible, goToStep5, startStep5]);
+
     useEffect(() => {
         if (!isCollectionVisible) {
             goToStep5(5);
         }
-    }, [isCollectionVisible, goToStep5, startStep5]);
-
-    // useEffect(() => {
-    //     if (!isCollectionVisible) {
-    //         goTo5(5);
-    //     }
-    // }, [goTo5, isCollectionVisible, startStep5]);
+    }, [goToStep5, isCollectionVisible]);
 
     return (
-        <WalkthroughProvider>
-            <SafeAreaView style={styles.container}>
-                <View style={{ flex: 1, gap: spacing.md }}>
-                    <View style={{ paddingHorizontal: spacing.sm, marginTop: spacing.md }}>
-                        <BackButton color={colors.gray300} />
-                    </View>
+        <SafeAreaView style={styles.container}>
+            <View style={{ flex: 1, gap: spacing.md }}>
+                <View style={{ paddingHorizontal: spacing.sm, marginTop: spacing.md }}>
+                    <BackButton color={colors.gray300} />
+                </View>
 
-                    <View
-                        style={styles.definitionContainer}
-                        onLayout={step5OnLayout}
-                    >
-                        <Text style={styles.word}>
-                            Bạn bè
-                        </Text>
-                        <Text style={styles.definition}>
-                            Người có mối quan hệ thân thiết,
-                            thường xuyên chia sẻ, trò chuyện
-                            và hỗ trợ nhau trong học tập hoặc cuộc sống.
-                        </Text>
-                    </View>
-                    <View
-                        style={{
-                            alignSelf: 'flex-start',
-                            position: 'absolute',
-                            top: 80,
-                            right: 20
+                <View
+                    style={styles.definitionContainer}
+                    onLayout={step5OnLayout}
+                >
+                    <Text style={styles.word}>
+                        Bạn bè
+                    </Text>
+                    <Text style={styles.definition}>
+                        Người có mối quan hệ thân thiết,
+                        thường xuyên chia sẻ, trò chuyện
+                        và hỗ trợ nhau trong học tập hoặc cuộc sống.
+                    </Text>
+                </View>
+                <View
+                    style={{
+                        alignSelf: 'flex-start',
+                        position: 'absolute',
+                        top: 80,
+                        right: 20
+                    }}
+                    onLayout={step7OnLayout}
+                >
+                    <AnimatedLikeIcon
+                        primary={colors.red300}
+                        accent={colors.gray200}
+                        onPress={() => {
+                            setIsCollectionVisible(true);
+                            stop();
                         }}
-                        onLayout={step7OnLayout}
-                    >
-                        <AnimatedLikeIcon
-                            primary={colors.red300}
-                            accent={colors.gray200}
-                            onPress={() => {
-                                setIsCollectionVisible(true);
-                                stop();
-                            }}
-                            sizeModifier={1.3}
-                        />
-                    </View>
+                        sizeModifier={1.3}
+                    />
+                </View>
 
-                    <View style={styles.main}>
-                        <ScrollView
-                            style={{ flex: 1 }}
-                            contentContainerStyle={{
-                                paddingBottom: spacing.lg * 4
-                            }}
-                            showsVerticalScrollIndicator={false}
-                        >
-                            <View style={{ paddingTop: spacing.xs, flex: 1, gap: spacing.lg }}>
-                                {/* <Animated.View
+                <View style={styles.main}>
+                    <ScrollView
+                        style={{ flex: 1 }}
+                        contentContainerStyle={{
+                            paddingBottom: spacing.lg * 4
+                        }}
+                        showsVerticalScrollIndicator={false}
+                    >
+                        <View style={{ paddingTop: spacing.xs, flex: 1, gap: spacing.lg }}>
+                            {/* <Animated.View
                                 style={styles.videoContainer}
                                 entering={FadeInLeft.delay(200).duration(500).springify()}
                                 onLayout={step6OnLayout}
                             >
                             </Animated.View> */}
-                                {/* <Animated.View */}
+                            {/* <Animated.View */}
+                            <View
+                                style={styles.videoContainer}
+                                // entering={FadeInLeft.delay(500).duration(500).springify()}
+                                onLayout={step6OnLayout}
+                            >
+                                <Video
+                                    source={{ uri: `${VIDEO_URL}${videoFile}` }}
+                                    style={{ width: width - spacing.md * 2, height: width * 0.5625 }}
+                                    controls={true}
+                                    paused={true}
+                                    onLoad={() => setVideoLoaded(true)}
+                                />
+                            </View>
+                            <View style={{ gap: spacing.sm }}>
                                 <View
-                                    style={styles.videoContainer}
-                                    // entering={FadeInLeft.delay(500).duration(500).springify()}
-                                    onLayout={step6OnLayout}
                                 >
-                                    <Video
-                                        source={{ uri: `${VIDEO_URL}${videoFile}` }}
-                                        style={{ width: width - spacing.md * 2, height: width * 0.5625 }}
-                                        controls={true}
-                                        paused={true}
-                                        onLoad={() => setVideoLoaded(true)}
-                                    />
+                                    <Text style={{ fontSize: fontSizes.md * 1.4, fontWeight: 600, color: colors.primary500 }}>Ví dụ sử dụng:</Text>
                                 </View>
-                                <View style={{ gap: spacing.sm }}>
-                                    <View
-                                    >
-                                        <Text style={{ fontSize: fontSizes.md * 1.4, fontWeight: 600, color: colors.primary500 }}>Ví dụ sử dụng:</Text>
-                                    </View>
-                                    <View
-                                    >
-                                        <Text style={{ fontSize: fontSizes.sm * 1.2, fontStyle: 'italic', fontWeight: 500, color: colors.primary700 }}>
-                                            &quot;Tôi có nhiều bạn bè trong lớp học.&quot;
-                                        </Text>
-                                    </View>
-                                </View>
-
-                                <View style={{ flex: 1, gap: spacing.sm }}>
-                                    <Text style={{ fontSize: fontSizes.md, fontWeight: 600, color: colors.primary500 }}>Các ký hiệu liên quan</Text>
-                                    <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-                                        {relatedWords.map((item, index) => (
-                                            // <View key={index} style={styles.relatedWords}>
-                                            //     <Text>{item}</Text>
-                                            // </View>
-                                            <TouchableOpacity
-                                                key={index}
-                                                style={styles.relatedWords}
-                                                onPress={() => {
-                                                    // hoặc router.push(`/dictionary/${item}`)
-                                                }}
-                                            >
-                                                <Text style={{ fontSize: fontSizes.sm * 1.2, fontWeight: 600, color: colors.primary700 }}>
-                                                    {item}
-                                                </Text>
-                                            </TouchableOpacity>
-                                        ))}
-                                    </View>
+                                <View
+                                >
+                                    <Text style={{ fontSize: fontSizes.sm * 1.2, fontStyle: 'italic', fontWeight: 500, color: colors.primary700 }}>
+                                        &quot;Tôi có nhiều bạn bè trong lớp học.&quot;
+                                    </Text>
                                 </View>
                             </View>
-                        </ScrollView>
-                    </View>
 
-                    {/* <ResultModal
+                            <View style={{ flex: 1, gap: spacing.sm }}>
+                                <Text style={{ fontSize: fontSizes.md, fontWeight: 600, color: colors.primary500 }}>Các ký hiệu liên quan</Text>
+                                <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                                    {relatedWords.map((item, index) => (
+                                        // <View key={index} style={styles.relatedWords}>
+                                        //     <Text>{item}</Text>
+                                        // </View>
+                                        <TouchableOpacity
+                                            key={index}
+                                            style={styles.relatedWords}
+                                            onPress={() => {
+                                                // hoặc router.push(`/dictionary/${item}`)
+                                            }}
+                                        >
+                                            <Text style={{ fontSize: fontSizes.sm * 1.2, fontWeight: 600, color: colors.primary700 }}>
+                                                {item}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
+                        </View>
+                    </ScrollView>
+                </View>
+
+                {/* <ResultModal
                     visible={isResultVisible}
                     onClose={() => setIsResultVisible(false)}
                     state={resultState}
                 /> */}
 
-                    {/* {!canStartWalkthrough && */}
-                    <CollectionModal
-                        isVisible={isCollectionVisible}
-                        onCancel={() => setIsCollectionVisible(false)}
-                        collections={collections}
-                        onConfirm={() => {
-                            setIsCollectionVisible(false);
-                            setResultState("save");
-                            setIsResultVisible(true);
-                        }}
-                        onAdd={() => {
-                            setIsCollectionVisible(false);
-                            setIsAddModalVisible(true);
-                        }}
-                    />
-                    {/* } */}
+                {/* {!canStartWalkthrough && */}
+                <CollectionModal
+                    isVisible={isCollectionVisible}
+                    onCancel={() => setIsCollectionVisible(false)}
+                    collections={collections}
+                    onConfirm={() => {
+                        setIsCollectionVisible(false);
+                        setResultState("save");
+                        setIsResultVisible(true);
+                    }}
+                    onAdd={() => {
+                        setIsCollectionVisible(false);
+                        setIsAddModalVisible(true);
+                    }}
+                />
+                {/* } */}
 
-                    {/* <AddCollectionModal
+                {/* <AddCollectionModal
                     isVisible={isAddModalVisible}
                     onCancel={() => setIsAddModalVisible(false)}
                     onAdd={() => {
@@ -238,69 +237,68 @@ export default function WordScreen() {
                         setIsResultVisible(true);
                     }}
                 /> */}
-                    <View style={{ ...styles.containerNav }}>
-                        <Link href="/home" asChild>
-                            <TouchableOpacity style={styles.button} onPress={() => setActiveTab("home")}>
-                                {/* <View style={{ backgroundColor: activeTab === "home" ? "red" : "transparent", ...styles.wrapper }}> */}
-                                <View style={styles.wrapper}>
-                                    <HomeIcon
-                                        width={ICON_SIZE}
-                                        height={ICON_SIZE}
-                                        stroke={activeTab === "home" ? colors.primary400 : colors.gray500}
-                                        fill={activeTab === "home" ? colors.primary400 : colors.gray500}
-                                    />
-                                    <Text style={{ color: activeTab === "home" ? colors.primary400 : colors.gray500, ...styles.text }}>Trang chủ</Text>
-                                </View>
-                            </TouchableOpacity>
-                        </Link>
+                <View style={{ ...styles.containerNav }}>
+                    <Link href="/home" asChild>
+                        <TouchableOpacity style={styles.button} onPress={() => setActiveTab("home")}>
+                            {/* <View style={{ backgroundColor: activeTab === "home" ? "red" : "transparent", ...styles.wrapper }}> */}
+                            <View style={styles.wrapper}>
+                                <HomeIcon
+                                    width={ICON_SIZE}
+                                    height={ICON_SIZE}
+                                    stroke={activeTab === "home" ? colors.primary400 : colors.gray500}
+                                    fill={activeTab === "home" ? colors.primary400 : colors.gray500}
+                                />
+                                <Text style={{ color: activeTab === "home" ? colors.primary400 : colors.gray500, ...styles.text }}>Trang chủ</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </Link>
 
-                        <Link href="/translate" asChild>
-                            <TouchableOpacity style={styles.translateBtn} onPress={() => setActiveTab("translate")}>
-                                <View style={{ ...styles.wrapper, }}>
-                                    <Scan
-                                        width={ICON_SIZE}
-                                        height={ICON_SIZE}
-                                        stroke={activeTab === "translate" ? colors.primary400 : colors.gray500}
-                                    />
-                                    <Text style={{ color: activeTab === "translate" ? colors.primary400 : colors.gray500, ...styles.text }}>
-                                        Phiên dịch
-                                    </Text>
-                                </View>
-                            </TouchableOpacity>
-                        </Link>
+                    <Link href="/translate" asChild>
+                        <TouchableOpacity style={styles.translateBtn} onPress={() => setActiveTab("translate")}>
+                            <View style={{ ...styles.wrapper, }}>
+                                <Scan
+                                    width={ICON_SIZE}
+                                    height={ICON_SIZE}
+                                    stroke={activeTab === "translate" ? colors.primary400 : colors.gray500}
+                                />
+                                <Text style={{ color: activeTab === "translate" ? colors.primary400 : colors.gray500, ...styles.text }}>
+                                    Phiên dịch
+                                </Text>
+                            </View>
+                        </TouchableOpacity>
+                    </Link>
 
-                        <Link href="/dictionary" asChild>
-                            <TouchableOpacity
-                                style={styles.button}
-                                onPress={() => setActiveTab("dictionary")}
-                            >
-                                <View style={{ ...styles.wrapper, }}>
-                                    <Search
-                                        width={ICON_SIZE}
-                                        height={ICON_SIZE}
-                                        stroke={activeTab === "dictionary" ? colors.primary400 : colors.gray500}
-                                    />
-                                    <Text style={{ color: activeTab === "dictionary" ? colors.primary400 : colors.gray500, ...styles.text }}>Từ điển</Text>
-                                </View>
-                            </TouchableOpacity>
-                        </Link>
+                    <Link href="/dictionary" asChild>
+                        <TouchableOpacity
+                            style={styles.button}
+                            onPress={() => setActiveTab("dictionary")}
+                        >
+                            <View style={{ ...styles.wrapper, }}>
+                                <Search
+                                    width={ICON_SIZE}
+                                    height={ICON_SIZE}
+                                    stroke={activeTab === "dictionary" ? colors.primary400 : colors.gray500}
+                                />
+                                <Text style={{ color: activeTab === "dictionary" ? colors.primary400 : colors.gray500, ...styles.text }}>Từ điển</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </Link>
 
-                        <Link href="/profile" asChild>
-                            <TouchableOpacity style={styles.button} onPress={() => setActiveTab("profile")}>
-                                <View style={{ ...styles.wrapper }}>
-                                    <Profile
-                                        width={ICON_SIZE}
-                                        height={ICON_SIZE}
-                                        stroke={activeTab === "profile" ? colors.primary400 : colors.gray500}
-                                    />
-                                    <Text style={{ color: activeTab === "profile" ? colors.primary400 : colors.gray500, ...styles.text }}>Tài khoản</Text>
-                                </View>
-                            </TouchableOpacity>
-                        </Link>
-                    </View>
+                    <Link href="/profile" asChild>
+                        <TouchableOpacity style={styles.button} onPress={() => setActiveTab("profile")}>
+                            <View style={{ ...styles.wrapper }}>
+                                <Profile
+                                    width={ICON_SIZE}
+                                    height={ICON_SIZE}
+                                    stroke={activeTab === "profile" ? colors.primary400 : colors.gray500}
+                                />
+                                <Text style={{ color: activeTab === "profile" ? colors.primary400 : colors.gray500, ...styles.text }}>Tài khoản</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </Link>
                 </View>
-            </SafeAreaView >
-        </WalkthroughProvider>
+            </View>
+        </SafeAreaView >
     );
 }
 
