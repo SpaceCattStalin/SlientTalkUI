@@ -1,6 +1,6 @@
 import { colors, fontSizes, spacing } from '@/global/theme';
 import { ChevronRight } from 'lucide-react-native';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -33,33 +33,6 @@ const Index = () => {
     ...FontAwesome5.font,
   });
 
-  const { onLayout: step22OnLayout, goTo: goTo22, start: startStep22 } = useWalkthroughStep({
-    number: 22,
-    fullScreen: false,
-    OverlayComponent: ProfileScreenOverlay,
-  });
-
-  const { onLayout: step23OnLayout } = useWalkthroughStep({
-    number: 23,
-    fullScreen: false,
-    OverlayComponent: ProfileScreen2Overlay,
-  });
-
-  const { onLayout: step24OnLayout, } = useWalkthroughStep({
-    number: 24,
-    fullScreen: false,
-    OverlayComponent: ProfileScreen3Overlay,
-  });
-
-  const { onLayout: step25OnLayout, stop } = useWalkthroughStep({
-    number: 25,
-    fullScreen: true,
-    OverlayComponent: EndingMessageOverlay,
-  });
-
-  // useEffect(() => {
-  //   goTo22(22);
-  // }, [goTo22, startStep22]);
 
   if (!fontsLoaded) {
     return (
@@ -91,7 +64,7 @@ const Index = () => {
               </Text>
               <Animated.View
                 entering={FadeInLeft.delay(300).duration(500).springify()}
-                onLayout={step22OnLayout}
+              //onLayout={step22OnLayout}
               >
                 <AnimatedButton
                   onPress={() => router.push('./login')}>
@@ -126,7 +99,7 @@ const Index = () => {
 
               <Animated.View
                 entering={FadeInLeft.delay(300).duration(500).springify()}
-                onLayout={step23OnLayout}
+              //onLayout={step23OnLayout}
               >
                 <AnimatedButton>
                   <View style={{
@@ -215,7 +188,7 @@ const Index = () => {
             </Animated.View>
 
             <Animated.View
-              onLayout={step24OnLayout}
+              // onLayout={step24OnLayout}
               style={{
                 flexDirection: 'row',
                 justifyContent: 'space-evenly'
@@ -485,8 +458,8 @@ const Index = () => {
         <View style={{
           paddingHorizontal: spacing.md,
           backgroundColor: colors.gray400,
-          alignSelf: 'auto',
-          paddingBottom: spacing.lg * 4
+          alignSelf: 'stretch',
+          paddingBottom: spacing.lg ,
         }}>
           <Animated.View
             entering={FadeInDown.delay(300).duration(500).springify()}

@@ -11,107 +11,144 @@ import WordDefinitionOverlay from "@/components/walkthrough/WordDefinitionOverla
 import WordDefinitionVideoOverlay from "@/components/walkthrough/WordDefinitionOverlay2";
 import WordDefinitionLikeButtonOverlay from "@/components/walkthrough/WordDefinitionOverlay3";
 import { colors, fontSizes, spacing } from "@/global/theme";
-import { Collection } from "@/types/Types";
-import { Link, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useWalkthroughStep } from "react-native-interactive-walkthrough";
+import { Collection, WordByIdResponse } from "@/types/Types";
+import { Link, router, useLocalSearchParams } from "expo-router";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { ActivityIndicator, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useWalkthroughStep, WalkthroughProvider } from "react-native-interactive-walkthrough";
 import Animated, { FadeInLeft } from "react-native-reanimated";
 import { SafeAreaView } from 'react-native-safe-area-context';
 // import Wave from '@/assets/images/wave.svg';
 import Scan from '@/assets/images/scan.svg';
 import { useNav } from "@/context/NavContext";
 import WordDefinition6Overlay from "@/components/walkthrough/WordDefinitionOverlay6";
-import ModelViewer from "@/components/animation/ModelViewer";
+import Video from 'react-native-video';
 const ICON_SIZE = 20;
+import NavBar from '@/components/NavBar';
+import { getRelatedWords, getWordById } from '@/services/api';
+import { SignWord, RelatedWord } from '@/types/Types';
+import { navigate } from 'expo-router/build/global-state/routing';
+import { AuthContext } from '@/context/AuthProvider';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { sign } from 'three/src/nodes/TSL.js';
+import TestRender from '@/components/animation/testRender';
 
-const collections: Collection[] = [
-    { id: 'randomstring', name: 'Tất cả từ đã lưu', wordCount: 12 },
-    // { id: 'randomstring1', name: 'Y tế', wordCount: 45 },
-    // { id: 'randomstring3', name: 'fafa', wordCount: 10 },
-];
-
-const relatedWords = [
-    "Thầy cô", "Gia đình", "Trường học"
-];
 
 export default function WordScreen() {
     const { activeTab, setActiveTab } = useNav();
+    const { width, height } = Dimensions.get('window');
 
     const { word } = useLocalSearchParams<{ word: string; }>();
 
-    const [walkthroughCompleted, setWalkthroughCompleted] = useState(false);
-    const [likePressed, setLikePressed] = useState(false);
+    const [relatedWords, setRelatedWords] = useState<RelatedWord[]>([]);
+
     const [isCollectionVisible, setIsCollectionVisible] = useState(false);
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
     const [isResultVisible, setIsResultVisible] = useState(false);
     const [resultState, setResultState] = useState<"add" | "save">("save");
+    const [signWord, setSignWord] = useState<SignWord | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    // const currentStep = 5;
+    useEffect(() => {
+        const fetchWord = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const token = await AsyncStorage.getItem("userToken");
+                if (!token) throw new Error("Missing access token");
 
-    const { onLayout: step5OnLayout, goTo: goTo5, start: startStep5 } = useWalkthroughStep({
-        number: 5,
-        fullScreen: false,
-        OverlayComponent: WordDefinitionOverlay,
-    });
+                const result: WordByIdResponse = await getWordById(token, word);
+                if (result.isSuccess) {
+                    if (result.data) {
+                        setSignWord(result.data);
+                        const related = await getRelatedWords(result.data.signWordId);
+                        setRelatedWords(related);
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                setError('Failed to fetch word');
+            } finally { setLoading(false); };
+        };
 
-    const { onLayout: step6OnLayout } = useWalkthroughStep({
-        number: 6,
-        fullScreen: false,
-        OverlayComponent: WordDefinitionVideoOverlay,
-    });
+        fetchWord();
+    }, [word]);
 
-    const { onLayout: step7OnLayout, stop } = useWalkthroughStep({
-        number: 7,
-        fullScreen: false,
-        maskAllowInteraction: true,
-        OverlayComponent: WordDefinitionLikeButtonOverlay,
-    });
+    const handleToggleLike = () => {
+        if (!signWord) return;
 
-    // useEffect(() => {
-    //     if (!isCollectionVisible) {
-    //         goTo5(5);
-    //     }
-    // }, [startStep5, goTo5, isCollectionVisible]);
+        // Optimistically toggle liked state
+        setSignWord(prev => prev ? { ...prev, isInUserCollection: true } : prev);
+
+        // Open modal
+        setIsCollectionVisible(true);
+    };
+
+    const handleCancelAddToCollection = () => {
+        if (!signWord) return;
+
+        // Revert optimistic update
+        setSignWord(prev => prev ? { ...prev, isInUserCollection: false } : prev);
+
+        setIsCollectionVisible(false);
+    };
+    if (loading) {
+        return (
+            <View style={styles.loader}>
+                <ActivityIndicator size="large" color="#007AFF" />
+            </View>
+        );
+    }
 
     return (
         <SafeAreaView style={styles.container}>
             <View style={{ flex: 1, gap: spacing.md }}>
                 <View style={{ paddingHorizontal: spacing.sm, marginTop: spacing.md }}>
-                    <BackButton color={colors.gray300} />
+                    <BackButton color={colors.gray300} onPress={() => navigate("/(dictionary)")} />
                 </View>
+
                 <Animated.View
                     style={styles.definitionContainer}
                     entering={FadeInLeft.duration(500).springify()}
-                    onLayout={step5OnLayout}
-                >
-                    <View style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: spacing.sm * 1.5,
-                    }}>
-                        <Text style={styles.word}>
-                            Bạn bè
-                        </Text>
 
-                        <View onLayout={step7OnLayout}>
-                            <AnimatedLikeIcon
-                                primary={colors.red300}
-                                accent={colors.gray200}
-                                // onPress={() => setLikePressed(true)}
-                                onPress={() => {
-                                    setIsCollectionVisible(true);
-                                    stop();
-                                }}
-                                sizeModifier={1.1}
-                            />
+                >
+                    {error ? (
+                        <Text style={styles.word}>{error}</Text>
+                    ) : signWord ? (
+                        <View style={styles.wordSection}>
+                            <View style={styles.wordHeader}>
+                                <Text style={styles.word}>{signWord.word}</Text>
+                                <Text style={styles.wordType}>({signWord.wordType})</Text>
+                            </View>
+
+                            <View style={styles.definitionBox}>
+                                <Text style={styles.definition}>{signWord.definition}</Text>
+                            </View>
                         </View>
-                    </View>
-                    <Text style={styles.definition}>
-                        Người có mối quan hệ thân thiết,
-                        thường xuyên chia sẻ, trò chuyện
-                        và hỗ trợ nhau trong học tập hoặc cuộc sống.
-                    </Text>
+
+                    ) : null}
+
+                </Animated.View>
+                <Animated.View
+                    entering={FadeInLeft.delay(100).duration(500).springify()}
+                    style={{
+                        alignSelf: 'flex-start',
+                        position: 'absolute',
+                        top: 80,
+                        right: 20
+                    }}
+                >
+                    <AnimatedLikeIcon
+                        primary={colors.red300}
+                        accent={colors.gray200}
+                        // onPress={() => {
+                        //     setIsCollectionVisible(true);
+                        // }}
+                        onPress={() => handleToggleLike()}
+                        sizeModifier={1.3}
+                        isLiked={signWord!.isInUserCollection}
+                    />
                 </Animated.View>
 
 
@@ -127,40 +164,24 @@ export default function WordScreen() {
                             <Animated.View
                                 style={styles.videoContainer}
                                 entering={FadeInLeft.delay(200).duration(500).springify()}
-                                onLayout={step6OnLayout}
                             >
-                                {/* <Image
-                                    source={require('@/assets/images/3d.png')}
-                                    style={{
-                                        width: 280,
-                                        height: 280,
-                                        alignSelf: 'center',
-                                        resizeMode: 'contain',
-                                    }}
+                                {signWord?.category === 'Chữ cái' ?
+                                    <TestRender />
+                                    : <Video
+                                        source={{ uri: signWord?.signWordUri }}
+                                        style={{ width: width - spacing.md * 2, height: width * 0.5625 }}
+                                        controls={true}
+                                        paused={true}
+                                    />
+                                }
+                                {/* <Video
+                                    source={{ uri: signWord?.signWordUri }}
+                                    style={{ width: width - spacing.md * 2, height: width * 0.5625 }}
+                                    controls={true}
+                                    paused={true}
                                 /> */}
-                                {/* <ModelViewer /> */}
-                            </Animated.View>
 
-                            <View style={{ gap: spacing.sm }}>
-                                <Animated.View
-                                    entering={FadeInLeft.delay(300).duration(500).springify()}
-                                >
-                                    <Text style={{ fontSize: fontSizes.md * 1.4, fontWeight: 600, color: colors.primary500 }}>Ví dụ sử dụng:</Text>
-                                </Animated.View>
-                                <Animated.View
-                                    entering={FadeInLeft.delay(400).duration(500).springify()}
-                                >
-                                    <Text style={{ fontSize: fontSizes.sm * 1.2, fontStyle: 'italic', fontWeight: 500, color: colors.primary700 }}>
-                                        &quot;Tôi có nhiều bạn bè trong lớp học.&quot;
-                                    </Text>
-                                </Animated.View>
-                            </View>
-                            {/* <Animated.View
-                                style={styles.videoContainer}
-                                entering={FadeInLeft.delay(500).duration(500).springify()}
-                            >
-                              
-                                <Image
+                                {/* <Image
                                     source={require('@/assets/images/3d.png')}
                                     style={{
                                         width: 200,
@@ -168,11 +189,34 @@ export default function WordScreen() {
                                         alignSelf: 'center',
                                         resizeMode: 'contain',
                                     }}
-                                />
-                            </Animated.View> */}
-                            <View style={{ flex: 1, gap: spacing.sm }}>
-                                <Text style={{ fontSize: fontSizes.md, fontWeight: 600, color: colors.primary500 }}>Các ký hiệu liên quan</Text>
-                                <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                                /> */}
+                            </Animated.View>
+                            {signWord?.category !== 'Chữ cái' && (
+                                <View style={{ gap: spacing.sm }}>
+                                    <Animated.View
+                                        entering={FadeInLeft.delay(300).duration(500).springify()}
+                                    >
+                                        <Text style={{ fontSize: fontSizes.md * 1.4, fontWeight: 600, color: colors.primary500 }}>
+                                            Ví dụ sử dụng:
+                                        </Text>
+                                    </Animated.View>
+                                    <Animated.View
+                                        entering={FadeInLeft.delay(400).duration(500).springify()}
+                                    >
+                                        <Text style={{ fontSize: fontSizes.sm * 1.2, fontStyle: 'italic', fontWeight: 500, color: colors.primary700 }}>
+                                            &quot;{signWord?.exampleSentence}&quot;
+                                        </Text>
+                                    </Animated.View>
+                                </View>
+                            )}
+
+                            <Animated.View
+                                entering={FadeInLeft.delay(300).duration(500).springify()}
+                                style={{ flex: 1, gap: spacing.sm }}>
+                                <Text style={{ fontSize: fontSizes.md, fontWeight: 600, color: colors.primary500 }}>
+                                    Các ký hiệu liên quan
+                                </Text>
+                                <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap', }}>
                                     {relatedWords.map((item, index) => (
                                         // <View key={index} style={styles.relatedWords}>
                                         //     <Text>{item}</Text>
@@ -181,17 +225,16 @@ export default function WordScreen() {
                                             key={index}
                                             style={styles.relatedWords}
                                             onPress={() => {
-                                                console.log(`Đi tới từ: ${item}`);
-                                                // hoặc router.push(`/dictionary/${item}`)
+                                                router.push(`./${encodeURIComponent(item.relatedSignWordId)}`);
                                             }}
                                         >
                                             <Text style={{ fontSize: fontSizes.sm * 1.2, fontWeight: 600, color: colors.primary700 }}>
-                                                {item}
+                                                {item.word}
                                             </Text>
                                         </TouchableOpacity>
                                     ))}
                                 </View>
-                            </View>
+                            </Animated.View>
                         </View>
                     </ScrollView>
                 </View>
@@ -204,8 +247,8 @@ export default function WordScreen() {
 
                 <CollectionModal
                     isVisible={isCollectionVisible}
-                    onCancel={() => setIsCollectionVisible(false)}
-                    collections={collections}
+                    onCancel={handleCancelAddToCollection}
+                    // onCancel={() => setIsCollectionVisible(false)}
                     onConfirm={() => {
                         setIsCollectionVisible(false);
                         setResultState("save");
@@ -218,6 +261,7 @@ export default function WordScreen() {
                 />
 
                 <AddCollectionModal
+                    signWordId={signWord?.signWordId}
                     isVisible={isAddModalVisible}
                     onCancel={() => setIsAddModalVisible(false)}
                     onAdd={() => {
@@ -226,85 +270,7 @@ export default function WordScreen() {
                         setIsResultVisible(true);
                     }}
                 />
-                {/* <NavBar /> */}
-                <View style={{ ...styles.containerNav }}>
-                    <Link href="/(main)/home" asChild>
-                        <TouchableOpacity style={styles.button} onPress={() => setActiveTab("home")}>
-                            {/* <View style={{ backgroundColor: activeTab === "home" ? "red" : "transparent", ...styles.wrapper }}> */}
-                            <View style={styles.wrapper}>
-                                <HomeIcon
-                                    width={ICON_SIZE}
-                                    height={ICON_SIZE}
-                                    stroke={activeTab === "home" ? colors.primary400 : colors.gray500}
-                                    fill={activeTab === "home" ? colors.primary400 : colors.gray500}
-                                />
-                                <Text style={{ color: activeTab === "home" ? colors.primary400 : colors.gray500, ...styles.text }}>Trang chủ</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </Link>
-
-                    {/* <Link href="/(practice)" asChild>
-                <TouchableOpacity style={styles.button} onPress={() => setActiveTab("practice")}>
-                    <View style={styles.wrapper}>
-                        <Book
-                            width={ICON_SIZE}
-                            height={ICON_SIZE}
-                            stroke={activeTab === "practice" ? colors.primary400 : colors.gray500}
-                        />
-                        <Text style={{ color: activeTab === "practice" ? colors.primary400 : colors.gray500, ...styles.text }}>Luyện tập</Text>
-                    </View>
-                </TouchableOpacity>
-            </Link> */}
-
-                    {/* <Button style={styles.button}>
-                <Wave width={ICON_SIZE} height={ICON_SIZE} />
-            </Button> */}
-
-                    <Link href="/(translate)" asChild>
-                        <TouchableOpacity style={styles.translateBtn} onPress={() => setActiveTab("translate")}>
-                            <View style={{ ...styles.wrapper, }}>
-                                <Scan
-                                    width={ICON_SIZE}
-                                    height={ICON_SIZE}
-                                    stroke={activeTab === "translate" ? colors.primary400 : colors.gray500}
-                                />
-                                <Text style={{ color: activeTab === "translate" ? colors.primary400 : colors.gray500, ...styles.text }}>
-                                    Phiên dịch
-                                </Text>
-                            </View>
-                        </TouchableOpacity>
-                    </Link>
-
-                    <Link href="/(dictionary)" asChild>
-                        <TouchableOpacity
-                            style={styles.button}
-                            onPress={() => setActiveTab("dictionary")}
-                        // onLayout={step8OnLayout}
-                        >
-                            <View style={{ ...styles.wrapper, }}>
-                                <Search
-                                    width={ICON_SIZE}
-                                    height={ICON_SIZE}
-                                    stroke={activeTab === "dictionary" ? colors.primary400 : colors.gray500}
-                                />
-                                <Text style={{ color: activeTab === "dictionary" ? colors.primary400 : colors.gray500, ...styles.text }}>Từ điển</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </Link>
-
-                    <Link href="/(profile)" asChild>
-                        <TouchableOpacity style={styles.button} onPress={() => setActiveTab("profile")}>
-                            <View style={{ ...styles.wrapper }}>
-                                <Profile
-                                    width={ICON_SIZE}
-                                    height={ICON_SIZE}
-                                    stroke={activeTab === "profile" ? colors.primary400 : colors.gray500}
-                                />
-                                <Text style={{ color: activeTab === "profile" ? colors.primary400 : colors.gray500, ...styles.text }}>Tài khoản</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </Link>
-                </View>
+                <NavBar />
             </View>
         </SafeAreaView >
     );
@@ -316,16 +282,14 @@ const styles = StyleSheet.create({
         backgroundColor: colors.dictionaryBackground
     },
     definitionContainer: {
-        // flex: 1,
+        flex: 1,
+        paddingLeft: spacing.md,
         alignSelf: 'stretch',
         justifyContent: 'flex-start',
-        // paddingTop: spacing.lg * 1.8,
-        paddingHorizontal: spacing.md,
-        marginBottom: spacing.md,
-        gap: spacing.md
+        maxWidth: '85%',
     },
     main: {
-        flex: 4,
+        flex: 5.5,
         borderRadius: 30,
         backgroundColor: colors.gray50,
         paddingTop: spacing.md,
@@ -342,6 +306,33 @@ const styles = StyleSheet.create({
         fontWeight: 700,
         color: colors.gray100
     },
+    loader: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "white", // or your theme background
+    },
+    wordSection: {
+        gap: spacing.sm,
+        // backgroundColor: 'red',
+        paddingRight: spacing.lg
+    },
+
+    wordHeader: {
+        flexDirection: 'row',
+        alignItems: 'baseline',
+        gap: spacing.sm / 2,
+    },
+    wordType: {
+        fontSize: fontSizes.md,
+        fontStyle: 'italic',
+        color: colors.gray200,
+    },
+
+    definitionBox: {
+
+    },
+
     videoContainer: {
         // borderRadius: 5,
         // borderWidth: 1,
@@ -355,7 +346,6 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         borderWidth: .5,
         borderColor: colors.gray400,
-        marginBottom: 10,
 
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },

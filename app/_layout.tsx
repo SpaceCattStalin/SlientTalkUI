@@ -7,8 +7,9 @@ import { useAuth } from "@/hooks/useAuth";
 import ThemedView from "@/components/ThemedView";
 import { enableExperimentalLayoutAnimation, WalkthroughProvider } from "react-native-interactive-walkthrough";
 import { NavProvider } from "@/context/NavContext";
-import { Home } from "lucide-react-native";
 import MainLayout from "./(main)/_layout";
+import Home from "./(main)/home";
+import WordScreen from "./(dictionary)/word/[word]";
 
 const RootNavigation = () => {
   const { authState } = useAuth();
@@ -27,9 +28,7 @@ export default function RootLayout() {
     <AuthProvider>
       <ThemeProvider>
         <NavProvider>
-          <WalkthroughProvider>
-            <RootNavigation />
-          </WalkthroughProvider>
+          <RootNavigation />
         </NavProvider>
       </ThemeProvider>
     </AuthProvider>

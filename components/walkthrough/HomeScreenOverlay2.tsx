@@ -6,7 +6,7 @@ import Animated, { FadeInDown, FadeOutUp, useAnimatedStyle, useSharedValue, with
 
 const WordOfTheDayOverlay = ({
     next,
-    
+
     step: { mask },
 }: IOverlayComponentProps) => {
     const scale = useSharedValue(1);
@@ -16,10 +16,8 @@ const WordOfTheDayOverlay = ({
     }));
 
     return (
-        <Animated.View
+        <View
             style={{ ...styles.container, top: mask.y - styles.overlay.padding - 160, left: 50 }}
-            entering={FadeInDown.duration(300)}
-            exiting={FadeOutUp.duration(200)}
         >
             <View style={styles.overlay}>
                 <Text style={styles.title}>Từ của Ngày</Text>
@@ -43,7 +41,7 @@ const WordOfTheDayOverlay = ({
                 </Pressable>
             </View>
             <View style={styles.pointer} />
-        </Animated.View>
+        </View>
     );
 };
 

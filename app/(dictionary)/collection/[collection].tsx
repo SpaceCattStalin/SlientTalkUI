@@ -1,7 +1,7 @@
 import ThreeDots from '@/assets/images/three_dots.svg';
 import BackButton from '@/components/BackButton';
 import CollectionModal from '@/components/CollectionModal';
-import ConfirmDeleteModal from '@/components/ConfirmDeleteModal';
+import ConfirmDeleteModal from '@/components/ConfirmActionModal';
 import ResultModal from '@/components/ResultModal';
 import Search from '@/components/Searchbar';
 import CollectionWordsOverlay from '@/components/walkthrough/CollectionScreenOverlay2';
@@ -10,11 +10,11 @@ import CollectionOption4Overlay from '@/components/walkthrough/CollectionScreenO
 import WordOptionModal from '@/components/WordOptionModal';
 import { useNav } from '@/context/NavContext';
 import { colors, fontSizes, spacing } from '@/global/theme';
-import { Collection } from '@/types/Types';
+import { Collection, SignWord } from '@/types/Types';
 import { Link, router } from 'expo-router';
 import { usePathname, useSearchParams } from 'expo-router/build/hooks';
 import { ChevronRight } from 'lucide-react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
 import Animated, { FadeInLeft, FadeInUp } from 'react-native-reanimated';
@@ -54,7 +54,6 @@ const CollectionScreen = () => {
     const { activeTab, setActiveTab } = useNav();
 
     const [query, setQuery] = useState("");
-    const pathname = usePathname();
     const params = useSearchParams();
     const name = params.get("name");
     const words = collectionDictionary["Y tế"];
@@ -65,32 +64,6 @@ const CollectionScreen = () => {
     const [isResultVisible, setIsResultVisible] = useState(false);
     const [resultState, setResultState] = useState<"move" | "delete">("move");
     const [selectedWord, setSelectedWord] = useState<string | null>(null);
-
-    const { onLayout: step14OnLayout, goTo: goTo15, start: startStep15 } = useWalkthroughStep({
-        number: 15,
-        fullScreen: false,
-        OverlayComponent: CollectionWordsOverlay,
-    });
-
-
-    const { onLayout: step15OnLayout, next } = useWalkthroughStep({
-        number: 16,
-        fullScreen: false,
-        OverlayComponent: CollectionOptionOverlay,
-    });
-
-    const { onLayout: step16OnLayout} = useWalkthroughStep({
-        number: 17,
-        fullScreen: false,
-        maskAllowInteraction: true,
-        OverlayComponent: CollectionOption4Overlay,
-    });
-
-
-    // useEffect(() => {
-    //     goTo15(15);
-    // }, [startStep15, goTo15]);
-
     return (
         <SafeAreaView style={styles.container}>
             <View style={{ flex: 1 }}>
@@ -123,13 +96,12 @@ const CollectionScreen = () => {
                 <View style={styles.main}>
                     <View>
                         <FlatList
-                            onLayout={step14OnLayout}
                             style={{
                                 marginTop: 10, marginHorizontal: spacing.lg,
                             }}
                             data={words}
-                            keyExtractor={(item) => item}
-                            renderItem={({ item, index }) => (
+                            keyExtractor={(item: SignWord) => item.signWordId}
+                            renderItem={({ item, index }: { item: SignWord, index: number; }) => (
                                 <Animated.View
                                     entering={FadeInUp.delay(100 * index).duration(200)}
                                     style={styles.card}
@@ -137,7 +109,7 @@ const CollectionScreen = () => {
                                     <TouchableOpacity
                                         style={styles.searchItem}
                                         onPress={() => {
-                                            router.push(`../word/${encodeURIComponent(item)}`);
+                                            router.push(`/dictionary/word/${encodeURIComponent(item.signWordId)}`);
                                         }}
                                     >
                                         <Text style={{
@@ -149,9 +121,9 @@ const CollectionScreen = () => {
                                             {item}
                                         </Text>
                                         <Pressable
-                                            onLayout={step15OnLayout}
+                                            //onLayout={step15OnLayout}
                                             onPress={() => {
-                                                setSelectedWord(item);
+                                                setSelectedWord(item.signWordId);
                                                 setIsOptionModalVisible(true);
                                             }}
                                             hitSlop={10}
@@ -159,12 +131,6 @@ const CollectionScreen = () => {
                                         >
                                             <ThreeDots width={18} height={18} />
                                         </Pressable>
-                                        {/* <View style={{
-                                        flexDirection: 'row',
-                                        gap: spacing.xs,
-                                        alignItems: 'center',
-                                        backgroundColor: 'red',
-                                    }}> */}
 
                                         <ChevronRight
                                             color={colors.primary700}
@@ -194,32 +160,15 @@ const CollectionScreen = () => {
                         </TouchableOpacity>
                     </Link>
 
-                    {/* <Link href="/(practice)" asChild>
-                <TouchableOpacity style={styles.button} onPress={() => setActiveTab("practice")}>
-                    <View style={styles.wrapper}>
-                        <Book
-                            width={ICON_SIZE}
-                            height={ICON_SIZE}
-                            stroke={activeTab === "practice" ? colors.primary400 : colors.gray500}
-                        />
-                        <Text style={{ color: activeTab === "practice" ? colors.primary400 : colors.gray500, ...styles.text }}>Luyện tập</Text>
-                    </View>
-                </TouchableOpacity>
-            </Link> */}
-
-                    {/* <Button style={styles.button}>
-                <Wave width={ICON_SIZE} height={ICON_SIZE} />
-            </Button> */}
-
                     <Link href="/(translate)" asChild>
                         <TouchableOpacity
                             style={styles.translateBtn}
                             onPress={() => {
-                                next();
+                                //next();
                                 setActiveTab("translate");
                                 //stop();
                             }}
-                            onLayout={step16OnLayout}
+                        //onLayout={step16OnLayout}
                         >
                             <View style={{ ...styles.wrapper, }}>
                                 <Scan

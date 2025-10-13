@@ -15,10 +15,8 @@ const DictionaryCategoryOverlay = ({
     }));
 
     return (
-        <Animated.View
+        <View
             style={{ ...styles.container, top: mask.y - mask.height, left: 50 }}
-            entering={FadeInDown.duration(300)}
-            exiting={FadeOutUp.duration(200)}
         >
             <View style={styles.overlay}>
                 <Text style={styles.title}>Tìm kiếm</Text>
@@ -43,7 +41,7 @@ const DictionaryCategoryOverlay = ({
             </View>
             <View style={styles.pointer} />
 
-        </Animated.View>
+        </View>
     );
 };
 

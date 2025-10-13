@@ -16,14 +16,12 @@ const WordDefinitionVideoOverlay = ({
     }));
 
     return (
-        <Animated.View
+        <View
             style={{
                 ...styles.container,
                 top: mask.y + mask.height,
                 left: 50
             }}
-            entering={FadeInDown.duration(300)}
-            exiting={FadeOutUp.duration(200)}
         >
             <View style={styles.pointer} />
 
@@ -40,17 +38,17 @@ const WordDefinitionVideoOverlay = ({
                         next();
                     }}
                 >
-                    <Animated.View style={[
+                    <View style={[
                         styles.button,
-                        animatedStyle]}
+                        ]}
                     >
                         <Text style={styles.buttonText}>
                             Tiếp theo
                         </Text>
-                    </Animated.View>
+                    </View>
                 </Pressable>
             </View>
-        </Animated.View>
+        </View>
     );
 };
 

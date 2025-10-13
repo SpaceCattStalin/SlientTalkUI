@@ -10,19 +10,13 @@ const WordDefinitionOverlay = ({
 }: IOverlayComponentProps) => {
   const scale = useSharedValue(1);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
   return (
-    <Animated.View
+    <View
       style={{
         ...styles.container,
-        top: mask.y + mask.height ,
+        top: mask.y + mask.height,
         left: 50
       }}
-      entering={FadeInDown.duration(300)}
-      exiting={FadeOutUp.duration(200)}
     >
       <View style={styles.pointer} />
 
@@ -35,17 +29,17 @@ const WordDefinitionOverlay = ({
           onPressOut={() => { scale.value = withSpring(1); }}
           onPress={next}
         >
-          <Animated.View style={[
+          <View style={[
             styles.button,
-            animatedStyle]}
+          ]}
           >
             <Text style={styles.buttonText}>
               Tiếp theo
             </Text>
-          </Animated.View>
+          </View>
         </Pressable>
       </View>
-    </Animated.View>
+    </View>
   );
 };
 

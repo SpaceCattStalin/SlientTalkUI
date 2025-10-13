@@ -10,7 +10,7 @@ import AddCollectionModal from '@/components/AddModal';
 import AnimatedLikeIcon from '@/components/animation/AnimatedLikeIcon';
 import CollectionModal from '@/components/CollectionModal';
 import ResultModal from '@/components/ResultModal';
-import { Collection } from '@/types/Types';
+import { Collection, SignWord, SignWordCategoryResponse } from '@/types/Types';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInDown, FadeInLeft, FadeInUp, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
@@ -19,74 +19,138 @@ import DictionarySearchOverlay from '@/components/walkthrough/DictionaryScreenOv
 import DictionarySaveOverlay from '@/components/walkthrough/DictionaryScreenOverlay3';
 import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
 import DictionaryCategoryOverlay from '../../components/walkthrough/DictionaryScreenOverlay2';
+import { useWalkthrough } from '@/hooks/useWalkthrough';
+import { opacity } from 'react-native-reanimated/lib/typescript/Colors';
+import { getWordsByCategory } from '@/services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import ConfirmActionModal from '@/components/ConfirmActionModal';
 
-const categories = ["Triệu chứng", "Bộ phận cơ thể", "Điều trị", "Trường học"];
-
-const collections: Collection[] = [
-    { id: 'randomstring', name: 'Tất cả từ đã lưu', wordCount: 12 },
-    // { id: 'randomstring1', name: 'Y tế', wordCount: 4 },
-    // { id: 'randomstring3', name: 'fafa', wordCount: 4 },
-];
-
-const dictionary = [
-    "Bố", "Mẹ", "Banh", "Cô", "Kẹo",
-    "Anh", "Chị", "Em", "Ông", "Bà",
-    "Cơm", "Nước", "Sữa", "Bánh mì", "Táo",
-    "Thầy", "Cô giáo", "Bạn", "Sách", "Bút",
-    "Xin chào", "Cảm ơn", "Xin lỗi", "Có", "Không"
-];
 
 const Index = () => {
     const router = useRouter();
+
+    const [selectedWordId, setSelectedWordId] = useState<string | null>(null);
+
     const [query, setQuery] = useState("");
-    const [results, setResults] = useState<string[]>([]);
+    const [allWords, setAllWords] = useState<SignWord[]>([]);
+    const [results, setResults] = useState<SignWord[]>([]);
+    const [loading, setLoading] = useState(false);
 
     const [isCollectionVisible, setIsCollectionVisible] = useState(false);
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
     const [isResultVisible, setIsResultVisible] = useState(false);
     const [resultState, setResultState] = useState<"add" | "save">("save");
     const scale = useSharedValue(1);
+    const [shouldRefetch, setShouldRefetch] = useState(false);
+    const [confirmUnlikeVisible, setConfirmUnlikeVisible] = useState(false);
 
+    useEffect(() => {
+        const fetchWords = async () => {
+            setLoading(true);
+            try {
+                const token = await AsyncStorage.getItem("userToken");
+                if (!token) throw new Error("Missing access token");
 
-    const { onLayout: step11OnLayout, goTo: goTo11, start: startStep11 } = useWalkthroughStep({
-        number: 11,
-        fullScreen: false,
-        OverlayComponent: DictionarySearchOverlay,
-    });
+                const result: SignWordCategoryResponse = await getWordsByCategory(token, "");
+                if (result.isSuccess) {
+                    setAllWords(result.data);   // store original data
+                    setResults(result.data);
+                } else {
+                    setAllWords([]);
+                    setResults([]);
+                }
+            } catch (error) {
+                console.log("Failed to fetch words for topic:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const { onLayout: step12OnLayout } = useWalkthroughStep({
-        number: 12,
-        fullScreen: false,
-        OverlayComponent: DictionaryCategoryOverlay,
-    });
-
-    const { onLayout: step13OnLayout } = useWalkthroughStep({
-        number: 13,
-        fullScreen: false,
-        maskAllowInteraction: true,
-        OverlayComponent: DictionarySaveOverlay,
-    });
+        fetchWords();
+    }, []);
 
     useEffect(() => {
         if (query.length > 0) {
-            const filtered = dictionary.filter((word) =>
-                word.toLowerCase().includes(query.toLowerCase())
+            const filtered = allWords.filter((w) =>
+                w.word.toLowerCase().includes(query.toLowerCase())
             );
             setResults(filtered);
         } else {
-            setResults([]);
+            setResults(allWords);  // reset to original list
         }
-    }, [query]);
+    }, [query, allWords]);
 
     const animatedStyle = useAnimatedStyle(() => ({
         transform: [{ scale: scale.value }],
     }));
 
-    // useEffect(() => {
-    //     goTo11(11);
-    // }, [startStep11, goTo11]);
+    const handleToggleLike = (word: SignWord) => {
+        setSelectedWordId(word.signWordId);
 
-    return ( 
+        if (!word.isInUserCollection) {
+            // Chưa lưu → mở modal lưu
+            setIsCollectionVisible(true);
+
+            // Optional: optimistic update
+            setResults(prev => prev.map(item =>
+                item.signWordId === word.signWordId
+                    ? { ...item, isInUserCollection: true }
+                    : item
+            ));
+            setAllWords(prev => prev.map(item =>
+                item.signWordId === word.signWordId
+                    ? { ...item, isInUserCollection: true }
+                    : item
+            ));
+        } else {
+            // Đã lưu → mở modal confirm bỏ thích
+            setConfirmUnlikeVisible(true);
+        }
+    };
+
+    const handleCancelAddToCollection = () => {
+        if (!selectedWordId) return;
+
+        // Revert optimistic update
+        setResults(prev => prev.map(item =>
+            item.signWordId === selectedWordId
+                ? { ...item, isInUserCollection: false }
+                : item
+        ));
+
+        setAllWords(prev => prev.map(item =>
+            item.signWordId === selectedWordId
+                ? { ...item, isInUserCollection: false }
+                : item
+        ));
+
+        setIsCollectionVisible(false);
+        setSelectedWordId(null);
+    };
+
+    const handleConfirmUnlike = async () => {
+        if (!selectedWordId) return;
+
+        // Optimistic update: bỏ lưu
+        setResults(prev => prev.map(item =>
+            item.signWordId === selectedWordId
+                ? { ...item, isInUserCollection: false }
+                : item
+        ));
+        setAllWords(prev => prev.map(item =>
+            item.signWordId === selectedWordId
+                ? { ...item, isInUserCollection: false }
+                : item
+        ));
+
+        // TODO: Gọi API bỏ lưu khi có backend
+        // await removeWordFromCollection(selectedWordId)
+
+        setConfirmUnlikeVisible(false);
+        setSelectedWordId(null);
+    };
+
+    return (
         <KeyboardAvoidingView
             style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -122,42 +186,17 @@ const Index = () => {
                                 <Animated.View style={[
                                     styles.buttonStyle,
                                     animatedStyle]}
-                                    onLayout={step13OnLayout}
                                 >
                                     <TwoLine height={20} width={20} preserveAspectRatio="xMidYMid meet" />
                                 </Animated.View>
                             </Pressable>
                         </View>
                         <Animated.View
-                            onLayout={step11OnLayout}
+                            //onLayout={step11OnLayout}
                             entering={FadeInLeft.delay(200).duration(500).springify()}
                         >
                             <Search value={query} onChange={setQuery} />
                         </Animated.View>
-                        {/* <FlatList
-                        style={{ alignSelf: 'auto', padding: spacing.sm }}
-                        horizontal
-                        data={categories}
-                        keyExtractor={(item) => item}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity style={styles.categoryCard}>
-                                <Text style={{ fontSize: fontSizes.sm }}>
-                                    {item}
-                                </Text>
-                            </TouchableOpacity>
-                        )}
-                        ItemSeparatorComponent={() => <View style={{ width: 8 }} />}
-                    /> */}
-
-                        {/* 
-                    <View style={{
-                        paddingHorizontal: spacing.md,
-                    }}>
-
-                        <Text style={{ fontSize: fontSizes.xl, fontWeight: 700, color: colors.gray50 }}>hay...</Text>
-               
-                        <CTAButton />
-                    </View> */}
                     </Animated.View>
 
                     <View style={styles.main}>
@@ -170,10 +209,10 @@ const Index = () => {
                                     }}
                                 >
                                     <FlatList
-                                        style={{ marginTop: 10 }}
+                                        style={{ marginTop: 10, paddingBottom: 50 }}
                                         data={results}
-                                        keyExtractor={(item) => item}
-                                        renderItem={({ item, index }) => (
+                                        keyExtractor={(item: SignWord) => item.signWordId}
+                                        renderItem={({ item, index }: { item: SignWord, index: number; }) => (
                                             <Animated.View
                                                 entering={FadeInUp.delay(100 * index).duration(200)}
                                                 style={styles.card}
@@ -181,8 +220,7 @@ const Index = () => {
                                                 <TouchableOpacity
                                                     style={styles.searchItem}
                                                     onPress={() => {
-                                                        // router.push(`./word/${item}`);
-                                                        router.push(`./word/${encodeURIComponent(item)}`);
+                                                        router.push(`./word/${encodeURIComponent(item.signWordId)}`);
                                                     }}
                                                 >
                                                     <Text style={{
@@ -190,7 +228,7 @@ const Index = () => {
                                                         color: colors.primary600,
                                                         fontWeight: 500
                                                     }}>
-                                                        {item}
+                                                        {item.word}
                                                     </Text>
                                                     <View style={{
                                                         flexDirection: 'row',
@@ -200,7 +238,12 @@ const Index = () => {
                                                         <AnimatedLikeIcon
                                                             accent='transparent'
                                                             primary={colors.primary600}
-                                                            onPress={() => setIsCollectionVisible(true)}
+                                                            isLiked={item.isInUserCollection}
+                                                            // onPress={() => {
+                                                            //     setSelectedWordId(item.signWordId);
+                                                            //     setIsCollectionVisible(true);
+                                                            // }}
+                                                            onPress={() => handleToggleLike(item.signWordId)}
                                                         />
                                                         <ChevronRight
                                                             color={colors.primary700}
@@ -253,8 +296,23 @@ const Index = () => {
                                     <Animated.View
                                         style={styles.topicContainer}
                                         entering={FadeInDown.delay(400).duration(500).springify()}
-                                        onLayout={step12OnLayout}
+                                    //onLayout={step12OnLayout}
                                     >
+                                        <TouchableOpacity
+                                            style={styles.topic}
+                                            onPress={() => {
+                                                router.push(`./${encodeURIComponent("Chữ cái")}`);
+                                            }}
+                                        >
+                                            <View style={styles.topicImage}>
+                                                <Image
+                                                    source={require('@/assets/images/char.png')}
+                                                    style={styles.image}
+                                                    resizeMode='contain'
+                                                />
+                                            </View>
+                                            <Text style={styles.topicTitle}>Chữ cái</Text>
+                                        </TouchableOpacity>
                                         <TouchableOpacity style={styles.topic}
                                             onPress={() => {
                                                 // router.push('./family');
@@ -270,21 +328,7 @@ const Index = () => {
                                             </View>
                                             <Text style={styles.topicTitle}>Gia đình</Text>
                                         </TouchableOpacity>
-                                        <TouchableOpacity
-                                            style={styles.topic}
-                                            onPress={() => {
-                                                router.push(`./${encodeURIComponent("Y tế")}`);
-                                            }}
-                                        >
-                                            <View style={styles.topicImage}>
-                                                <Image
-                                                    source={require('@/assets/images/doctor.png')}
-                                                    style={styles.image}
-                                                    resizeMode='contain'
-                                                />
-                                            </View>
-                                            <Text style={styles.topicTitle}>Y tế</Text>
-                                        </TouchableOpacity>
+
                                     </Animated.View>
 
                                     <Animated.View
@@ -321,6 +365,21 @@ const Index = () => {
                                             </View>
                                             <Text style={styles.topicTitle}>Câu hỏi</Text>
                                         </TouchableOpacity>
+                                        {/* <View
+                                            style={{ ...styles.topic, opacity: 0 }}
+                                        // onPress={() => {
+                                        //     router.push(`./${encodeURIComponent("Trường học")}`);
+                                        // }}
+                                        >
+                                            <View style={styles.topicImage}>
+                                                <Image
+                                                    source={require('@/assets/images/school.png')}
+                                                    style={styles.image}
+                                                    resizeMode='contain'
+                                                />
+                                            </View>
+                                            <Text style={styles.topicTitle}>Trường học</Text>
+                                        </View> */}
                                     </Animated.View>
                                 </View>
                             </View>)}
@@ -329,35 +388,54 @@ const Index = () => {
                 </View>
                 <ResultModal
                     visible={isResultVisible}
-                    onClose={() => setIsResultVisible(false)}
+                    onClose={() => {
+                        setIsResultVisible(false);
+                        setSelectedWordId(null);
+                    }}
                     state={resultState}
                 />
 
                 <CollectionModal
                     inDictionary={true}
                     isVisible={isCollectionVisible}
-                    onCancel={() => setIsCollectionVisible(false)}
-                    collections={collections}
+                    onCancel={handleCancelAddToCollection}
                     onConfirm={() => {
                         setIsCollectionVisible(false);
                         setResultState("save");
                         setIsResultVisible(true);
+                        setShouldRefetch((prev) => !prev);
                     }}
+                    refetch={shouldRefetch}
                     onAdd={() => {
                         setIsCollectionVisible(false);
                         setIsAddModalVisible(true);
                     }}
+                    signWordId={selectedWordId!}
                 />
 
                 <AddCollectionModal
                     isVisible={isAddModalVisible}
-                    onCancel={() => setIsAddModalVisible(false)}
+                    onCancel={() => {
+                        setIsAddModalVisible(false);
+                        setSelectedWordId(null);
+                    }}
                     onAdd={() => {
                         setIsAddModalVisible(false);
                         setResultState("add");
                         setIsResultVisible(true);
                     }}
+                    signWordId={selectedWordId!}
                 />
+
+                <ConfirmActionModal
+                    visible={confirmUnlikeVisible}
+                    message={`Bạn có chắc muốn bỏ lưu từ "${allWords.find(w => w.signWordId === selectedWordId)?.word}" không?`}
+                    onCancel={() => setConfirmUnlikeVisible(false)}
+                    onConfirm={handleConfirmUnlike}
+                    cancelText="Hủy"
+                    confirmText="Bỏ thích"
+                />
+
             </SafeAreaView>
         </KeyboardAvoidingView >
     );

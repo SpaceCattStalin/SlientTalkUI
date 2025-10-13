@@ -3,10 +3,10 @@ import React from 'react';
 import "../../threeSetup";
 import { ExpoWebGLRenderingContext, GLView } from 'expo-gl';
 import { Renderer, THREE } from 'expo-three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';  // ✅ Use GLTFLoader
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { AnimationMixer } from 'three';
 
-const MODEL_URL = 'https://curious-pauline-catchable.ngrok-free.dev/static/3d/A.glb'; // ✅ Replace with your .glb
+const MODEL_URL = 'https://curious-pauline-catchable.ngrok-free.dev/static/3d/B.glb';
 
 const TestRender = () => {
     const onContextCreate = async (gl: ExpoWebGLRenderingContext) => {
@@ -14,13 +14,17 @@ const TestRender = () => {
 
         // Renderer
         const renderer = new Renderer({ gl });
+        // renderer.setSize(width, height);
         renderer.setSize(width, height);
-        renderer.setClearColor(0xaaaaaa);
 
+        // renderer.setClearColor(0xaaaaaa);
+        renderer.setClearColor(0xffffff);
         // Scene + Camera
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-        camera.position.z = 5;
+        camera.position.z = 3;
+        camera.position.y = 4;
+
 
         // Lights
         const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -38,7 +42,9 @@ const TestRender = () => {
                 // console.log('GLB loaded:', gltf);
 
                 const model = gltf.scene;
-                model.scale.set(0.5, 0.5, 0.5);
+                // model.scale.set(2, 2, 2);
+                model.scale.set(3, 3, 3);
+
                 model.position.set(0, -1, 0);
 
                 scene.add(model);
@@ -74,18 +80,29 @@ const TestRender = () => {
 
     return (
         <View style={styles.container}>
-            <GLView style={styles.glview} onContextCreate={onContextCreate} />
+            <View style={styles.glWrapper}>
+                <GLView style={styles.glview} onContextCreate={onContextCreate} />
+            </View>
         </View>
     );
 };
 
 export default TestRender;
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
     },
-    glview: { width: 500, height: 500 },
+    glWrapper: {
+        width: "100%",
+        height: 300,
+        borderWidth: .5,
+        borderColor: '#000',  // change color as needed
+        borderRadius: 8,
+        overflow: 'hidden',   // important for rounded corners!
+    },
+    glview: {
+        flex: 1, // make GLView fill the wrapper
+    },
 });

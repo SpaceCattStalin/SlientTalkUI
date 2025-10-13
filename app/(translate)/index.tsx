@@ -124,18 +124,6 @@ const Index = () => {
     };
   }, []);
 
-  // useEffect(() => {
-  //   socket.current!.on("prediction", (data) => {
-  //     console.log("📩 Prediction received:", data.label);
-
-  //     setPrediction(data.label);
-  //     addLog(`Kết quả: ${data.label}`);
-  //   });
-
-  //   return () => {
-  //     socket.current!.off("prediction");
-  //   };
-  // }, []);
   useEffect(() => {
     currentSentenceRef.current = currentSentence;
   }, [currentSentence]);
@@ -219,35 +207,6 @@ const Index = () => {
     opacity: overlayOpacity.value,
   }));
 
-  const { onLayout: step18OnLayout, goTo: goTo18, start: startStep18 } = useWalkthroughStep({
-    number: 18,
-    fullScreen: false,
-    OverlayComponent: TranslateScreenOverlay,
-  });
-
-  const { onLayout: step19OnLayout, stop } = useWalkthroughStep({
-    number: 19,
-    fullScreen: false,
-    OverlayComponent: TranslateScreen3Overlay,
-  });
-
-  const { onLayout: step20OnLayout } = useWalkthroughStep({
-    number: 20,
-    fullScreen: false,
-    OverlayComponent: TranslateScreen4Overlay,
-  });
-
-  const { onLayout: step21OnLayout } = useWalkthroughStep({
-    number: 21,
-    fullScreen: false,
-    maskAllowInteraction: true,
-    OverlayComponent: TranslateScreen5Overlay,
-  });
-
-  // useEffect(() => {
-  //   goTo18(18);
-  // }, [goTo18, startStep18]);
-
   if (!fontsLoaded && !hasPermission) {
     return (
       <View style={styles.loader}>
@@ -256,13 +215,13 @@ const Index = () => {
     );
   }
 
-  // if (!fontsLoaded) {
-  //   return (
-  //     <View style={styles.loader}>
-  //       <ActivityIndicator size="large" color="#007AFF" />
-  //     </View>
-  //   );
-  // }
+  if (!fontsLoaded) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
   // if (hasPermission === false) {
   //   return (
   //     <SafeAreaView style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
@@ -310,7 +269,7 @@ const Index = () => {
           <TouchableOpacity
             style={[styles.button, { marginLeft: 10 }]}
             onPress={toggleSidebar}
-            onLayout={step20OnLayout}
+            //onLayout={step20OnLayout}
           >
             <MaterialIcons name="menu" size={24} color="#fff" />
           </TouchableOpacity>
@@ -318,8 +277,7 @@ const Index = () => {
       </View>
 
       <View style={{ flex: 1, position: 'relative' }}>
-        <Animated.View
-          entering={FadeInDown.delay(300).duration(500).springify()}
+        <View
           style={styles.main}
         >
           {/* {mode === "camera" ? (
@@ -400,7 +358,7 @@ const Index = () => {
             />
           </View>
 
-        </Animated.View>
+        </View>
         <View style={{ ...styles.containerNav }}>
           <Link href="/(main)/home" asChild>
             <TouchableOpacity onPress={() => setActiveTab("home")}>
@@ -470,7 +428,7 @@ const Index = () => {
 
           <Link href="/(profile)" asChild>
             <TouchableOpacity
-              onLayout={step21OnLayout}
+              //onLayout={step21OnLayout}
               onPress={() => setActiveTab("profile")}>
               <View style={{ ...styles.wrapper }}>
                 <Profile

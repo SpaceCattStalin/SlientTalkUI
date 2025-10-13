@@ -1,66 +1,46 @@
-import { StyleSheet, Text, View } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import React, { useRef, useState } from 'react';
+import { Animated, Pressable, StyleSheet } from 'react-native';
 import { LucideHeart } from 'lucide-react-native';
 
 export const APP_ICON_SIZE = 12;
-
-const size = APP_ICON_SIZE * 2;
-
-const AnimatedHeart = Animated.createAnimatedComponent(LucideHeart);
+const baseSize = APP_ICON_SIZE * 2;
 
 type Props = {
-    primary: string,
-    accent: string,
-    onPress: () => void;
-    sizeModifier?: number;
+  primary: string;
+  accent: string;
+  onPress: () => void;
+  sizeModifier?: number;
+  isLiked: boolean
 };
 
-const AnimatedLikeIcon = ({ primary, accent, onPress, sizeModifier = 1 }: Props) => {
-    const scale = useSharedValue(1);
-    const isLiked = useSharedValue(false);
-    const [iconColor, setIconColor] = useState(primary);
+const AnimatedLikeIcon = ({ primary, accent, onPress, sizeModifier = 1, isLiked }: Props) => {
+  //const [isLiked, setIsLiked] = useState(false);
+  const scale = useRef(new Animated.Value(1)).current;
 
-    const baseSize = APP_ICON_SIZE * 2;
-    const iconSize = baseSize * sizeModifier;
+  const iconSize = baseSize * sizeModifier;
 
-    const animatedStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ scale: scale.value }],
-        };
-    });
+  const handlePress = () => {
+    // Scale animation
+    Animated.sequence([
+      Animated.spring(scale, { toValue: 1.5, useNativeDriver: true }),
+      Animated.spring(scale, { toValue: 1, friction: 3, useNativeDriver: true }),
+    ]).start();
 
-    const handlePress = () => {
-        scale.value = withSpring(
-            1.5,
-            {
-                damping: 2,
-                stiffness: 150,
-            },
-            () => {
-                scale.value = withSpring(1);
-            },
-        );
-        isLiked.value = !isLiked.value;
-        if (onPress) {
-            runOnJS(onPress)();
-        }
-        runOnJS(setIconColor)(isLiked.value ? primary : accent);
-    };
+    // setIsLiked(!isLiked);
+    onPress?.();
+  };
 
-
-    return (
-        <AnimatedHeart
-            size={iconSize}
-            color={isLiked.value ? accent : primary}
-            fill={isLiked.value ? primary : accent}
-            style={animatedStyle}
-            onPress={handlePress}
-            accessible={true}
-            accessibilityRole="button"
-            accessibilityLabel={isLiked.value ? 'Unlike' : 'Like'}
+  return (
+    <Pressable onPress={handlePress} accessibilityRole="button" accessibilityLabel={isLiked ? 'Unlike' : 'Like'}>
+      <Animated.View style={{ transform: [{ scale }] }}>
+        <LucideHeart
+          size={iconSize}
+          color={isLiked ? accent : primary}
+          fill={isLiked ? primary : accent}
         />
-    );
+      </Animated.View>
+    </Pressable>
+  );
 };
 
 export default AnimatedLikeIcon;

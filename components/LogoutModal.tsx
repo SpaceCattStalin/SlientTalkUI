@@ -1,11 +1,12 @@
 import { StyleSheet, Text, Touchable, TouchableOpacity, View } from 'react-native';
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { colors, fontSizes, spacing } from '@/global/theme';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
     withTiming,
 } from "react-native-reanimated";
+import { AuthContext } from '@/context/AuthProvider';
 
 type Prop = {
     isVisible: boolean;
@@ -14,6 +15,7 @@ type Prop = {
 
 const LogoutModal = ({ isVisible, onCancel }: Prop) => {
     const offsetY = useSharedValue(300);
+    const { signOut } = useContext(AuthContext);
 
     useEffect(() => {
         if (isVisible) {
@@ -46,8 +48,15 @@ const LogoutModal = ({ isVisible, onCancel }: Prop) => {
                     <Text style={{ textAlign: 'center' }}>Hủy</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={[styles.button, styles.confirmBtn]}>
-                    <Text style={{ textAlign: 'center', color: colors.gray50, fontWeight: 500 }}>Đăng xuất</Text>
+                <TouchableOpacity
+                    style={[styles.button, styles.confirmBtn]}
+                    onPress={() => signOut()}
+                >
+                    <Text
+                        style={{ textAlign: 'center', color: colors.gray50, fontWeight: 500 }}
+                    >
+                        Đăng xuất
+                    </Text>
                 </TouchableOpacity>
             </View>
         </Animated.View>

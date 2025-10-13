@@ -12,51 +12,58 @@ import WelcomeMessageOverlay from '@/components/walkthrough/WelcomeMessageOverla
 import { useNav } from '@/context/NavContext';
 import { colors, fontSizes, spacing } from '@/global/theme';
 import { Link, router } from 'expo-router';
-import React from 'react';
+import React, { use, useEffect, useRef } from 'react';
 import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
 import Animated, { FadeInLeft } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 // import Wave from '@/assets/images/wave.svg';
 import Scan from '@/assets/images/scan.svg';
+import { useWalkthrough } from '@/hooks/useWalkthrough';
 const ICON_SIZE = 20;
 
 const Home = () => {
     const { activeTab, setActiveTab } = useNav();
+    const renderCount = useRef(0);
+    renderCount.current += 1;
 
-    const { isWalkthroughOn: step1On, start: startStep1 } = useWalkthroughStep({
-        number: 1,
-        OverlayComponent: WelcomeMessageOverlay,
-        fullScreen: true,
+    useEffect(() => {
+        console.log(`HomeScreen rendered ${renderCount.current} times`);
     });
 
-    const { onLayout: step2OnLayout } = useWalkthroughStep({
-        number: 2,
-        fullScreen: false,
-        OverlayComponent: HomeScreenOverlay,
-    });
+    // const { isWalkthroughOn: step1On, start: startStep1 } = useWalkthroughStep({
+    //     number: 1,
+    //     OverlayComponent: WelcomeMessageOverlay,
+    //     fullScreen: true,
+    // });
 
-    const { onLayout: step3OnLayout } = useWalkthroughStep({
-        number: 3,
-        fullScreen: false,
-        OverlayComponent: WordOfTheDayOverlay,
-    });
+    // const { onLayout: step2OnLayout } = useWalkthroughStep({
+    //     number: 2,
+    //     fullScreen: false,
+    //     OverlayComponent: HomeScreenOverlay,
+    // });
 
-    const { onLayout: step4OnLayout, goTo, stop } = useWalkthroughStep({
-        number: 4,
-        fullScreen: false,
-        maskAllowInteraction: true,
-        OverlayComponent: WordOfTheDayButtonOverlay,
-    });
+    // const { onLayout: step3OnLayout } = useWalkthroughStep({
+    //     number: 3,
+    //     fullScreen: false,
+    //     OverlayComponent: WordOfTheDayOverlay,
+    // });
 
+    // const { onLayout: step4OnLayout, goTo, stop } = useWalkthroughStep({
+    //     number: 4,
+    //     fullScreen: false,
+    //     maskAllowInteraction: true,
+    //     OverlayComponent: WordOfTheDayButtonOverlay,
+    // });
 
-    // useEffect(
-    //     () => {
-    //         startStep1();
-    //     },
-    //     [startStep1],
-    // );
-
+    // useEffect(() => {
+    //     startStep1();
+    // }, [startStep1]);
+  
+    // useEffect(() => {
+    //     start();
+    // }, [start]);
+    
     return (
         <SafeAreaView style={styles.container} >
             <BackgroundDecoration />
@@ -67,7 +74,7 @@ const Home = () => {
 
                     <View style={{ marginTop: spacing.md }}>
                         <AnimatedTyping
-                            textToType={["Xin chào, An"]}
+                            textToType={["Xin chào"]}
                             displayLogo={false}
                             textStyle={styles.greeting}
                         />
@@ -76,8 +83,6 @@ const Home = () => {
                     <Animated.View
                         style={styles.summary}
                         entering={FadeInLeft.delay(200).duration(1000).springify()}
-                        //onLayout={onLayout}
-                        onLayout={step2OnLayout}
                     >
                         <View style={{
                             flex: 1,
@@ -158,7 +163,6 @@ const Home = () => {
 
                     <View
                         className='gap-4 mt-1'
-                        onLayout={step3OnLayout}
                     //onLayout={onLayout}
                     >
                         <Animated.View
@@ -207,13 +211,10 @@ const Home = () => {
                                             onPress={() => console.log("Hi")}
                                         /> */}
                                         <View
-                                            onLayout={step4OnLayout}
                                         //onLayout={onLayout}
                                         >
                                             <AnimateChveron
                                                 onPress={() => {
-                                                    //goTo(5);
-                                                    stop()
                                                     router.push({
                                                         pathname: "../(dictionary)/word/[word]",
                                                         params: { word: "friend" },

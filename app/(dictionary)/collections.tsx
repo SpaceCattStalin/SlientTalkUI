@@ -7,13 +7,19 @@ import { useNav } from '@/context/NavContext';
 import { colors, fontSizes, spacing } from '@/global/theme';
 import { Collection } from '@/types/Types';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
 import Animated, { FadeInLeft, FadeInUp, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const collections: Collection[] = [
+type LocalCollection = {
+    id: string,
+    name: string,
+    wordCount: number
+}
+
+const collections: LocalCollection[] = [
     { id: 'randomstring', name: 'Tất cả từ đã lưu', wordCount: 12 },
     // { id: 'randomstring1', name: 'Y tế', wordCount: 4, tag: 'y_te' },
     // { id: 'randomstring3', name: 'fafa', wordCount: 6, tag: 'fafa' },
@@ -32,17 +38,7 @@ const Collections = () => {
     const animatedStyle = useAnimatedStyle(() => ({
         transform: [{ scale: scale.value }],
     }));
-    const { onLayout: step13OnLayout, goTo, start, next } = useWalkthroughStep({
-        number: 14,
-        fullScreen: false,
-        OverlayComponent: CollectionScreenOverlay,
-        maskAllowInteraction: true
-    });
-
-    // useEffect(() => {
-    //     goTo(14);
-    // }, [goTo, start]);
-
+   
     return (
         <SafeAreaView style={styles.container}>
             <View style={{ flex: 1 }}>
@@ -97,16 +93,16 @@ const Collections = () => {
                         keyExtractor={(item) => item.id}
                         renderItem={({ item, index }) => (
                             <Animated.View
-                                onLayout={index === 0 ? step13OnLayout : undefined}
+                                //onLayout={index === 0 ? step13OnLayout : undefined}
                                 entering={FadeInUp.delay(100 * index).duration(200)}
                                 style={styles.card}
                             >
                                 <TouchableOpacity
                                     style={styles.searchItem}
                                     onPress={() => {
-                                        next();
-                                        router.push(`./collection/${encodeURIComponent(item.tag ?? 'default')}
-                                        ?name=${encodeURIComponent(item.name)}`);
+                                        //next();
+                                        // router.push(`./collection/${encodeURIComponent(item.tag ?? 'default')}
+                                        // ?name=${encodeURIComponent(item.name)}`);
                                     }}
                                 >
                                     <Text style={{

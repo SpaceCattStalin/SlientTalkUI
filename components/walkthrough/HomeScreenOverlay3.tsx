@@ -16,14 +16,12 @@ const WordOfTheDayButtonOverlay = ({
     }));
 
     return (
-        <Animated.View
+        <View
             style={{
                 ...styles.container,
                 top: mask.y - styles.overlay.padding - 90,
                 right: mask.width - styles.overlay.padding - 40
             }}
-            entering={FadeInDown.duration(300)}
-            exiting={FadeOutUp.duration(200)}
         >
             <Pressable style={styles.overlay}>
                 <Text style={styles.subtitle}>
@@ -31,7 +29,7 @@ const WordOfTheDayButtonOverlay = ({
                 </Text>
             </Pressable>
             <View style={styles.pointer} />
-        </Animated.View>
+        </View>
     );
 };
 

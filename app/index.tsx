@@ -35,18 +35,17 @@ const Index = () => {
 
     if (showOnboarding) {
         return (
-            // <Onboarding onDone={() => {
-            //     setShowOnboarding(false);
-            //     setReadyToRedirect(true);
-            // }} />            
-            // <ModelViewer />
+            <Onboarding onDone={() => {
+                setShowOnboarding(false);
+                setReadyToRedirect(true);
+            }} />
 
-            <TestRender/>
+            // <TestRender/>
         );
     }
 
     if (readyToRedirect) {
-        return <Redirect href="/(main)/home" />;
+        return <Redirect href="/home" />;
     }
 
     return (
