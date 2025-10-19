@@ -10,9 +10,9 @@ import CollectionOption4Overlay from '@/components/walkthrough/CollectionScreenO
 import WordOptionModal from '@/components/WordOptionModal';
 import { useNav } from '@/context/NavContext';
 import { colors, fontSizes, spacing } from '@/global/theme';
-import { Collection, SignWord } from '@/types/Types';
+import { ApiResponse, Collection, GetWordsByCollection, SignWord } from '@/types/Types';
 import { Link, router } from 'expo-router';
-import { usePathname, useSearchParams } from 'expo-router/build/hooks';
+import { useLocalSearchParams, usePathname, useRouter, useSearchParams } from 'expo-router/build/hooks';
 import { ChevronRight } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -25,45 +25,52 @@ import Profile from '@/assets/images/profile.svg';
 import SearchIcon from '@/assets/images/search.svg';
 // import Wave from '@/assets/images/wave.svg';
 import Scan from '@/assets/images/scan.svg';
+import { useRoute } from '@react-navigation/native';
+import { getWordsInCollection } from '@/services/api';
+import NavBar from '@/components/NavBar';
 
 const ICON_SIZE = 20;
 
-const collectionDictionary: Record<string, string[]> = {
-    "Tất cả từ đã lưu": [
-        "Bố", "Mẹ", "Anh", "Chị", "Em", "Ông", "Bà", "Con", "Cháu",
-        "Vợ", "Chồng", "Cô", "Dì", "Chú", "Bác", "Anh họ", "Chị họ",
-        "Bác sĩ", "Y tá", "Thuốc", "Bệnh viện", "Khám bệnh",
-        "Thầy", "Cô giáo", "Bạn", "Sách", "Bút", "Bảng", "Vở", "Lớp học",
-        "Xin chào", "Cảm ơn", "Xin lỗi", "Có", "Không"
-    ],
-    "Y tế": [
-        "Bác sĩ", "Y tá", "Thuốc", "Bệnh viện", "Khám bệnh"
-    ],
-    "fafa": [
-        "Bác sĩ", "Y tá", "Thuốc", "Bệnh viện", "Khám bệnh"
-    ],
-};
-
-const collections: Collection[] = [
-    { id: 'randomstring', name: 'Tất cả từ đã lưu', wordCount: 120 },
-    { id: 'randomstring1', name: 'Y tế', wordCount: 45 },
-    { id: 'randomstring3', name: 'fafa', wordCount: 10 },
-];
 
 const CollectionScreen = () => {
     const { activeTab, setActiveTab } = useNav();
 
     const [query, setQuery] = useState("");
-    const params = useSearchParams();
-    const name = params.get("name");
-    const words = collectionDictionary["Y tế"];
+    const { collection } = useLocalSearchParams<{ collection: string; }>();
+
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [signWords, setSignWords] = useState<SignWord[]>();
+    const [collectionName, setCollectionName] = useState<string>();
 
     const [isCollectionVisible, setIsCollectionVisible] = useState(false);
     const [isOptionModalVisible, setIsOptionModalVisible] = useState(false);
     const [isConfirmDeleteModalVisible, setIsConfirmDeleteModalVisible] = useState(false);
     const [isResultVisible, setIsResultVisible] = useState(false);
     const [resultState, setResultState] = useState<"move" | "delete">("move");
-    const [selectedWord, setSelectedWord] = useState<string | null>(null);
+    const [selectedWord, setSelectedWord] = useState<SignWord>();
+
+    useEffect(() => {
+        const fetchWordsInCollection = async () => {
+            try {
+                setIsLoading(true);
+                const res: ApiResponse<GetWordsByCollection> = await getWordsInCollection(collection);
+                if (res.isSuccess) {
+                    setSignWords(res.data.words);
+                    setCollectionName(res.data.collectionName);
+                    setIsLoading(false);
+                }
+            } catch (err: any) {
+                console.log("Lỗi khi fetch words trong collection");
+            }
+        };
+
+        fetchWordsInCollection();
+    }, [collection]);
+
+    const handleDelete = async () => {
+        
+    } 
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={{ flex: 1 }}>
@@ -73,33 +80,47 @@ const CollectionScreen = () => {
                 }}>
                     <BackButton color={colors.gray50} />
                 </View>
-
-                <Animated.View
-                    style={styles.searchContainer}
-                    entering={FadeInLeft.duration(500).springify()}
-                >
-                    <Text
-                        style={{
-                            paddingHorizontal: spacing.md,
-                            fontSize: fontSizes['2xl'],
-                            fontWeight: 700,
-                            color: colors.gray50
-                        }}>
-                        Bộ sưu tập: {name}
-                    </Text>
-                    <Animated.View
-                        entering={FadeInLeft.delay(200).duration(500).springify()}
+                <View style={{
+                    flex: 1,
+                }}>
+                    {!isLoading && <Animated.View
+                        style={styles.searchContainer}
+                        entering={FadeInLeft.duration(500).springify()}
                     >
-                        <Search value={query} onChange={setQuery} />
+                        <View style={{ flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: spacing.md }}>
+                            <Text
+                                style={{
+                                    fontSize: fontSizes['xl'],
+                                    fontWeight: 700,
+                                    color: colors.gray300
+                                }}>
+                                Bộ sưu tập:
+                            </Text>
+                            <Text style={{
+                                fontSize: fontSizes['2xl'],
+                                fontWeight: 700,
+                                color: colors.gray50,
+                                paddingLeft: spacing.sm
+                            }}>
+                                {collectionName}
+                            </Text>
+                        </View>
+                        <Animated.View
+                            entering={FadeInLeft.delay(200).duration(500).springify()}
+                        >
+                            <Search value={query} onChange={setQuery} />
+                        </Animated.View>
                     </Animated.View>
-                </Animated.View>
+                    }
+                </View>
+
                 <View style={styles.main}>
                     <View>
                         <FlatList
                             style={{
                                 marginTop: 10, marginHorizontal: spacing.lg,
                             }}
-                            data={words}
+                            data={signWords}
                             keyExtractor={(item: SignWord) => item.signWordId}
                             renderItem={({ item, index }: { item: SignWord, index: number; }) => (
                                 <Animated.View
@@ -109,7 +130,7 @@ const CollectionScreen = () => {
                                     <TouchableOpacity
                                         style={styles.searchItem}
                                         onPress={() => {
-                                            router.push(`/dictionary/word/${encodeURIComponent(item.signWordId)}`);
+                                            router.push(`/word/${encodeURIComponent(item.signWordId)}`);
                                         }}
                                     >
                                         <Text style={{
@@ -118,12 +139,11 @@ const CollectionScreen = () => {
                                             fontWeight: 500,
                                             flex: 1,
                                         }}>
-                                            {item}
+                                            {item.word}
                                         </Text>
                                         <Pressable
-                                            //onLayout={step15OnLayout}
                                             onPress={() => {
-                                                setSelectedWord(item.signWordId);
+                                                setSelectedWord(item);
                                                 setIsOptionModalVisible(true);
                                             }}
                                             hitSlop={10}
@@ -136,83 +156,14 @@ const CollectionScreen = () => {
                                             color={colors.primary700}
                                             size={28}
                                         />
-                                        {/* </View> */}
                                     </TouchableOpacity>
                                 </Animated.View>
                             )}
                         />
                     </View>
                 </View>
-                {/* <NavBar /> */}
-                <View style={{ ...styles.containerNav }}>
-                    <Link href="/(main)/home" asChild>
-                        <TouchableOpacity style={styles.button} onPress={() => setActiveTab("home")}>
-                            {/* <View style={{ backgroundColor: activeTab === "home" ? "red" : "transparent", ...styles.wrapper }}> */}
-                            <View style={styles.wrapper}>
-                                <HomeIcon
-                                    width={ICON_SIZE}
-                                    height={ICON_SIZE}
-                                    stroke={activeTab === "home" ? colors.primary400 : colors.gray500}
-                                    fill={activeTab === "home" ? colors.primary400 : colors.gray500}
-                                />
-                                <Text style={{ color: activeTab === "home" ? colors.primary400 : colors.gray500, ...styles.text }}>Trang chủ</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </Link>
+                <NavBar />
 
-                    <Link href="/(translate)" asChild>
-                        <TouchableOpacity
-                            style={styles.translateBtn}
-                            onPress={() => {
-                                //next();
-                                setActiveTab("translate");
-                                //stop();
-                            }}
-                        //onLayout={step16OnLayout}
-                        >
-                            <View style={{ ...styles.wrapper, }}>
-                                <Scan
-                                    width={ICON_SIZE}
-                                    height={ICON_SIZE}
-                                    stroke={activeTab === "translate" ? colors.primary400 : colors.gray500}
-                                />
-                                <Text style={{ color: activeTab === "translate" ? colors.primary400 : colors.gray500, ...styles.text }}>
-                                    Phiên dịch
-                                </Text>
-                            </View>
-                        </TouchableOpacity>
-                    </Link>
-
-                    <Link href="/(dictionary)" asChild>
-                        <TouchableOpacity
-                            style={styles.button}
-                            onPress={() => setActiveTab("dictionary")}
-                        // onLayout={step8OnLayout}
-                        >
-                            <View style={{ ...styles.wrapper, }}>
-                                <SearchIcon
-                                    width={ICON_SIZE}
-                                    height={ICON_SIZE}
-                                    stroke={activeTab === "dictionary" ? colors.primary400 : colors.gray500}
-                                />
-                                <Text style={{ color: activeTab === "dictionary" ? colors.primary400 : colors.gray500, ...styles.text }}>Từ điển</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </Link>
-
-                    <Link href="/(profile)" asChild>
-                        <TouchableOpacity style={styles.button} onPress={() => setActiveTab("profile")}>
-                            <View style={{ ...styles.wrapper }}>
-                                <Profile
-                                    width={ICON_SIZE}
-                                    height={ICON_SIZE}
-                                    stroke={activeTab === "profile" ? colors.primary400 : colors.gray500}
-                                />
-                                <Text style={{ color: activeTab === "profile" ? colors.primary400 : colors.gray500, ...styles.text }}>Tài khoản</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </Link>
-                </View>
                 <WordOptionModal
                     visible={isOptionModalVisible}
                     onClose={() => setIsOptionModalVisible(false)}
@@ -226,7 +177,7 @@ const CollectionScreen = () => {
                     }}
                 />
 
-                <CollectionModal
+                {/* <CollectionModal
                     inDictionary={true}
                     isVisible={isCollectionVisible}
                     onCancel={() => setIsCollectionVisible(false)}
@@ -237,7 +188,7 @@ const CollectionScreen = () => {
                         setIsResultVisible(true);
                     }}
                     isMove={true}
-                />
+                /> */}
 
                 <ResultModal
                     visible={isResultVisible}
@@ -247,7 +198,8 @@ const CollectionScreen = () => {
 
                 <ConfirmDeleteModal
                     visible={isConfirmDeleteModalVisible}
-                    word={selectedWord ?? ""}
+                    //word={selectedWord ?? ""}
+                    message={`Bạn có chắc bỏ thích kí hiệu cho ${selectedWord?.word} này!`}
                     onCancel={() => {
                         setIsConfirmDeleteModalVisible(false);
 

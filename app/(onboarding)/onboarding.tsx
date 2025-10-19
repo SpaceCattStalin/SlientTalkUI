@@ -50,9 +50,6 @@ type OnboardingProps = {
 };
 
 const Index = ({ onDone }: OnboardingProps) => {
-  const route = useRoute();
-  console.log("Currently on route:", route.name);
-
 
   return (
     <View style={styles.container}>

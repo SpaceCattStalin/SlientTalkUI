@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TextInput, View, Pressable } from 'react-native';
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fontSizes, spacing } from '@/global/theme';
 import { ChevronLeft } from 'lucide-react-native';
@@ -13,17 +13,84 @@ import EditPen from '@/assets/images/edit-icon.svg';
 import BackButton from '@/components/BackButton';
 import AnimatedButton from '@/components/animation/AnimatedButton';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeIn, FadeInDown, FadeInLeft } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown, FadeInLeft, FadeInRight, FadeOutDown } from 'react-native-reanimated';
+import { ApiResponse, UserInfo } from '@/types/Types';
+import { getUserInfo, updateUserInfo } from '@/services/api';
+import ResultModal from '@/components/ResultModal';
+import ErrorModal from '@/components/ErrorModal';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 const Account = () => {
     const [isEditing, setIsEditing] = useState(false);
-   
+    const [name, setName] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("");
+    const [errors, setErrors] = useState<{ name?: string, phoneNumber?: string; }>({});
+
+    const [resultModalVisible, setResultModalVisible] = useState(false);
+    const [errorModalVisible, setErrorModalVisible] = useState(false);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const res: UserInfo = await getUserInfo();
+                if (res != null) {
+                    setName(res.name);
+                    setPhoneNumber(res.phoneNumber);
+                }
+                console.log(res);
+            } catch (err: any) {
+                console.log("Lỗi khi lấy thông tin user!", err);
+            }
+        };
+
+        fetchUser();
+    }, []);
+
+    const validate = () => {
+        let valid = true;
+        let newErrors: { name?: string; phoneNumber?: string; } = {};
+
+        if (!name.trim()) {
+            newErrors.name = "Tên không được để trống";
+            valid = false;
+        }
+
+        if (!phoneNumber.trim()) {
+            newErrors.phoneNumber = "Số điện thoại không được để trống";
+            valid = false;
+        } else if (!/^(0|\+84)\d{9,10}$/.test(phoneNumber)) {
+            newErrors.phoneNumber = "Số điện thoại không hợp lệ";
+            valid = false;
+        }
+
+        setErrors(newErrors);
+        return valid;
+    };
+
+    const handleSave = async () => {
+        try {
+            if (!validate()) return;
+
+            const result: ApiResponse<UserInfo> = await updateUserInfo(name, phoneNumber);
+            if (result !== null) {
+                setIsEditing(false);
+            }
+        } catch (err: any) {
+            console.log(err);
+        }
+    };
 
     return (
-        <SafeAreaView style={{
-            flex: 1,
-        }}>
-            <View style={styles.container}>
+        // <SafeAreaView style={{
+        //     flex: 1,
+        // }}>
+        <SafeAreaView style={styles.container}>
+            <View style={{
+                flex: 1,
+                paddingTop: spacing.lg * 1.25,
+                paddingHorizontal: spacing.md,
+            }}>
+                {/* <View style={styles.container}> */}
                 {/* <LinearGradient
                     colors={['#0B3478', '#2877ED']}
                     locations={[0, 0.5]}
@@ -59,18 +126,23 @@ const Account = () => {
                     <View style={styles.avatarSection}>
                         <View>
                             <Avatar
-                                width={100}
-                                height={100}
+                                width={150}
+                                height={160}
                             />
-                            <View style={styles.penButton}>
-                                {/* <EditPen style={styles.penButton} /> */}
+                            {isEditing && <Animated.View
+                                style={styles.penButton}
+                                entering={FadeInDown.delay(100).duration(400).springify()}
+                            >
                                 <EditPen />
-                            </View>
+                            </Animated.View>}
                         </View>
                     </View>
 
                     <View style={styles.main}>
-                        <View style={{ alignItems: 'flex-start', gap: spacing.sm }}>
+                        <View style={{
+                            alignItems: 'flex-start',
+                            gap: spacing.sm
+                        }}>
                             <Text style={styles.label}>Tên</Text>
 
                             <View style={styles.inputWrapper}>
@@ -82,32 +154,17 @@ const Account = () => {
                                 />
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="Nguyen Van An"
+                                    placeholder={isEditing ? "Nhập tên" : "Nguyen Van An"}
                                     placeholderTextColor="#999"
                                     keyboardType="default"
                                     editable={isEditing}
+                                    value={name}
+                                    onChangeText={(value) => setName(value)}
                                 />
                             </View>
+                            {errors.name && <Text style={{ color: 'red' }}>{errors.name}</Text>}
                         </View>
-                        <View style={{ alignItems: 'flex-start', gap: spacing.sm }}>
-                            <Text style={styles.label}>Email</Text>
 
-                            <View style={styles.inputWrapper}>
-                                <Feather
-                                    name="mail"
-                                    size={20}
-                                    color="black"
-                                    style={styles.icon}
-                                />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="xxx@gmail.com"
-                                    placeholderTextColor="#999"
-                                    keyboardType="email-address"
-                                    editable={isEditing}
-                                />
-                            </View>
-                        </View>
                         <View style={{ alignItems: 'flex-start', gap: spacing.sm }}>
                             <Text style={styles.label}>Số điện thoại</Text>
 
@@ -115,37 +172,57 @@ const Account = () => {
                                 <Feather name="phone" size={20} color="black" style={styles.icon} />
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="0869255375"
+                                    placeholder={isEditing ? "Nhập số điện thoại" : "0869255375"}
                                     placeholderTextColor="#999"
                                     keyboardType="number-pad"
                                     editable={isEditing}
+                                    value={phoneNumber}
+                                    onChangeText={(value) => setPhoneNumber(value)}
                                 />
                             </View>
+                            {errors.phoneNumber && <Text style={{ color: 'red' }}>{errors.phoneNumber}</Text>}
                         </View>
                     </View>
-                    {isEditing && (
-                        <View style={styles.actionRow}>
-                            <AnimatedButton
-                                style={[styles.actionBtn, styles.cancelBtn]}
-                                onPress={() => setIsEditing(false)}>
-                                <Text style={styles.cancelText}>
-                                    Hủy
-                                </Text>
-                            </AnimatedButton>
-
-                            <AnimatedButton
-                                style={[styles.actionBtn, styles.saveBtn]}
-                                onPress={() => console.log("Save changes")}
+                    <View style={{ height: 80, marginTop: spacing.md }}>
+                        {isEditing && (
+                            <Animated.View
+                                entering={FadeInDown.delay(100).duration(400).springify()}
+                                exiting={FadeOutDown.duration(400).springify()}
+                                style={styles.actionRow}
                             >
-                                <Text style={styles.saveText}>Lưu</Text>
-                            </AnimatedButton>
-                        </View>
-                    )}
+                                <AnimatedButton
+                                    style={[styles.actionBtn, styles.cancelBtn]}
+                                    onPress={() => setIsEditing(false)}
+                                >
+                                    <Text style={styles.cancelText}>Hủy</Text>
+                                </AnimatedButton>
 
+                                <AnimatedButton
+                                    style={[styles.actionBtn, styles.saveBtn]}
+                                    onPress={handleSave}
+                                >
+                                    <Text style={styles.saveText}>Lưu</Text>
+                                </AnimatedButton>
+                            </Animated.View>
+                        )}
+                    </View>
                 </Animated.View>
             </View>
-            <NavBar />
-        </SafeAreaView>
+
+            <ResultModal
+                visible={resultModalVisible}
+                onClose={() => setResultModalVisible(prev => !prev)}
+                state={'save'}
+            />
+
+            <ErrorModal
+                visible={errorModalVisible}
+                onClose={() => setErrorModalVisible(prev => !prev)}
+                message={"Cập nhật thông tin người dùng thất bại"} />
+            <View>
+                <NavBar />
+            </View>
+        </SafeAreaView >
     );
 };
 
@@ -154,10 +231,11 @@ export default Account;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: spacing.lg * 1.25,
-        paddingHorizontal: spacing.md,
         backgroundColor: colors.gray100,
-        marginBottom: spacing.lg * 4
+        // paddingTop: spacing.lg * 1.25,
+        // paddingHorizontal: spacing.md,
+
+        // marginBottom: spacing.lg * 4
     },
     header: {
         alignSelf: 'stretch',
@@ -173,7 +251,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     main: {
-        flex: 3,
+        // flex: 3,
         marginTop: spacing.lg,
         gap: spacing.lg,
     },
@@ -217,12 +295,14 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
     },
     card: {
-        flex: 1,
-        padding: spacing.lg,
-        backgroundColor: "#fff", // cards usually white
+        // flex: 1,
+        marginTop: spacing.lg,
+        paddingTop: spacing.lg,
+        paddingHorizontal: spacing.lg,
+        backgroundColor: "#fff",
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: colors.gray200, // lighter border for subtle look
+        borderColor: colors.gray200,
 
         // Shadow (iOS)
         shadowColor: "#000",
@@ -239,14 +319,14 @@ const styles = StyleSheet.create({
     },
     actionRow: {
         paddingHorizontal: spacing.lg,
-        position: "absolute",
-        bottom: 20,
-        left: 0,
-        right: 0,
+        // position: "absolute",
+        // bottom: 20,
+        // left: 0,
+        // right: 0,
         gap: 20,
         flexDirection: "row",
         justifyContent: "space-around",
-        padding: 10,
+        // padding: 10,
         backgroundColor: "white",
         zIndex: 10,
     },

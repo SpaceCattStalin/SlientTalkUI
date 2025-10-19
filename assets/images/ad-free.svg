@@ -1,12 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- Circle -->
   <circle cx="32" cy="32" r="28" fill="white" stroke="#FF5A5A" stroke-width="6"></circle>
 
-  <!-- Slash -->
   <line x1="16" y1="48" x2="48" y2="16" stroke="#FF5A5A" stroke-width="6"></line>
 
-  <!-- AD text, corrected vertical alignment -->
-  <text x="28" y="32" font-size="20" font-weight="bold" text-anchor="middle" fill="black" font-family="Arial, sans-serif" dy=".35em">
+  <text x="27" y="32" font-size="18" font-weight="bold" text-anchor="middle" fill="black" dy=".35em">
     AD
   </text>
 </svg>

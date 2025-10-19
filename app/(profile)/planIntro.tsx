@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fontSizes, spacing } from '@/global/theme';
@@ -7,7 +7,7 @@ import { Link, router } from 'expo-router';
 
 import Camera from '@/assets/images/camera.svg';
 import Speech from '@/assets/images/speech.svg';
-import AdFree from '@/assets/images/ad-free.svg';
+// import AdFree from '@/assets/images/ad-free.svg';
 import BackButton from '@/components/BackButton';
 import Animated, { FadeInDown, FadeInLeft } from 'react-native-reanimated';
 
@@ -16,25 +16,31 @@ type Benefit = {
     subtitle?: string;
     icon: React.ComponentType<any>;
 };
-
+const NoAdsIcon = () => (
+  <Image 
+    source={require("../../assets/images/ad.png")} 
+    style={{ width: 60, height: 60 }} 
+    resizeMode="contain" 
+  />
+);
 const benefits: Benefit[] = [
     {
         title: 'Dịch bằng camera',
         subtitle:
-            'Sử dụng camera để dịch dấu hiệu trong thời gian thực hoặc dịch văn bản sang ngôn ngữ ký hiệu bằng avatar 3D.',
+            'Sử dụng camera để dịch dấu hiệu trong thời gian thực không giới hạn',
         icon: Camera
     },
     {
-        title: 'Học tương tác',
+        title: 'Lưu từ không giới hạn',
         subtitle:
-            'Luyện tập tương tác, giúp bạn luyện kỹ năng một cách sinh động và thực tế.',
+            'Không giới hạn số bộ sưu tập',
         icon: Speech
     },
     {
         title: 'Không bị gián đoạn',
         subtitle:
-            'Tập trung học ngôn ngữ ký hiệu mượt mà và không bị gián đoạn.',
-        icon: AdFree
+            'Sử dụng ứng dụng mà không bị gián đoạn.',
+        icon:NoAdsIcon
     },
 ];
 const PlanIntro = () => {
@@ -101,7 +107,7 @@ const PlanIntro = () => {
                             fontWeight: 600,
                             fontSize: fontSizes.md
                         }}>
-                            Xem các gói
+                            Nâng cấp lên gói Premium
                         </Text>
                     </TouchableOpacity>
                 </Animated.View>

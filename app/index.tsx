@@ -51,7 +51,7 @@ const Index = () => {
     return (
         <View style={styles.container}>
             <View style={styles.main}>
-                <AnimatedTyping textToType={["SilentTalk"]} displayLogo={true} />
+                <AnimatedTyping textToType={["SilenTalk"]} displayLogo={true} />
             </View>
             {/* <Redirect href="/(auth)/login" />; */}
         </View>

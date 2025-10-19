@@ -25,44 +25,8 @@ const ICON_SIZE = 20;
 const Home = () => {
     const { activeTab, setActiveTab } = useNav();
     const renderCount = useRef(0);
-    renderCount.current += 1;
 
-    useEffect(() => {
-        console.log(`HomeScreen rendered ${renderCount.current} times`);
-    });
 
-    // const { isWalkthroughOn: step1On, start: startStep1 } = useWalkthroughStep({
-    //     number: 1,
-    //     OverlayComponent: WelcomeMessageOverlay,
-    //     fullScreen: true,
-    // });
-
-    // const { onLayout: step2OnLayout } = useWalkthroughStep({
-    //     number: 2,
-    //     fullScreen: false,
-    //     OverlayComponent: HomeScreenOverlay,
-    // });
-
-    // const { onLayout: step3OnLayout } = useWalkthroughStep({
-    //     number: 3,
-    //     fullScreen: false,
-    //     OverlayComponent: WordOfTheDayOverlay,
-    // });
-
-    // const { onLayout: step4OnLayout, goTo, stop } = useWalkthroughStep({
-    //     number: 4,
-    //     fullScreen: false,
-    //     maskAllowInteraction: true,
-    //     OverlayComponent: WordOfTheDayButtonOverlay,
-    // });
-
-    // useEffect(() => {
-    //     startStep1();
-    // }, [startStep1]);
-  
-    // useEffect(() => {
-    //     start();
-    // }, [start]);
     
     return (
         <SafeAreaView style={styles.container} >

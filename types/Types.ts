@@ -37,6 +37,35 @@ export type GenericResponse<T = any> = {
   count?: number;             // optional, for list endpoints
 };
 
+export type ApiResponse<T> = {
+  isSuccess: boolean,
+  data?: T;
+};
+
+export type CreatePaymentResponse = {
+  orderUrl: string,
+  zpTransToken: string,
+  message: string
+}
+
+export type CreatePaymentRequest = {
+  userId: string,
+  amount: number,
+  itemName: string,
+  description: string
+}
+
+export type UserInfo = {
+  id: string,
+  name: string,
+  phoneNumber: string;
+};
+
+export type GetWordsByCollection = {
+  collectionName: string,
+  words: SignWord[];
+};
+
 export interface SignWordCategoryResponse {
   isSuccess: boolean;
   count: number;

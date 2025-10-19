@@ -32,7 +32,7 @@ const Login = () => {
         setError('');
         try {
             const result = await login(email, password);
-            console.log('Login success:', result);
+            // console.log('Login success:', result);
 
             if (result?.accessToken) {
                 await signIn(result.accessToken);

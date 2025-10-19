@@ -243,7 +243,7 @@ const Index = () => {
                                                             //     setSelectedWordId(item.signWordId);
                                                             //     setIsCollectionVisible(true);
                                                             // }}
-                                                            onPress={() => handleToggleLike(item.signWordId)}
+                                                            onPress={() => handleToggleLike(item)}
                                                         />
                                                         <ChevronRight
                                                             color={colors.primary700}

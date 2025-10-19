@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, KeyboardAvoi
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { colors, fontSizes, spacing } from "@/global/theme";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
-import React, { use, useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Search from "@/components/Searchbar";
 import AnimatedLikeIcon from "@/components/animation/AnimatedLikeIcon";
@@ -16,6 +16,7 @@ import Animated, { FadeInLeft, FadeInUp } from "react-native-reanimated";
 import { getWordsByCategory } from "../../services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ErrorModal from "@/components/ErrorModal";
+import ConfirmActionModal from "@/components/ConfirmActionModal";
 
 export default function TopicDetailScreen() {
     const { topic } = useLocalSearchParams();
@@ -23,6 +24,7 @@ export default function TopicDetailScreen() {
     const [results, setResults] = useState<SignWord[]>([]);
     const [query, setQuery] = useState("");
 
+    const [selectedWord, setSelectedWord] = useState<string | null>(null);
     const [selectedWordId, setSelectedWordId] = useState<string | null>(null);
 
     const [loading, setLoading] = useState(false);
@@ -47,7 +49,6 @@ export default function TopicDetailScreen() {
 
             const result: SignWordCategoryResponse = await getWordsByCategory(token, topic as string);
             if (result.isSuccess) {
-                //console.log(result.data);
                 setWordsForTopic(result.data);
                 setResults(result.data);
             } else {
@@ -70,9 +71,7 @@ export default function TopicDetailScreen() {
     useEffect(() => {
         fetchWords();
     }, [fetchWords]);
-    // useEffect(() => {
-    //     console.log(selectedWordId);
-    // }, [selectedWordId]);
+
     useEffect(() => {
         if (query.length > 0) {
             const filtered = wordsForTopic.filter((w) =>
@@ -97,7 +96,7 @@ export default function TopicDetailScreen() {
             setConfirmUnlikeVisible(true);
             return;
         }
-        
+
         setResults(prev => prev.map(item =>
             item.signWordId === wordId
                 ? { ...item, isInUserCollection: !item.isInUserCollection }
@@ -110,14 +109,16 @@ export default function TopicDetailScreen() {
                 : item
         ));
 
-        // Open modal
         setIsCollectionVisible(true);
     };
+
+    const handleUnlikeWordFromCollection = () => {
+        
+    }
 
     const handleCancelAddToCollection = () => {
         if (!selectedWordId) return;
 
-        // Revert optimistic update
         setResults(prev => prev.map(item =>
             item.signWordId === selectedWordId
                 ? { ...item, isInUserCollection: false }
@@ -134,6 +135,7 @@ export default function TopicDetailScreen() {
         setIsAddModalVisible(false);
         setSelectedWordId(null);
     };
+
     return (
         <KeyboardAvoidingView
             style={{ flex: 1 }}
@@ -206,7 +208,10 @@ export default function TopicDetailScreen() {
                                                             //     setIsCollectionVisible(true);
                                                             //     setSelectedWordId(item.signWordId);
                                                             // }}
-                                                            onPress={() => handleToggleLike(item.signWordId)}
+                                                            onPress={() => {
+                                                                handleToggleLike(item.signWordId);
+                                                                setSelectedWord(item.word)
+                                                            }}
                                                         />
                                                         <ChevronRight color={colors.primary700} size={28} />
                                                     </View>
@@ -239,6 +244,7 @@ export default function TopicDetailScreen() {
                     </View>
                     <NavBar />
                 </View>
+
                 <ResultModal
                     visible={isResultVisible}
                     onClose={() => {
@@ -283,6 +289,15 @@ export default function TopicDetailScreen() {
                     }}
                     signWordId={selectedWordId!}
                     onError={showError}
+                />
+
+                <ConfirmActionModal
+                    visible={confirmUnlikeVisible}
+                    message={`Bạn có muốn bỏ thích từ ${selectedWord} này không?`}
+                    onCancel={() => setConfirmUnlikeVisible(false)}
+                    onConfirm={function (): void {
+                        throw new Error("Function not implemented.");
+                    }}
                 />
             </SafeAreaView>
         </KeyboardAvoidingView >

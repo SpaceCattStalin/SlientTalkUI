@@ -16,7 +16,7 @@ const Header = ({ title, onPressRight }: HeaderProps) => {
 
             <View className='flex-row gap-1'>
                 <Logo width={35} height={35} />
-                <Text style={styles.title}>SilentTalk</Text>
+                <Text style={styles.title}>SilenTalk</Text>
             </View>
 
 

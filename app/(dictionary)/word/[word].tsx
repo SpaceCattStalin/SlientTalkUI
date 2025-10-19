@@ -11,7 +11,7 @@ import WordDefinitionOverlay from "@/components/walkthrough/WordDefinitionOverla
 import WordDefinitionVideoOverlay from "@/components/walkthrough/WordDefinitionOverlay2";
 import WordDefinitionLikeButtonOverlay from "@/components/walkthrough/WordDefinitionOverlay3";
 import { colors, fontSizes, spacing } from "@/global/theme";
-import { Collection, WordByIdResponse } from "@/types/Types";
+import { Collection, WordByIdResponse, SignWord, RelatedWord } from "@/types/Types";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -23,15 +23,15 @@ import Scan from '@/assets/images/scan.svg';
 import { useNav } from "@/context/NavContext";
 import WordDefinition6Overlay from "@/components/walkthrough/WordDefinitionOverlay6";
 import Video from 'react-native-video';
-const ICON_SIZE = 20;
 import NavBar from '@/components/NavBar';
 import { getRelatedWords, getWordById } from '@/services/api';
-import { SignWord, RelatedWord } from '@/types/Types';
+
 import { navigate } from 'expo-router/build/global-state/routing';
 import { AuthContext } from '@/context/AuthProvider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { sign } from 'three/src/nodes/TSL.js';
 import TestRender from '@/components/animation/testRender';
+const ICON_SIZE = 20;
 
 
 export default function WordScreen() {
@@ -106,6 +106,9 @@ export default function WordScreen() {
             <View style={{ flex: 1, gap: spacing.md }}>
                 <View style={{ paddingHorizontal: spacing.sm, marginTop: spacing.md }}>
                     <BackButton color={colors.gray300} onPress={() => navigate("/(dictionary)")} />
+                    {/* <BackButton color={colors.gray300}
+                        onPress={() => router.back()}
+                    /> */}
                 </View>
 
                 <Animated.View
@@ -314,7 +317,6 @@ const styles = StyleSheet.create({
     },
     wordSection: {
         gap: spacing.sm,
-        // backgroundColor: 'red',
         paddingRight: spacing.lg
     },
 
@@ -322,6 +324,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'baseline',
         gap: spacing.sm / 2,
+        flexWrap: 'wrap'
     },
     wordType: {
         fontSize: fontSizes.md,
