@@ -1,5 +1,4 @@
 package com.anonymous.SlientTalkUI
-import android.util.Log
 
 import android.app.Activity
 import com.facebook.react.bridge.*
@@ -36,7 +35,6 @@ class PayZaloBridgeModule(reactContext: ReactApplicationContext) :
             }
 
             override fun onPaymentError(zaloPayError: ZaloPayError?, zpTransToken: String?, appTransID: String?) {
-                Log.d("PayZalo", "onPaymentError called: ${zaloPayError?.name}")
                 val params = Arguments.createMap().apply {
                     val errorCode = when (zaloPayError) {
                         ZaloPayError.UNKNOWN -> -1
@@ -57,10 +55,8 @@ class PayZaloBridgeModule(reactContext: ReactApplicationContext) :
             }
 
             override fun onPaymentSucceeded(transactionId: String, transToken: String, appTransID: String?) {
-                Log.d("PayZalo", "onPaymentSucceeded called")
-
                 val params = Arguments.createMap().apply {
-                    putInt("errorCode", 1)
+                    putInt("errorCode", 0)
                     putString("transactionId", transactionId)
                     putString("zpTranstoken", transToken)
                     putString("appTransId", appTransID)
@@ -75,14 +71,5 @@ class PayZaloBridgeModule(reactContext: ReactApplicationContext) :
         reactContext
             .getJSModule(RCTDeviceEventEmitter::class.java)
             .emit(eventName, params)
-    }
-    @ReactMethod
-    fun addListener(eventName: String?) {
-        // Required for RN event emitter, you can leave empty
-    }
-
-    @ReactMethod
-    fun removeListeners(count: Int) {
-        // Required for RN event emitter, you can leave empty
     }
 }

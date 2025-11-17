@@ -45,20 +45,56 @@ export type ApiResponse<T> = {
 export type CreatePaymentResponse = {
   orderUrl: string,
   zpTransToken: string,
-  message: string
+  message: string;
+};
+
+export type PaymentCallback = {
+  app_id: number,
+  app_trans_id: string,
+  app_time: number,
+  app_user: string,
+  amount: number,
+  embed_data: string,
+  item: string,
+  za_trans_id: number,
+  server_time: number,
+  channel: number,
+  merchant_user_id: string,
+  user_fee_amount: number,
+  discount_amount: number,
+  return_code: number,
+  return_message: string
 }
 
 export type CreatePaymentRequest = {
   userId: string,
   amount: number,
   itemName: string,
-  description: string
+  description: string;
+};
+
+export interface MoveSignWordRequest {
+  signWordId: string;
+  fromCollectionId: string;
+  toCollectionId: string;
+}
+
+export interface MoveSignWordResponse {
+  isSuccess: boolean;
+  message?: string;
+}
+
+export interface DeleteCollectionResponse {
+  isSuccess: boolean;
+  message?: string;
+  errorMessage?: string;
 }
 
 export type UserInfo = {
   id: string,
   name: string,
   phoneNumber: string;
+  imgUrl?: string
 };
 
 export type GetWordsByCollection = {

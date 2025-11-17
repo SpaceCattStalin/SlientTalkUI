@@ -75,7 +75,6 @@ const CollectionModal = ({ isVisible, onCancel, onConfirm, onAdd, isMove = false
     }, [isVisible, refetch]);
 
     const handleConfirm = async () => {
-        console.log(selectedId);
         if (!selectedId) return;
 
         try {
@@ -88,10 +87,7 @@ const CollectionModal = ({ isVisible, onCancel, onConfirm, onAdd, isMove = false
                     collectionId: selectedId,
                     signWordId: signWordId,
                 });
-                console.log(res);
                 if (res.isSuccess) {
-                    console.log("Word added successfully:", res.data);
-
                     // Refetch collections immediately
                     const collectionsRes = await getMyCollections(token);
                     if (collectionsRes.isSuccess) {

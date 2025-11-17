@@ -10,7 +10,7 @@ type Props = {
   accent: string;
   onPress: () => void;
   sizeModifier?: number;
-  isLiked: boolean
+  isLiked?: boolean
 };
 
 const AnimatedLikeIcon = ({ primary, accent, onPress, sizeModifier = 1, isLiked }: Props) => {

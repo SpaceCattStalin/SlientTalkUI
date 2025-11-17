@@ -15,7 +15,7 @@ import { Link, router } from 'expo-router';
 import { useLocalSearchParams, usePathname, useRouter, useSearchParams } from 'expo-router/build/hooks';
 import { ChevronRight } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View, Image, ActivityIndicator } from 'react-native';
 import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
 import Animated, { FadeInLeft, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,8 +26,10 @@ import SearchIcon from '@/assets/images/search.svg';
 // import Wave from '@/assets/images/wave.svg';
 import Scan from '@/assets/images/scan.svg';
 import { useRoute } from '@react-navigation/native';
-import { getWordsInCollection } from '@/services/api';
+import { deleteCollection, getWordsInCollection, moveWordBetweenCollections, removeWordFromCollections } from '@/services/api';
 import NavBar from '@/components/NavBar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Trash2 } from "lucide-react-native";
 
 const ICON_SIZE = 20;
 
@@ -42,11 +44,13 @@ const CollectionScreen = () => {
     const [signWords, setSignWords] = useState<SignWord[]>();
     const [collectionName, setCollectionName] = useState<string>();
 
+    const [isConfirmDeleteWordVisible, setIsConfirmDeleteWordVisible] = useState(false);
+    const [isConfirmDeleteCollectionVisible, setIsConfirmDeleteCollectionVisible] = useState(false);
+
     const [isCollectionVisible, setIsCollectionVisible] = useState(false);
     const [isOptionModalVisible, setIsOptionModalVisible] = useState(false);
-    const [isConfirmDeleteModalVisible, setIsConfirmDeleteModalVisible] = useState(false);
     const [isResultVisible, setIsResultVisible] = useState(false);
-    const [resultState, setResultState] = useState<"move" | "delete">("move");
+    const [resultState, setResultState] = useState<"move" | "unsave">("move");
     const [selectedWord, setSelectedWord] = useState<SignWord>();
 
     useEffect(() => {
@@ -55,8 +59,8 @@ const CollectionScreen = () => {
                 setIsLoading(true);
                 const res: ApiResponse<GetWordsByCollection> = await getWordsInCollection(collection);
                 if (res.isSuccess) {
-                    setSignWords(res.data.words);
-                    setCollectionName(res.data.collectionName);
+                    setSignWords(res.data?.words);
+                    setCollectionName(res.data?.collectionName);
                     setIsLoading(false);
                 }
             } catch (err: any) {
@@ -68,17 +72,80 @@ const CollectionScreen = () => {
     }, [collection]);
 
     const handleDelete = async () => {
-        
-    } 
+        if (!selectedWord) return;
+
+        try {
+            setIsLoading(true);
+            const token = await AsyncStorage.getItem("userToken");
+            if (!token) {
+                console.log("Bạn chưa đăng nhập");
+                return;
+            }
+            await removeWordFromCollections(token, {
+                collectionId: "",
+                signWordId: selectedWord.signWordId,
+            });
+
+            // Gọi API xoá
+            await removeWordFromCollections(token, {
+                collectionId: "",
+                signWordId: selectedWord.signWordId,
+            });
+
+            // Xoá khỏi state cục bộ để UI cập nhật
+            setSignWords(prev => prev?.filter(w => w.signWordId !== selectedWord.signWordId));
+
+            // Hiển thị modal kết quả
+            setResultState("unsave");
+            setIsResultVisible(true);
+        } catch (err) {
+            console.log("Lỗi khi xoá từ khỏi collection:", err);
+        } finally {
+            setIsLoading(false);
+            setIsConfirmDeleteWordVisible(false);
+            setSelectedWord(undefined);
+        }
+    };
+
+    const handleDeleteCollection = async () => {
+        try {
+            const token = await AsyncStorage.getItem("userToken");
+            if (!token) return;
+
+            const res = await deleteCollection(token, collection);
+            if (res.isSuccess) {
+                console.log("Xóa collection thành công");
+               
+                router.push({
+                    pathname: "/collections", 
+                    params: { deleted: "true" }
+                });
+            } else {
+                console.log("Xóa thất bại:", res.errorMessage);
+            }
+        } catch (err) {
+            console.log("Lỗi khi xóa collection:", err);
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
             <View style={{ flex: 1 }}>
                 <View style={{
                     paddingHorizontal: spacing.md,
-                    marginTop: spacing.lg
+                    marginTop: spacing.lg,
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
                 }}>
                     <BackButton color={colors.gray50} />
+                    <Pressable
+                        onPress={() => setIsConfirmDeleteCollectionVisible(true)}
+                        hitSlop={10}
+                        style={{ padding: 4 }}
+                    >
+                        <Trash2 width={24} height={24} color={colors.gray400} />
+                    </Pressable>
                 </View>
                 <View style={{
                     flex: 1,
@@ -115,11 +182,39 @@ const CollectionScreen = () => {
                 </View>
 
                 <View style={styles.main}>
-                    <View>
+                    {isLoading ? (
+                        // Trạng thái loading
+                        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                            <ActivityIndicator size="large" color={colors.primary600} />
+                            <Text style={{ marginTop: spacing.sm, color: colors.primary600, fontSize: fontSizes.md }}>
+                                Đang tải...
+                            </Text>
+                        </View>
+                    ) : (!signWords || signWords.length === 0) ? (
+                        // Collection rỗng
+                        <View style={{ flex: 1, gap: spacing.md, justifyContent: "center", alignItems: "center", paddingBottom: spacing.lg * 8 }}>
+                            <Image
+                                source={require('@/assets/images/empty.png')}
+                                style={{
+                                    width: 200,
+                                    height: 200,
+                                    resizeMode: 'contain',
+                                }}
+                            />
+                            <Text
+                                style={{
+                                    fontSize: fontSizes.lg,
+                                    color: colors.gray400,
+                                    textAlign: 'center',
+                                }}
+                            >
+                                Không có từ nào trong bộ sưu tập này
+                            </Text>
+                        </View>
+                    ) : (
+                        // Có dữ liệu thì hiển thị list
                         <FlatList
-                            style={{
-                                marginTop: 10, marginHorizontal: spacing.lg,
-                            }}
+                            style={{ marginTop: 10, marginHorizontal: spacing.lg }}
                             data={signWords}
                             keyExtractor={(item: SignWord) => item.signWordId}
                             renderItem={({ item, index }: { item: SignWord, index: number; }) => (
@@ -152,17 +247,26 @@ const CollectionScreen = () => {
                                             <ThreeDots width={18} height={18} />
                                         </Pressable>
 
-                                        <ChevronRight
-                                            color={colors.primary700}
-                                            size={28}
-                                        />
+                                        <ChevronRight color={colors.primary700} size={28} />
                                     </TouchableOpacity>
                                 </Animated.View>
                             )}
                         />
-                    </View>
+                    )}
                 </View>
+
+
                 <NavBar />
+
+                <ConfirmDeleteModal
+                    visible={isConfirmDeleteCollectionVisible}
+                    message={`Bạn có chắc chắn muốn xóa bộ sưu tập "${collectionName}" không?`}
+                    onCancel={() => setIsConfirmDeleteCollectionVisible(false)}
+                    onConfirm={async () => {
+                        await handleDeleteCollection();
+                        setIsConfirmDeleteCollectionVisible(false);
+                    }}
+                />
 
                 <WordOptionModal
                     visible={isOptionModalVisible}
@@ -172,23 +276,41 @@ const CollectionScreen = () => {
                         setIsOptionModalVisible(false);
                     }}
                     onDelete={() => {
-                        setIsConfirmDeleteModalVisible(true);
+                        setIsConfirmDeleteWordVisible(true);
                         setIsOptionModalVisible(false);
                     }}
                 />
 
-                {/* <CollectionModal
-                    inDictionary={true}
+                <CollectionModal
                     isVisible={isCollectionVisible}
                     onCancel={() => setIsCollectionVisible(false)}
-                    collections={collections}
-                    onConfirm={() => {
-                        setIsCollectionVisible(false);
-                        setResultState("move");
-                        setIsResultVisible(true);
+                    onConfirm={async (toCollectionId) => {
+                        if (!selectedWord) return;
+                        try {
+                            const token = await AsyncStorage.getItem("userToken");
+                            if (!token) return;
+
+                            const res = await moveWordBetweenCollections(token, {
+                                signWordId: selectedWord.signWordId,
+                                fromCollectionId: collection,
+                                toCollectionId,
+                            });
+
+                            if (res.isSuccess) {
+                                setSignWords(prev => prev?.filter(w => w.signWordId !== selectedWord.signWordId));
+
+                                setResultState("move");
+                                setIsResultVisible(true);
+                            }
+                        } catch (err) {
+                            console.log("Lỗi move word:", err);
+                        } finally {
+                            setIsCollectionVisible(false);
+                            setSelectedWord(undefined);
+                        }
                     }}
                     isMove={true}
-                /> */}
+                />
 
                 <ResultModal
                     visible={isResultVisible}
@@ -197,19 +319,12 @@ const CollectionScreen = () => {
                 />
 
                 <ConfirmDeleteModal
-                    visible={isConfirmDeleteModalVisible}
-                    //word={selectedWord ?? ""}
-                    message={`Bạn có chắc bỏ thích kí hiệu cho ${selectedWord?.word} này!`}
-                    onCancel={() => {
-                        setIsConfirmDeleteModalVisible(false);
-
-                    }}
-                    onConfirm={() => {
-                        setIsConfirmDeleteModalVisible(false);
-                        setResultState("delete");
-                        setIsResultVisible(true);
-                    }}
+                    visible={isConfirmDeleteWordVisible}
+                    message={`Bạn có chắc bỏ thích từ "${selectedWord?.word}" không!`}
+                    onCancel={() => setIsConfirmDeleteWordVisible(false)}
+                    onConfirm={handleDelete}
                 />
+
             </View>
         </SafeAreaView >
     );

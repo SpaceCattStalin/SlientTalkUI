@@ -9,13 +9,15 @@ const titles: Record<Props["state"], string> = {
     save: "Lưu thành công!",
     move: "Di chuyển thành công!",
     delete: "Xóa thành công!",
-    payment: "Thanh toán thành công!"
+    payment: "Thanh toán thành công!",
+    unsave: "Bỏ lưu thành công!",
+    register: "Đăng ký thành công!"
 };
 
 type Props = {
     visible: boolean;
     onClose: () => void;
-    state: "add" | "save" | "move" | "delete" | "payment";
+    state: "add" | "save" | "move" | "delete" | "payment" | "unsave" | "register";
 };
 
 const ResultModal = ({ visible, onClose, state }: Props) => {
@@ -26,7 +28,7 @@ const ResultModal = ({ visible, onClose, state }: Props) => {
         if (visible) {
             timer = setTimeout(() => {
                 onClose();
-            }, 3500);
+            }, 3000);
         }
         return () => clearTimeout(timer);
     }, [visible]);

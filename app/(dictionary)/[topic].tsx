@@ -13,10 +13,12 @@ import AddCollectionModal from "@/components/AddModal";
 import { Collection, SignWord, SignWordCategoryResponse } from "@/types/Types";
 import BackButton from "@/components/BackButton";
 import Animated, { FadeInLeft, FadeInUp } from "react-native-reanimated";
-import { getWordsByCategory } from "../../services/api";
+import { getWordsByCategory, removeWordFromCollections } from "../../services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ErrorModal from "@/components/ErrorModal";
 import ConfirmActionModal from "@/components/ConfirmActionModal";
+import UpgradeModal from "@/components/UpgradeModal";
+import { getUserLimit } from "@/services/userLimit";
 
 export default function TopicDetailScreen() {
     const { topic } = useLocalSearchParams();
@@ -37,9 +39,18 @@ export default function TopicDetailScreen() {
     const [confirmUnlikeVisible, setConfirmUnlikeVisible] = useState(false);
     const [wordPendingUnlike, setWordPendingUnlike] = useState<SignWord | null>(null);
 
-    const [resultState, setResultState] = useState<"add" | "save">("save");
+    const [resultState, setResultState] = useState<"add" | "save" | "unsave">("save");
+    const [limit, setLimit] = useState(10);
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
     const router = useRouter();
+    useEffect(() => {
+        const loadLimit = async () => {
+            const userLimit = await getUserLimit();
+            setLimit(userLimit);
+        };
+        loadLimit();
+    }, []);
 
     const fetchWords = useCallback(async () => {
         setLoading(true);
@@ -96,6 +107,30 @@ export default function TopicDetailScreen() {
             setConfirmUnlikeVisible(true);
             return;
         }
+        const savedWords = wordsForTopic.filter(w => w.isInUserCollection).length;
+
+        if (savedWords >= limit) {
+            setShowUpgradeModal(true);
+            return;
+        }
+
+        if (savedWords >= limit - 2) {
+            setShowUpgradeModal(true);
+        }
+        if (savedWords === 5) {
+            setShowUpgradeModal(true);
+        }
+
+        if (savedWords === 3) {
+            setShowUpgradeModal(true);
+        }
+
+
+        if (savedWords === 1) {
+            setShowUpgradeModal(true);
+        }
+
+        setIsCollectionVisible(true);
 
         setResults(prev => prev.map(item =>
             item.signWordId === wordId
@@ -112,9 +147,42 @@ export default function TopicDetailScreen() {
         setIsCollectionVisible(true);
     };
 
-    const handleUnlikeWordFromCollection = () => {
-        
-    }
+    const handleUnlikeWordFromCollection = async () => {
+        if (!wordPendingUnlike) return;
+
+        try {
+            const token = await AsyncStorage.getItem("userToken");
+            if (!token) {
+                showError("Bạn chưa đăng nhập");
+                return;
+            }
+
+            await removeWordFromCollections(token, {
+                collectionId: "",
+                signWordId: wordPendingUnlike.signWordId,
+            });
+
+            // Update state: set isInUserCollection = false cho từ vừa bỏ
+            setResults(prev => prev.map(item =>
+                item.signWordId === wordPendingUnlike.signWordId
+                    ? { ...item, isInUserCollection: false }
+                    : item
+            ));
+            setWordsForTopic(prev => prev.map(item =>
+                item.signWordId === wordPendingUnlike.signWordId
+                    ? { ...item, isInUserCollection: false }
+                    : item
+            ));
+            setResultState('unsave');
+            setIsResultVisible(true);
+        } catch (err) {
+            console.log("Failed to remove word:", err);
+            showError("Có lỗi khi bỏ thích từ này");
+        } finally {
+            setConfirmUnlikeVisible(false);
+            setWordPendingUnlike(null);
+        }
+    };
 
     const handleCancelAddToCollection = () => {
         if (!selectedWordId) return;
@@ -210,7 +278,7 @@ export default function TopicDetailScreen() {
                                                             // }}
                                                             onPress={() => {
                                                                 handleToggleLike(item.signWordId);
-                                                                setSelectedWord(item.word)
+                                                                setSelectedWord(item.word);
                                                             }}
                                                         />
                                                         <ChevronRight color={colors.primary700} size={28} />
@@ -295,10 +363,20 @@ export default function TopicDetailScreen() {
                     visible={confirmUnlikeVisible}
                     message={`Bạn có muốn bỏ thích từ ${selectedWord} này không?`}
                     onCancel={() => setConfirmUnlikeVisible(false)}
-                    onConfirm={function (): void {
-                        throw new Error("Function not implemented.");
+                    onConfirm={handleUnlikeWordFromCollection}
+                />
+                
+                <UpgradeModal
+                    visible={showUpgradeModal}
+                    onClose={() => setShowUpgradeModal(false)}
+                    currentWords={wordsForTopic.filter(w => w.isInUserCollection).length}
+                    limit={limit}
+                    onUpgrade={() => {
+                        setShowUpgradeModal(false);
+                        router.push('/planIntro'); 
                     }}
                 />
+
             </SafeAreaView>
         </KeyboardAvoidingView >
     );

@@ -2,19 +2,30 @@ import ThemedView from '@/components/ThemedView';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import * as React from 'react';
 import { useState } from 'react';
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import SunAnimation from '@/components/animation/SunAnimation';
 import ThemedText from '@/components/ThemedText';
 import { colors } from '@/global/theme';
 import { useRoute } from '@react-navigation/native';
-import { Link, useRouter } from 'expo-router';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import Animated, { FadeInLeft, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AuthContext } from '@/context/AuthProvider';
 import { login } from '@/services/auth';
 import { useContext } from 'react';
+import ResultModal from '@/components/ResultModal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const storeData = async (key: string, value: string) => {
+    try {
+        const jsonValue = JSON.stringify(value);
+        await AsyncStorage.setItem(key, jsonValue);
+    } catch (e) {
+        console.error("Lỗi khi lưu data", e);
+    }
+};
 
 const Login = () => {
     const router = useRouter();
@@ -25,22 +36,33 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const { signIn } = useContext(AuthContext);
+    const [isResultVisible, setIsResultVisible] = useState(false);
+    const [resultState, setResultState] = useState<"register">("register");
+    const { fromRegister } = useLocalSearchParams<{ fromRegister?: string; }>();
 
+    React.useEffect(() => {
+        if (fromRegister === "true") {
+            setIsResultVisible(true);
+            setResultState("register");
+        }
+    }, [fromRegister]);
 
     const handleLogin = async () => {
         setLoading(true);
         setError('');
         try {
             const result = await login(email, password);
-            // console.log('Login success:', result);
-
+            console.log('Result', result);
+            storeData("email", email);
             if (result?.accessToken) {
                 await signIn(result.accessToken);
                 router.push('/home');
+            } else {
+                setError(result?.message || 'Đăng nhập thất bại: Phản hồi không hợp lệ.');
+                Alert.alert('Đăng nhập thất bại', `${error}}`);
             }
         } catch (err: any) {
             console.error(err);
-            setError('Đăng nhập thất bại. Vui lòng thử lại.');
         } finally {
             setLoading(false);
         }
@@ -84,7 +106,14 @@ const Login = () => {
                             placeholderTextColor="#666"
                         />
                     </Animated.View>
-
+                    {error ? (
+                        <Animated.Text
+                            entering={FadeInUp.duration(300)}
+                            className="text-red-500 text-base font-medium w-full text-center mb-2"
+                        >
+                            {error}
+                        </Animated.Text>
+                    ) : null}
                     <Animated.View entering={FadeInUp.delay(200).duration(500).springify()} className='w-full'>
                         <TouchableOpacity
                             className='w-full bg-brand-400 p-3 rounded-2xl bg-brand-500'
@@ -128,6 +157,13 @@ const Login = () => {
                     </Animated.View>
                 </ThemedView>
             </View>
+
+            <ResultModal
+                visible={isResultVisible}
+                onClose={() => setIsResultVisible(false)}
+                state={resultState}
+            />
+
         </SafeAreaView>
     );
 };

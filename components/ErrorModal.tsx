@@ -69,6 +69,7 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         textAlign: "center",
         color: colors.gray800,
+        paddingHorizontal: spacing.md
     },
     iconWrapper: {
         padding: 15,

@@ -11,6 +11,7 @@ import { colors } from '@/global/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { register } from '@/services/api';
 import { AuthContext } from '@/context/AuthProvider';
+import { setUserLimit } from '@/services/userLimit';
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -38,7 +39,12 @@ const Register = () => {
       console.log('Register success:', result);
 
       if (result?.isSuccess) {
-        router.push('/login');
+        await setUserLimit();
+
+        router.push({
+          pathname: '/login',
+          params: { fromRegister: 'true' },
+        });
       } else {
         Alert.alert('Đăng ký thất bại', 'Không nhận được token từ server.');
       }

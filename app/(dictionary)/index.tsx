@@ -24,7 +24,8 @@ import { opacity } from 'react-native-reanimated/lib/typescript/Colors';
 import { getWordsByCategory } from '@/services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ConfirmActionModal from '@/components/ConfirmActionModal';
-
+import { getUserLimit } from '@/services/userLimit';
+import UpgradeModal from '@/components/UpgradeModal';
 
 const Index = () => {
     const router = useRouter();
@@ -43,17 +44,47 @@ const Index = () => {
     const scale = useSharedValue(1);
     const [shouldRefetch, setShouldRefetch] = useState(false);
     const [confirmUnlikeVisible, setConfirmUnlikeVisible] = useState(false);
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+    const [limit, setLimit] = useState(10);
+
+    // useEffect(() => {
+    //     const fetchWords = async () => {
+    //         setLoading(true);
+    //         try {
+    //             const token = await AsyncStorage.getItem("userToken");
+    //             if (!token) throw new Error("Missing access token");
+
+    //             const result: SignWordCategoryResponse = await getWordsByCategory(token, "");
+    //             if (result.isSuccess) {
+    //                 setAllWords(result.data);   // store original data
+    //                 setResults(result.data);
+    //             } else {
+    //                 setAllWords([]);
+    //                 setResults([]);
+    //             }
+    //         } catch (error) {
+    //             console.log("Failed to fetch words for topic:", error);
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     };
+
+    //     fetchWords();
+    // }, []);
 
     useEffect(() => {
-        const fetchWords = async () => {
-            setLoading(true);
+        const init = async () => {
+            const userLimit = await getUserLimit();
+            setLimit(userLimit);
+
             try {
                 const token = await AsyncStorage.getItem("userToken");
                 if (!token) throw new Error("Missing access token");
 
                 const result: SignWordCategoryResponse = await getWordsByCategory(token, "");
                 if (result.isSuccess) {
-                    setAllWords(result.data);   // store original data
+                    setAllWords(result.data);
                     setResults(result.data);
                 } else {
                     setAllWords([]);
@@ -66,7 +97,8 @@ const Index = () => {
             }
         };
 
-        fetchWords();
+        setLoading(true);
+        init();
     }, []);
 
     useEffect(() => {
@@ -88,10 +120,37 @@ const Index = () => {
         setSelectedWordId(word.signWordId);
 
         if (!word.isInUserCollection) {
-            // Chưa lưu → mở modal lưu
             setIsCollectionVisible(true);
 
-            // Optional: optimistic update
+            const savedWords = allWords.filter(w => w.isInUserCollection).length;
+            if (savedWords >= limit) {
+                setShowUpgradeModal(true);
+                //return;
+            }
+
+            if (savedWords >= limit - 2) {
+                setShowUpgradeModal(true);
+                //return;
+            }
+
+            if (savedWords === 5) {
+                setShowUpgradeModal(true);
+                //return;
+            }
+
+            if (savedWords === 3) {
+                setShowUpgradeModal(true);
+                //return;
+            }
+
+
+            if (savedWords === 1) {
+                setShowUpgradeModal(true);
+                //return;
+            }
+
+            setIsCollectionVisible(true);
+
             setResults(prev => prev.map(item =>
                 item.signWordId === word.signWordId
                     ? { ...item, isInUserCollection: true }
@@ -434,6 +493,17 @@ const Index = () => {
                     onConfirm={handleConfirmUnlike}
                     cancelText="Hủy"
                     confirmText="Bỏ thích"
+                />
+
+                <UpgradeModal
+                    visible={showUpgradeModal}
+                    onClose={() => setShowUpgradeModal(false)}
+                    currentWords={allWords.filter(w => w.isInUserCollection).length - 1}
+                    limit={limit}
+                    onUpgrade={() => {
+                        setShowUpgradeModal(false);
+                        router.push('/planIntro');
+                    }}
                 />
 
             </SafeAreaView>

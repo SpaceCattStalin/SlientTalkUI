@@ -5,11 +5,12 @@ import { AuthProvider } from "@/context/AuthProvider";
 import { ThemeProvider } from "@/context/ThemeProvider";
 import { useAuth } from "@/hooks/useAuth";
 import ThemedView from "@/components/ThemedView";
-import { enableExperimentalLayoutAnimation, WalkthroughProvider } from "react-native-interactive-walkthrough";
 import { NavProvider } from "@/context/NavContext";
 import MainLayout from "./(main)/_layout";
 import Home from "./(main)/home";
 import WordScreen from "./(dictionary)/word/[word]";
+import { LogBox } from 'react-native';
+
 
 const RootNavigation = () => {
   const { authState } = useAuth();
@@ -24,6 +25,11 @@ const RootNavigation = () => {
 
 
 export default function RootLayout() {
+  LogBox.ignoreLogs([
+    "SafeAreaView has been deprecated",
+  ]);
+  console.warn = () => { };
+  LogBox.ignoreAllLogs(true);
   return (
     <AuthProvider>
       <ThemeProvider>

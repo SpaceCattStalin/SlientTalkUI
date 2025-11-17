@@ -8,12 +8,13 @@ import { colors, fontSizes, spacing } from '@/global/theme';
 import { getMyCollections } from '@/services/api';
 import { ApiResponse, Collection } from '@/types/Types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router, useNavigation } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
+import React, { useCallback, useEffect, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
 import Animated, { FadeInLeft, FadeInUp, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { navigate } from 'expo-router/build/global-state/routing';
 
 type LocalCollection = {
     id: string,
@@ -36,27 +37,58 @@ const Collections = () => {
     const [isCollectionVisible, setIsCollectionVisible] = useState(false);
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
     const [isResultVisible, setIsResultVisible] = useState(false);
-    const [resultState, setResultState] = useState<"add" | "save">("save");
+    const [resultState, setResultState] = useState<"add" | "save" | "delete">("save");
+
+    const params = useLocalSearchParams();
 
     useEffect(() => {
-        const fetchCollections = async (): Promise<void> => {
-            setIsLoading(true);
+        if (params?.deleted === "true") {
+            setResultState("delete");
+            setIsResultVisible(true);
 
-            try {
-                let token = await AsyncStorage.getItem("userToken");
-                if (token == null) throw new Error("Thiếu token");
+            router.setParams({ deleted: undefined });
+        }
+    }, [params]);
 
-                let res: ApiResponse<Collection[]> = await getMyCollections(token);
-                setCollections(res.data);
-            } catch (err: any) {
-                console.log(err.message);
-            } finally {
-                setIsLoading(false);
-            }
-        };
+    // useEffect(() => {
+    //     const fetchCollections = async (): Promise<void> => {
+    //         setIsLoading(true);
 
-        fetchCollections();
-    }, []);
+    //         try {
+    //             let token = await AsyncStorage.getItem("userToken");
+    //             if (token == null) throw new Error("Thiếu token");
+
+    //             let res: ApiResponse<Collection[]> = await getMyCollections(token);
+    //             setCollections(res.data);
+    //         } catch (err: any) {
+    //             console.log(err.message);
+    //         } finally {
+    //             setIsLoading(false);
+    //         }
+    //     };
+
+    //     fetchCollections();
+    // }, []);
+    useFocusEffect(
+        useCallback(() => {
+            const fetchCollections = async (): Promise<void> => {
+                setIsLoading(true);
+                try {
+                    let token = await AsyncStorage.getItem("userToken");
+                    if (token == null) throw new Error("Thiếu token");
+
+                    let res: ApiResponse<Collection[]> = await getMyCollections(token);
+                    setCollections(res.data);
+                } catch (err: any) {
+                    console.log(err.message);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            fetchCollections();
+        }, [])
+    );
 
     const scale = useSharedValue(1);
 
@@ -73,7 +105,8 @@ const Collections = () => {
                         marginTop: spacing.lg,
                         alignSelf: 'center'
                     }}>
-                        <BackButton color={colors.gray50} />
+                        {/* <BackButton color={colors.gray50} /> */}
+                        <BackButton color={colors.gray300} onPress={() => navigate("/(dictionary)")} />
                     </View>
                 </View>
 
@@ -152,7 +185,7 @@ const Collections = () => {
                 state={resultState}
             />
 
-            <AddCollectionModal
+            {/* <AddCollectionModal
                 isVisible={isAddModalVisible}
                 onCancel={() => setIsAddModalVisible(false)}
                 onAdd={() => {
@@ -160,7 +193,31 @@ const Collections = () => {
                     setResultState("add");
                     setIsResultVisible(true);
                 }}
+            /> */}
+            <AddCollectionModal
+                isVisible={isAddModalVisible}
+                onCancel={() => setIsAddModalVisible(false)}
+                onAdd={async () => {
+                    setIsAddModalVisible(false);
+                    setResultState("add");
+                    setIsResultVisible(true);
+
+                    // gọi lại API để update danh sách
+                    try {
+                        setIsLoading(true);
+                        let token = await AsyncStorage.getItem("userToken");
+                        if (token == null) throw new Error("Thiếu token");
+
+                        let res: ApiResponse<Collection[]> = await getMyCollections(token);
+                        setCollections(res.data);
+                    } catch (err: any) {
+                        console.log("Lỗi khi fetch sau add:", err.message);
+                    } finally {
+                        setIsLoading(false);
+                    }
+                }}
             />
+
         </SafeAreaView>
     );
 };

@@ -1,4 +1,4 @@
-import { Linking, StyleSheet, Text, TouchableOpacity, View, NativeModules, NativeEventEmitter, Alert, ActivityIndicator } from 'react-native';
+import { Linking, StyleSheet, Text, TouchableOpacity, View, NativeModules, NativeEventEmitter, Alert, ActivityIndicator, Platform } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fontSizes, spacing } from '@/global/theme';
@@ -6,11 +6,14 @@ import BackButton from '@/components/BackButton';
 import { Ionicons } from '@expo/vector-icons';
 import NavBar from '@/components/NavBar';
 import Animated, { FadeInDown, FadeInLeft } from 'react-native-reanimated';
-import { createPayment } from '@/services/api';
+import { createPayment, getCurrentPlan, paymentCallback } from '@/services/api';
 import { CreatePaymentRequest, CreatePaymentResponse } from '@/types/Types';
 import ResultModal from '@/components/ResultModal';
-
+import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useZaloPay } from '../../hooks/useZaloPay';
 const { PayZaloBridgeModule } = NativeModules;
+// const payZaloEmitter = new NativeEventEmitter(PayZaloBridgeModule);
 const payZaloEmitter = new NativeEventEmitter(PayZaloBridgeModule);
 
 const PlanCard = ({
@@ -19,7 +22,8 @@ const PlanCard = ({
     price,
     discount,
     features,
-    isPremium = false,
+    planType,
+    currentPlan,
     onSubscribe,
     onApply,
 }: {
@@ -28,10 +32,13 @@ const PlanCard = ({
     price?: string;
     discount?: string;
     features: string[];
-    isPremium?: boolean;
+    planType: string;
+    currentPlan: string | null;
     onSubscribe?: () => void;
     onApply?: () => void;
 }) => {
+    const isCurrent = currentPlan === planType;
+
     return (
         <Animated.View
             style={styles.card}
@@ -39,17 +46,9 @@ const PlanCard = ({
         >
             <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle}>{title}</Text>
-                {/* {isPremium && (
-                    <Ionicons name="diamond" size={20} color={colors.primary500} />
-                )} */}
             </View>
 
             {price && <Text style={styles.price}>{price}</Text>}
-            {/* {discount && <Text style={styles.discount}>{discount}</Text>} */}
-
-            {/* <Text style={styles.subtitle}>
-                {subtitle}
-            </Text> */}
 
             <View style={{ marginTop: spacing.sm }}>
                 {features.map((f, idx) => (
@@ -59,46 +58,76 @@ const PlanCard = ({
                 ))}
             </View>
 
-            {isPremium ? (
-                <View style={{ marginTop: spacing.lg }}>
-                    <TouchableOpacity style={styles.subscribeBtn} onPress={onSubscribe}>
-                        <Text style={styles.subscribeText}>Đăng ký</Text>
-                    </TouchableOpacity>
-
-                    {/* <TouchableOpacity
-                        style={styles.applyBtn}
-                        onPress={onApply}
-                        disabled={!onApply}
-                    >
-                        <Text style={styles.applyText}>Đăng ký chương trình giảm giá</Text>
-                    </TouchableOpacity> */}
-                </View>
-            ) :
-                <View style={{ marginTop: spacing.lg }}>
-                    <TouchableOpacity
-                        style={styles.applyBtn}
-                        onPress={onApply}
-                        disabled={!onApply}
-                    >
+            <View style={{ marginTop: spacing.lg }}>
+                {isCurrent ? (
+                    <TouchableOpacity style={styles.applyBtn} disabled>
                         <Text style={styles.applyText}>Gói hiện tại</Text>
                     </TouchableOpacity>
-                </View>
-            }
-        </Animated.View>
-    );
+                ) : (
+                    planType === "PREMIUM" && (
+                        <TouchableOpacity style={styles.subscribeBtn} onPress={onSubscribe}>
+                            <Text style={styles.subscribeText}>Đăng ký</Text>
+                        </TouchableOpacity>
+                    )
+                )}
+            </View>
+        </Animated.View>);
 };
 
+const retrieveData = async (key: string) => {
+    try {
+        const jsonValue = await AsyncStorage.getItem(key);
+
+        return jsonValue != null ? JSON.parse(jsonValue) : null;
+    } catch (e) {
+        console.error("Lỗi khi lấy data", e);
+    }
+};
 const PaymentPlans = () => {
     const [loading, setLoading] = useState(false);
     const [isResultVisible, setIsResultVisible] = useState(false);
+    const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+    const [isPlanLoading, setIsPlanLoading] = useState(false);
+    const { pay, subscribe } = useZaloPay();
+
+    const getPlan = async () => {
+        try {
+            setIsPlanLoading(true);
+            const res = await getCurrentPlan();
+
+            if (res !== null) {
+                setCurrentPlan(res.data.planId);
+            }
+        } catch (err: any) {
+            console.log(err);
+        } finally {
+            setIsPlanLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        getPlan();
+    }, []);
+
+    const startPayment = async (zpToken: string) => {
+        try {
+            const res = await PayZaloBridgeModule.payOrder(zpToken, "silentalk://zp");
+
+            console.log('payOrder result', res);
+        } catch (err) {
+            console.log(err);
+            console.warn('payOrder err', err);
+        }
+    };
 
     const createZaloPayment = async () => {
+        const email = await retrieveData("email");
         try {
             setLoading(true);
             const request: CreatePaymentRequest = {
                 userId: "",
                 amount: 69000,
-                description: "Đăng kí SlienTalk Premium",
+                description: `Đăng kí SlienTalk Premium \n Cho người dùng ${JSON.stringify(email)}`,
                 itemName: "SilentTalk Premium 1 Tháng"
 
             };
@@ -115,33 +144,69 @@ const PaymentPlans = () => {
         }
     };
 
+    // useEffect(() => {
+    //     const sub = payZaloEmitter.addListener('EventPayZalo', (data) => {
+    //         setLoading(false);
+
+    //         //console.log(data);
+
+    //         router.navigate('/plan');
+    //         if (data.errorCode === 0) {
+    //             setIsResultVisible(true);
+    //         }
+    //     });
+
+    //     return () => sub.remove();
+    // }, []);
     useEffect(() => {
-        console.log("Registering EventPayZalo listener");
+        const unsubscribe = subscribe((data) => {
+            console.log("ZaloPay Event:", data);
 
-        const sub = payZaloEmitter.addListener('EventPayZalo', (data) => {
-            console.log("Hi");
-            setLoading(false);
-            if (data.errorCode === 1) {
-                setIsResultVisible(true);
-            } else {
+            switch (data.errorCode) {
+                case 0:
+                    setIsResultVisible(true);
+                    router.push("/plan");
+                    break;
+
+                case 1:
+                    // PAYMENT_APP_NOT_FOUND
+                    Alert.alert(
+                        "ZaloPay chưa được cài đặt",
+                        "Bạn cần cài ứng dụng ZaloPay để tiếp tục thanh toán.",
+                        [
+                            {
+                                text: "Cài đặt ngay",
+                                onPress: () => {
+                                    const url = Platform.select({
+                                        android: "market://details?id=vn.zalopay",
+                                        ios: "itms-apps://itunes.apple.com/app/id1168873121",
+                                    });
+                                    Linking.openURL(url!);
+                                },
+                            },
+                            { text: "Hủy", style: "cancel" },
+                        ]
+                    );
+                    break;
+
+                case 4:
+                    Alert.alert("Đã hủy", "Bạn đã hủy giao dịch.");
+                    break;
+
+                default:
+                    Alert.alert("Lỗi", `Thanh toán thất bại (mã lỗi: ${data.errorCode})`);
+                    break;
             }
-        });
-        return () => sub.remove();
-    }, []);
-    // console.log('PayZaloBridgeModule', PayZaloBridgeModule);
 
-    const startPayment = async (zpToken: string) => {
-        try {
-            const res = await PayZaloBridgeModule.payOrder(zpToken, 'silentalk');
-            console.log('payOrder result', res);
-        } catch (err) {
-            console.log(err);
-            console.warn('payOrder err', err);
-        }
-    };
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     return (
         <SafeAreaView style={styles.container}>
+
             <View style={{
                 flex: 1, paddingTop: spacing.lg * 1.25,
                 paddingHorizontal: spacing.md,
@@ -161,7 +226,10 @@ const PaymentPlans = () => {
                             'Truy cập Từ điển Ngôn ngữ Ký hiệu',
                             'Dùng chế độ Phiên dịch với số lượng giới hạn',
                         ]}
+                        planType="FREE"
+                        currentPlan={currentPlan}
                     />
+
                     <PlanCard
                         title="Gói Cao cấp"
                         subtitle="Người khiếm thính, sinh viên ngành Giáo dục, Y tế và Công tác xã hội"
@@ -173,7 +241,8 @@ const PaymentPlans = () => {
                             'Không bị quảng cáo gián đoạn',
                             'Hỗ trợ ưu tiên và dùng thử miễn phí 1 tháng',
                         ]}
-                        isPremium
+                        planType="PREMIUM"
+                        currentPlan={currentPlan}
                         onSubscribe={createZaloPayment}
                     />
                 </View>
@@ -195,7 +264,14 @@ const PaymentPlans = () => {
             {loading && (
                 <View style={styles.loadingOverlay}>
                     <ActivityIndicator size="large" color={colors.primary500} />
-                    <Text style={{ marginTop: 8, color: colors.gray700 }}>Đang xử lý thanh toán...</Text>
+                </View>
+            )}
+            {isPlanLoading && (
+                <View style={styles.loadingOverlay}>
+                    <ActivityIndicator size="large" color={colors.primary500} />
+                    <Text style={{ marginTop: 8, color: colors.gray700 }}>
+                        Đang tải thông tin gói...
+                    </Text>
                 </View>
             )}
         </SafeAreaView>
@@ -294,3 +370,4 @@ const styles = StyleSheet.create({
         fontSize: fontSizes.sm,
     },
 });
+

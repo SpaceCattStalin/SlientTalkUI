@@ -7,9 +7,6 @@ import AnimatedLikeIcon from "@/components/animation/AnimatedLikeIcon";
 import BackButton from "@/components/BackButton";
 import CollectionModal from "@/components/CollectionModal";
 import ResultModal from "@/components/ResultModal";
-import WordDefinitionOverlay from "@/components/walkthrough/WordDefinitionOverlay";
-import WordDefinitionVideoOverlay from "@/components/walkthrough/WordDefinitionOverlay2";
-import WordDefinitionLikeButtonOverlay from "@/components/walkthrough/WordDefinitionOverlay3";
 import { colors, fontSizes, spacing } from "@/global/theme";
 import { Collection, WordByIdResponse, SignWord, RelatedWord } from "@/types/Types";
 import { Link, router, useLocalSearchParams } from "expo-router";
@@ -24,13 +21,14 @@ import { useNav } from "@/context/NavContext";
 import WordDefinition6Overlay from "@/components/walkthrough/WordDefinitionOverlay6";
 import Video from 'react-native-video';
 import NavBar from '@/components/NavBar';
-import { getRelatedWords, getWordById } from '@/services/api';
+import { getRelatedWords, getWordById, removeWordFromCollections } from '@/services/api';
 
 import { navigate } from 'expo-router/build/global-state/routing';
 import { AuthContext } from '@/context/AuthProvider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { sign } from 'three/src/nodes/TSL.js';
 import TestRender from '@/components/animation/testRender';
+import ConfirmActionModal from '@/components/ConfirmActionModal';
+import ErrorModal from '@/components/ErrorModal';
 const ICON_SIZE = 20;
 
 
@@ -39,13 +37,16 @@ export default function WordScreen() {
     const { width, height } = Dimensions.get('window');
 
     const { word } = useLocalSearchParams<{ word: string; }>();
+    const [confirmUnlikeVisible, setConfirmUnlikeVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+    const [isErrorVisible, setIsErrorVisible] = useState(false);
 
     const [relatedWords, setRelatedWords] = useState<RelatedWord[]>([]);
 
     const [isCollectionVisible, setIsCollectionVisible] = useState(false);
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
     const [isResultVisible, setIsResultVisible] = useState(false);
-    const [resultState, setResultState] = useState<"add" | "save">("save");
+    const [resultState, setResultState] = useState<"add" | "save" | "unsave">("save");
     const [signWord, setSignWord] = useState<SignWord | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -78,12 +79,15 @@ export default function WordScreen() {
     const handleToggleLike = () => {
         if (!signWord) return;
 
-        // Optimistically toggle liked state
-        setSignWord(prev => prev ? { ...prev, isInUserCollection: true } : prev);
+        if (signWord.isInUserCollection) {
+            setConfirmUnlikeVisible(true);
+            return;
+        }
 
-        // Open modal
+        setSignWord(prev => prev ? { ...prev, isInUserCollection: true } : prev);
         setIsCollectionVisible(true);
     };
+
 
     const handleCancelAddToCollection = () => {
         if (!signWord) return;
@@ -93,6 +97,36 @@ export default function WordScreen() {
 
         setIsCollectionVisible(false);
     };
+    const handleUnlikeWordFromCollection = async () => {
+        if (!signWord) return;
+
+        try {
+            const token = await AsyncStorage.getItem("userToken");
+            if (!token) {
+                setErrorMessage("Bạn chưa đăng nhập");
+                setIsErrorVisible(true);
+                return;
+            }
+
+            await removeWordFromCollections(token, {
+                collectionId: "",
+                signWordId: signWord.signWordId,
+            });
+
+            // Update state
+            setSignWord(prev => prev ? { ...prev, isInUserCollection: false } : prev);
+
+            setResultState("unsave");
+            setIsResultVisible(true);
+        } catch (err) {
+            console.log("Failed to remove word:", err);
+            setErrorMessage("Có lỗi khi bỏ thích từ này");
+            setIsErrorVisible(true);
+        } finally {
+            setConfirmUnlikeVisible(false);
+        }
+    };
+
     if (loading) {
         return (
             <View style={styles.loader}>
@@ -150,7 +184,7 @@ export default function WordScreen() {
                         // }}
                         onPress={() => handleToggleLike()}
                         sizeModifier={1.3}
-                        isLiked={signWord!.isInUserCollection}
+                        isLiked={signWord?.isInUserCollection}
                     />
                 </Animated.View>
 
@@ -169,7 +203,7 @@ export default function WordScreen() {
                                 entering={FadeInLeft.delay(200).duration(500).springify()}
                             >
                                 {signWord?.category === 'Chữ cái' ?
-                                    <TestRender />
+                                    <TestRender word={signWord.word} />
                                     : <Video
                                         source={{ uri: signWord?.signWordUri }}
                                         style={{ width: width - spacing.md * 2, height: width * 0.5625 }}
@@ -272,6 +306,19 @@ export default function WordScreen() {
                         setResultState("add");
                         setIsResultVisible(true);
                     }}
+                />
+
+                <ConfirmActionModal
+                    visible={confirmUnlikeVisible}
+                    message={`Bạn có muốn bỏ thích từ "${signWord?.word}" không?`}
+                    onCancel={() => setConfirmUnlikeVisible(false)}
+                    onConfirm={handleUnlikeWordFromCollection}
+                />
+
+                <ErrorModal
+                    visible={isErrorVisible}
+                    onClose={() => setIsErrorVisible(false)}
+                    message={errorMessage}
                 />
                 <NavBar />
             </View>

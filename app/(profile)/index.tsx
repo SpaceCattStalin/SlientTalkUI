@@ -28,19 +28,19 @@ const Index = () => {
 
   const { authState, signIn } = useContext(AuthContext);
 
-  const [fontsLoaded] = useFonts({
-    ...Ionicons.font,
-    ...FontAwesome5.font,
-  });
+  // const [fontsLoaded] = useFonts({
+  //   ...Ionicons.font,
+  //   ...FontAwesome5.font,
+  // });
 
 
-  if (!fontsLoaded) {
-    return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#007AFF" />
-      </View>
-    );
-  }
+  // if (!fontsLoaded) {
+  //   return (
+  //     <View style={styles.loader}>
+  //       <ActivityIndicator size="large" color="#007AFF" />
+  //     </View>
+  //   );
+  // }
 
   if (!authState.userToken) {
     return (

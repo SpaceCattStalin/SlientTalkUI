@@ -6,9 +6,14 @@ import { Renderer, THREE } from 'expo-three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { AnimationMixer } from 'three';
 
-const MODEL_URL = 'https://curious-pauline-catchable.ngrok-free.dev/static/3d/B.glb';
+const MODEL_URL = 'https://curious-pauline-catchable.ngrok-free.dev/static/3d/';
+//const MODEL_URL = 'https://curious-pauline-catchable.ngrok-free.dev/static/3d/8.gltf';
 
-const TestRender = () => {
+type TestRender = {
+    word: string;
+};
+
+const TestRender = ({ word }: TestRender) => {
     const onContextCreate = async (gl: ExpoWebGLRenderingContext) => {
         const { drawingBufferWidth: width, drawingBufferHeight: height } = gl;
 
@@ -37,7 +42,7 @@ const TestRender = () => {
         // ====== Load GLB Model ======
         const loader = new GLTFLoader();
         loader.load(
-            MODEL_URL,
+            MODEL_URL + word + '.glb',
             (gltf) => {
                 // console.log('GLB loaded:', gltf);
 

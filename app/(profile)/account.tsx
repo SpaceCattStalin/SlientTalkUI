@@ -1,5 +1,5 @@
-import { StyleSheet, Text, TextInput, View, Pressable } from 'react-native';
-import React, { useState, useContext, useEffect } from 'react';
+import { StyleSheet, Text, TextInput, View, Pressable, Image, ActivityIndicator } from 'react-native';
+import React, { useState, useContext, useEffect, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fontSizes, spacing } from '@/global/theme';
 import { ChevronLeft } from 'lucide-react-native';
@@ -15,36 +15,67 @@ import AnimatedButton from '@/components/animation/AnimatedButton';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeIn, FadeInDown, FadeInLeft, FadeInRight, FadeOutDown } from 'react-native-reanimated';
 import { ApiResponse, UserInfo } from '@/types/Types';
-import { getUserInfo, updateUserInfo } from '@/services/api';
+import { getUserInfo, updateUserInfo, uploadProfileImage } from '@/services/api';
 import ResultModal from '@/components/ResultModal';
 import ErrorModal from '@/components/ErrorModal';
-import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import * as ImagePicker from 'expo-image-picker';
+import { useFocusEffect } from 'expo-router';
 
 const Account = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [name, setName] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
     const [errors, setErrors] = useState<{ name?: string, phoneNumber?: string; }>({});
-
+    const [avatarUri, setAvatarUri] = useState<string | null>(null);
+    const [loadingUser, setLoadingUser] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [resultModalVisible, setResultModalVisible] = useState(false);
     const [errorModalVisible, setErrorModalVisible] = useState(false);
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const res: UserInfo = await getUserInfo();
-                if (res != null) {
-                    setName(res.name);
-                    setPhoneNumber(res.phoneNumber);
-                }
-                console.log(res);
-            } catch (err: any) {
-                console.log("Lỗi khi lấy thông tin user!", err);
-            }
-        };
+    // useEffect(() => {
+    //     const fetchUser = async () => {
+    //         try {
+    //             setLoadingUser(true);
+    //             const res: UserInfo = await getUserInfo();
+    //             if (res != null) {
+    //                 setName(res.name);
+    //                 setPhoneNumber(res.phoneNumber);
+    //                 setAvatarUri(res.imgUrl ?? "");
+    //             }
+    //         } catch (err: any) {
+    //             console.log("Lỗi khi lấy thông tin user!", err);
+    //             setErrorModalVisible(true);
+    //         } finally {
+    //             setLoadingUser(false);
+    //         }
+    //     };
 
-        fetchUser();
-    }, []);
+    //     fetchUser();
+    // }, []);
+
+    const fetchUser = async () => {
+        try {
+            setLoadingUser(true);
+            const res: UserInfo = await getUserInfo();
+            if (res != null) {
+                setName(res.name);
+                setPhoneNumber(res.phoneNumber);
+                // setAvatarUri(res.imgUrl ?? "");
+                setAvatarUri(res.imgUrl ? `${res.imgUrl}?t=${Date.now()}` : "");
+            }
+        } catch (err) {
+            console.log("Lỗi khi lấy thông tin user!", err);
+            setErrorModalVisible(true);
+        } finally {
+            setLoadingUser(false);
+        }
+    };
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchUser();
+        }, [])
+    );
 
     const validate = () => {
         let valid = true;
@@ -58,10 +89,14 @@ const Account = () => {
         if (!phoneNumber.trim()) {
             newErrors.phoneNumber = "Số điện thoại không được để trống";
             valid = false;
-        } else if (!/^(0|\+84)\d{9,10}$/.test(phoneNumber)) {
-            newErrors.phoneNumber = "Số điện thoại không hợp lệ";
+        } else if (phoneNumber.length < 10) {
+            newErrors.phoneNumber = "Số điện thoại phải đủ 10 số";
+            valid = false;
+        } else if (phoneNumber.length > 10) {
+            newErrors.phoneNumber = "Số điện thoại không được quá 10 số";
             valid = false;
         }
+
 
         setErrors(newErrors);
         return valid;
@@ -70,16 +105,59 @@ const Account = () => {
     const handleSave = async () => {
         try {
             if (!validate()) return;
+            setSaving(true);
+            let success = false;
 
-            const result: ApiResponse<UserInfo> = await updateUserInfo(name, phoneNumber);
-            if (result !== null) {
-                setIsEditing(false);
+            if (avatarUri) {
+                const res = await uploadProfileImage(avatarUri);
+                if (res.isSuccess) {
+                    success = true;
+                    setAvatarUri(res.ImageUrl);
+                }
             }
-        } catch (err: any) {
+
+            if (name || phoneNumber) {
+                const res: ApiResponse<UserInfo> = await updateUserInfo(name, phoneNumber);
+                if (res) {
+                    success = true;
+                    setIsEditing(false);
+                }
+            }
+
+            if (success) {
+                await fetchUser();
+                setResultModalVisible(true);
+            }
+
+        } catch (err) {
             console.log(err);
+            setErrorModalVisible(true);
+        } finally {
+            setSaving(false);
         }
     };
 
+
+    const pickImage = async () => {
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 0.7,
+        });
+
+        if (!result.canceled) {
+            setAvatarUri(result.assets[0].uri);
+        }
+    };
+
+    if (loadingUser) {
+        return (
+            <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" color={colors.primary500} />
+                <Text style={{ marginTop: 10, color: colors.primary800 }}>Đang tải thông tin...</Text>
+            </SafeAreaView>
+        );
+    }
     return (
         // <SafeAreaView style={{
         //     flex: 1,
@@ -112,7 +190,9 @@ const Account = () => {
                         Thông tin tài khoản
                     </Text>
 
-                    <Pressable onPress={() => setIsEditing(!isEditing)}>
+                    <Pressable onPress={() => {
+                        setIsEditing(!isEditing);
+                    }}>
                         <Feather
                             name={isEditing ? "x" : "edit"}
                             size={28}
@@ -125,16 +205,25 @@ const Account = () => {
                     style={styles.card}>
                     <View style={styles.avatarSection}>
                         <View>
-                            <Avatar
-                                width={150}
-                                height={160}
-                            />
-                            {isEditing && <Animated.View
-                                style={styles.penButton}
-                                entering={FadeInDown.delay(100).duration(400).springify()}
-                            >
-                                <EditPen />
-                            </Animated.View>}
+                            {avatarUri ? (
+                                <Image
+                                    source={{ uri: avatarUri }}
+                                    style={{ width: 150, height: 160, borderRadius: 75 }}
+                                />
+                            ) : (
+                                <Avatar width={150} height={160} />
+                            )}
+                            {isEditing &&
+                                <Animated.View
+                                    style={styles.penButton}
+                                    entering={FadeInDown.delay(100).duration(400).springify()}
+                                >
+                                    <Pressable
+                                        onPress={pickImage}
+                                    >
+                                        <EditPen />
+                                    </Pressable>
+                                </Animated.View>}
                         </View>
                     </View>
 

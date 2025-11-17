@@ -24,12 +24,7 @@ import Search from "@/components/Searchbar";
 import { Searchbar } from "react-native-paper";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import Animated, { FadeInDown, FadeInRight, runOnJS, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
-import { useWalkthroughStep } from "react-native-interactive-walkthrough";
-import TranslateScreenOverlay from "@/components/walkthrough/TranslateScreenOverlay";
-import TranslateScreen2Overlay from "@/components/walkthrough/TranslateScreenOverlay2";
-import TranslateScreen3Overlay from "@/components/walkthrough/TranslateScreenOverlay3";
-import TranslateScreen4Overlay from "@/components/walkthrough/TranslateScreenOverlay4";
-import TranslateScreen5Overlay from "@/components/walkthrough/TranslateScreenOverlay5";
+
 import * as FileSystem from 'expo-file-system/legacy';
 
 import HomeIcon from '@/assets/images/home.svg';
@@ -45,7 +40,6 @@ import { useFonts } from "expo-font";
 
 import { Camera, CameraDevice, useCameraDevice, useFrameProcessor } from "react-native-vision-camera";
 import SocketService from "@/services/socket";
-import { color } from "three/src/nodes/TSL.js";
 
 
 const ICON_SIZE = 20;
@@ -113,7 +107,8 @@ const Index = () => {
           if (failureCount === 5) break;
         }
 
-        await new Promise((res) => setTimeout(res, 1000));
+        // await new Promise((res) => setTimeout(res, 1000));
+        await new Promise((res) => setTimeout(res, 400));
       }
     };
 
@@ -263,17 +258,17 @@ const Index = () => {
               <Ionicons name="camera" size={24} color="#fff" />
             )}
           </TouchableOpacity> */}
-        <Animated.View
+        {/* <Animated.View
           entering={FadeInRight.delay(200).duration(500).springify()}
         >
           <TouchableOpacity
             style={[styles.button, { marginLeft: 10 }]}
             onPress={toggleSidebar}
-            //onLayout={step20OnLayout}
+          //onLayout={step20OnLayout}
           >
             <MaterialIcons name="menu" size={24} color="#fff" />
           </TouchableOpacity>
-        </Animated.View>
+        </Animated.View> */}
       </View>
 
       <View style={{ flex: 1, position: 'relative' }}>
