@@ -1,8 +1,8 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { colors, fontSizes, spacing } from "@/global/theme";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Search from "@/components/Searchbar";
 import AnimatedLikeIcon from "@/components/animation/AnimatedLikeIcon";
@@ -10,63 +10,200 @@ import NavBar from "@/components/NavBar";
 import ResultModal from "@/components/ResultModal";
 import CollectionModal from "@/components/CollectionModal";
 import AddCollectionModal from "@/components/AddModal";
-import { Collection } from "@/types/Types";
+import { Collection, SignWord, SignWordCategoryResponse } from "@/types/Types";
 import BackButton from "@/components/BackButton";
 import Animated, { FadeInLeft, FadeInUp } from "react-native-reanimated";
-
-const collections: Collection[] = [
-    { id: 'randomstring', name: 'Tất cả từ đã lưu', wordCount: 12 },
-    // { id: 'randomstring1', name: 'Y tế', wordCount: 45 },
-    // { id: 'randomstring3', name: 'fafa', wordCount: 10 },
-];
-
-const topicDictionary: Record<string, string[]> = {
-    "Gia đình": [
-        "Bố", "Mẹ", "Anh", "Chị", "Em", "Ông", "Bà", "Con", "Cháu",
-        "Vợ", "Chồng", "Cô", "Dì", "Chú", "Bác", "Anh họ", "Chị họ"
-    ],
-    "Y tế": [
-        "Bác sĩ", "Y tá", "Thuốc", "Bệnh viện", "Khám bệnh"
-    ],
-    "Trường học": [
-        "Thầy", "Cô giáo", "Bạn", "Sách", "Bút", "Bảng", "Vở", "Lớp học"
-    ],
-    "Câu hỏi": ["Xin chào", "Cảm ơn", "Xin lỗi", "Có", "Không"],
-};
-
-const dictionary = [
-    "Bố", "Mẹ", "Banh", "Cô", "Kẹo",
-    "Anh", "Chị", "Em", "Ông", "Bà",
-    "Cơm", "Nước", "Sữa", "Bánh mì", "Táo",
-    "Thầy", "Cô giáo", "Bạn", "Sách", "Bút",
-    "Xin chào", "Cảm ơn", "Xin lỗi", "Có", "Không"
-];
+import { getWordsByCategory, removeWordFromCollections } from "../../services/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import ErrorModal from "@/components/ErrorModal";
+import ConfirmActionModal from "@/components/ConfirmActionModal";
+import UpgradeModal from "@/components/UpgradeModal";
+import { getUserLimit } from "@/services/userLimit";
 
 export default function TopicDetailScreen() {
     const { topic } = useLocalSearchParams();
-    const wordsForTopic = topicDictionary[topic as string] || [];
-
+    const [wordsForTopic, setWordsForTopic] = useState<SignWord[]>([]);
+    const [results, setResults] = useState<SignWord[]>([]);
     const [query, setQuery] = useState("");
-    const [results, setResults] = useState<string[]>([]);
+
+    const [selectedWord, setSelectedWord] = useState<string | null>(null);
+    const [selectedWordId, setSelectedWordId] = useState<string | null>(null);
+
+    const [loading, setLoading] = useState(false);
 
     const [isCollectionVisible, setIsCollectionVisible] = useState(false);
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
     const [isResultVisible, setIsResultVisible] = useState(false);
-    const [resultState, setResultState] = useState<"add" | "save">("save");
+    const [isErrorVisible, setIsErrorVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+    const [confirmUnlikeVisible, setConfirmUnlikeVisible] = useState(false);
+    const [wordPendingUnlike, setWordPendingUnlike] = useState<SignWord | null>(null);
+
+    const [resultState, setResultState] = useState<"add" | "save" | "unsave">("save");
+    const [limit, setLimit] = useState(10);
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
     const router = useRouter();
+    useEffect(() => {
+        const loadLimit = async () => {
+            const userLimit = await getUserLimit();
+            setLimit(userLimit);
+        };
+        loadLimit();
+    }, []);
+
+    const fetchWords = useCallback(async () => {
+        setLoading(true);
+        try {
+            const token = await AsyncStorage.getItem("userToken");
+            if (!token) throw new Error("Missing access token");
+
+            const result: SignWordCategoryResponse = await getWordsByCategory(token, topic as string);
+            if (result.isSuccess) {
+                setWordsForTopic(result.data);
+                setResults(result.data);
+            } else {
+                setWordsForTopic([]);
+                setResults([]);
+            }
+        } catch (error) {
+            console.log("Failed to fetch words for topic:", error);
+            setWordsForTopic([]);
+        } finally {
+            setLoading(false);
+        }
+    }, [topic]);
+
+    const showError = (msg: string) => {
+        setErrorMessage(msg);
+        setIsErrorVisible(true);
+    };
+
+    useEffect(() => {
+        fetchWords();
+    }, [fetchWords]);
 
     useEffect(() => {
         if (query.length > 0) {
-            const filtered = dictionary.filter((word) =>
-                word.toLowerCase().includes(query.toLowerCase())
+            const filtered = wordsForTopic.filter((w) =>
+                w.word.toLowerCase().includes(query.toLowerCase())
             );
             setResults(filtered);
         } else {
-            // setResults([]);
             setResults(wordsForTopic);
         }
-    }, [query]);
+    }, [query, wordsForTopic]);
+
+
+    const handleToggleLike = (wordId: string) => {
+        const word = results.find(w => w.signWordId === wordId);
+        if (!word) return;
+
+        setSelectedWordId(wordId);
+
+        if (word.isInUserCollection) {
+            // Already liked → show confirm modal
+            setWordPendingUnlike(word);
+            setConfirmUnlikeVisible(true);
+            return;
+        }
+        const savedWords = wordsForTopic.filter(w => w.isInUserCollection).length;
+
+        if (savedWords >= limit) {
+            setShowUpgradeModal(true);
+            return;
+        }
+
+        if (savedWords >= limit - 2) {
+            setShowUpgradeModal(true);
+        }
+        if (savedWords === 5) {
+            setShowUpgradeModal(true);
+        }
+
+        if (savedWords === 3) {
+            setShowUpgradeModal(true);
+        }
+
+
+        if (savedWords === 1) {
+            setShowUpgradeModal(true);
+        }
+
+        setIsCollectionVisible(true);
+
+        setResults(prev => prev.map(item =>
+            item.signWordId === wordId
+                ? { ...item, isInUserCollection: !item.isInUserCollection }
+                : item
+        ));
+
+        setWordsForTopic(prev => prev.map(item =>
+            item.signWordId === wordId
+                ? { ...item, isInUserCollection: !item.isInUserCollection }
+                : item
+        ));
+
+        setIsCollectionVisible(true);
+    };
+
+    const handleUnlikeWordFromCollection = async () => {
+        if (!wordPendingUnlike) return;
+
+        try {
+            const token = await AsyncStorage.getItem("userToken");
+            if (!token) {
+                showError("Bạn chưa đăng nhập");
+                return;
+            }
+
+            await removeWordFromCollections(token, {
+                collectionId: "",
+                signWordId: wordPendingUnlike.signWordId,
+            });
+
+            // Update state: set isInUserCollection = false cho từ vừa bỏ
+            setResults(prev => prev.map(item =>
+                item.signWordId === wordPendingUnlike.signWordId
+                    ? { ...item, isInUserCollection: false }
+                    : item
+            ));
+            setWordsForTopic(prev => prev.map(item =>
+                item.signWordId === wordPendingUnlike.signWordId
+                    ? { ...item, isInUserCollection: false }
+                    : item
+            ));
+            setResultState('unsave');
+            setIsResultVisible(true);
+        } catch (err) {
+            console.log("Failed to remove word:", err);
+            showError("Có lỗi khi bỏ thích từ này");
+        } finally {
+            setConfirmUnlikeVisible(false);
+            setWordPendingUnlike(null);
+        }
+    };
+
+    const handleCancelAddToCollection = () => {
+        if (!selectedWordId) return;
+
+        setResults(prev => prev.map(item =>
+            item.signWordId === selectedWordId
+                ? { ...item, isInUserCollection: false }
+                : item
+        ));
+
+        setWordsForTopic(prev => prev.map(item =>
+            item.signWordId === selectedWordId
+                ? { ...item, isInUserCollection: false }
+                : item
+        ));
+
+        setIsCollectionVisible(false);
+        setIsAddModalVisible(false);
+        setSelectedWordId(null);
+    };
+
     return (
         <KeyboardAvoidingView
             style={{ flex: 1 }}
@@ -98,89 +235,104 @@ export default function TopicDetailScreen() {
                             <Search value={query} onChange={setQuery} />
                         </Animated.View>
                     </View>
-                </View>
-                <View style={styles.main}>
 
-                    {results.length > 0 ? (
-                        <View style={{ marginTop: spacing.lg, paddingHorizontal: spacing.md, marginBottom: spacing.lg * 4 }}>
-                            <FlatList
-                                style={{ marginTop: 10 }}
-                                data={results.length > 0 ? results : wordsForTopic}
-                                keyExtractor={(item) => item}
-                                renderItem={({ item,index }) => (
-                                    <Animated.View
-                                        entering={FadeInUp.delay(100 * index).duration(200)}
-                                        style={styles.card}
-                                    >
-                                        <TouchableOpacity
-                                            style={styles.searchItem}
-                                        // onPress={() => {
-                                        //     console.log(item);
-                                        //     router.push(`./${item}`);
-                                        // }}
-                                        >
-                                            <Text style={{
-                                                fontSize: fontSizes.lg,
-                                                color: colors.primary600,
-                                                fontWeight: 500
-                                            }}>
-                                                {item}
-                                            </Text>
-                                            <View style={{
-                                                flexDirection: 'row',
-                                                gap: spacing.xs,
-                                                alignItems: 'center'
-                                            }}>
-                                                <AnimatedLikeIcon
-                                                    accent='transparent'
-                                                    primary={colors.primary600}
-                                                    onPress={() => setIsCollectionVisible(true)}
-                                                />
-                                                <ChevronRight
-                                                    color={colors.primary700}
-                                                    size={28}
-                                                />
-                                            </View>
-                                        </TouchableOpacity>
-                                    </Animated.View>
-                                )}
-                            />
-                        </View>
-                    ) :
-                        <View style={{ flex: 1, gap: spacing.md, justifyContent: 'flex-start' }}>
-                            <Image source={require('@/assets/images/empty.png')}
-                                style={{
-                                    width: 200,
-                                    height: 200,
-                                    alignSelf: 'center',
-                                    resizeMode: 'contain',
-                                    marginTop: spacing.lg
-                                }}
-                            />
-                            <Text
-                                style={{
-                                    fontSize: fontSizes.lg,
-                                    color: colors.gray400,
-                                    textAlign: 'center',
-                                }}>
-                                Không tìm thấy kết quả cho &quot;{query}&quot;
-                            </Text>
-                        </View>
-                    }
+                    <View style={styles.main}>
+
+                        {loading ? (
+                            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                                <ActivityIndicator size="large" color={colors.primary600} />
+                                <Text style={{ color: colors.primary600, marginTop: 8 }}>Đang tải...</Text>
+                            </View>
+                        ) : (
+                            wordsForTopic.length > 0 ? (
+                                <View style={{ paddingBottom: 90 }}>
+                                    <FlatList
+                                        style={{ marginTop: 10 }}
+                                        data={results}
+                                        keyExtractor={(item: SignWord) => item.signWordId}
+                                        renderItem={({ item, index }: { item: SignWord, index: number; }) => (
+                                            <Animated.View
+                                                entering={FadeInUp.delay(100 * index).duration(200)}
+                                                style={styles.card}
+                                            >
+                                                <TouchableOpacity
+                                                    style={styles.searchItem}
+                                                    onPress={() => {
+                                                        router.push(`./word/${encodeURIComponent(item.signWordId)}`);
+                                                    }}                                            >
+                                                    <Text style={{
+                                                        fontSize: fontSizes.lg,
+                                                        color: colors.primary600,
+                                                        fontWeight: '500'
+                                                    }}>
+                                                        {item.word}
+                                                    </Text>
+                                                    <View style={{ flexDirection: 'row', gap: spacing.xs, alignItems: 'center' }}>
+                                                        <AnimatedLikeIcon
+                                                            isLiked={item.isInUserCollection}
+                                                            accent='transparent'
+                                                            primary={colors.primary600}
+                                                            // onPress={() => {
+                                                            //     setIsCollectionVisible(true);
+                                                            //     setSelectedWordId(item.signWordId);
+                                                            // }}
+                                                            onPress={() => {
+                                                                handleToggleLike(item.signWordId);
+                                                                setSelectedWord(item.word);
+                                                            }}
+                                                        />
+                                                        <ChevronRight color={colors.primary700} size={28} />
+                                                    </View>
+                                                </TouchableOpacity>
+                                            </Animated.View>
+                                        )}
+                                    />
+                                </View>
+                            ) : (
+                                <View style={{ flex: 1, gap: spacing.md, justifyContent: 'flex-start' }}>
+                                    <Image source={require('@/assets/images/empty.png')}
+                                        style={{
+                                            width: 200,
+                                            height: 200,
+                                            alignSelf: 'center',
+                                            resizeMode: 'contain',
+                                            marginTop: spacing.lg
+                                        }}
+                                    />
+                                    <Text style={{
+                                        fontSize: fontSizes.lg,
+                                        color: colors.gray400,
+                                        textAlign: 'center',
+                                    }}>
+                                        Không tìm thấy kết quả cho &quot;{query}&quot;
+                                    </Text>
+                                </View>
+                            )
+                        )}
+                    </View>
+                    <NavBar />
                 </View>
-                <NavBar />
 
                 <ResultModal
                     visible={isResultVisible}
-                    onClose={() => setIsResultVisible(false)}
+                    onClose={() => {
+                        setIsResultVisible(false);
+                        setSelectedWordId(null);
+                    }}
                     state={resultState}
+                />
+
+                <ErrorModal
+                    visible={isErrorVisible}
+                    onClose={() => setIsErrorVisible(false)}
+                    message={errorMessage}
                 />
 
                 <CollectionModal
                     inDictionary={true}
                     isVisible={isCollectionVisible}
-                    onCancel={() => setIsCollectionVisible(false)}
-                    collections={collections}
+                    onCancel={handleCancelAddToCollection}
+                    // collections={collections}
                     onConfirm={() => {
                         setIsCollectionVisible(false);
                         setResultState("save");
@@ -190,19 +342,43 @@ export default function TopicDetailScreen() {
                         setIsCollectionVisible(false);
                         setIsAddModalVisible(true);
                     }}
+                    signWordId={selectedWordId!}
+                    onError={showError}
                 />
 
                 <AddCollectionModal
                     isVisible={isAddModalVisible}
-                    onCancel={() => setIsAddModalVisible(false)}
+                    onCancel={handleCancelAddToCollection}
                     onAdd={() => {
+                        fetchWords();
                         setIsAddModalVisible(false);
-                        setResultState("add");
+                        setResultState("save");
                         setIsResultVisible(true);
                     }}
+                    signWordId={selectedWordId!}
+                    onError={showError}
                 />
+
+                <ConfirmActionModal
+                    visible={confirmUnlikeVisible}
+                    message={`Bạn có muốn bỏ thích từ ${selectedWord} này không?`}
+                    onCancel={() => setConfirmUnlikeVisible(false)}
+                    onConfirm={handleUnlikeWordFromCollection}
+                />
+                
+                <UpgradeModal
+                    visible={showUpgradeModal}
+                    onClose={() => setShowUpgradeModal(false)}
+                    currentWords={wordsForTopic.filter(w => w.isInUserCollection).length}
+                    limit={limit}
+                    onUpgrade={() => {
+                        setShowUpgradeModal(false);
+                        router.push('/planIntro'); 
+                    }}
+                />
+
             </SafeAreaView>
-        </KeyboardAvoidingView>
+        </KeyboardAvoidingView >
     );
 }
 
@@ -223,7 +399,8 @@ const styles = StyleSheet.create({
     main: {
         //flex: 3,
         flex: 3,
-        borderRadius: 60,
+        borderTopLeftRadius: 60,
+        borderTopRightRadius: 60,
         backgroundColor: colors.gray50,
         // gray50: #FDFDFE
         paddingTop: spacing.md,

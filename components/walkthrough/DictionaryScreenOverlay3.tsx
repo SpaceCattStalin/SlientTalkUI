@@ -17,13 +17,11 @@ const DictionarySaveOverlay = ({
     }));
 
     return (
-        <Animated.View
+        <View
             style={{
                 ...styles.container,
                 top: mask.y + mask.height + 10, right: -30
             }}
-            entering={FadeInDown.duration(300)}
-            exiting={FadeOutUp.duration(200)}
         >
             <View style={styles.pointer} />
             <View style={styles.overlay}>
@@ -49,7 +47,7 @@ const DictionarySaveOverlay = ({
                     </Animated.View>
                 </Pressable> */}
             </View>
-        </Animated.View>
+        </View>
     );
 };
 

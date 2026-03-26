@@ -16,14 +16,12 @@ const DictionarySearchOverlay = ({
     }));
 
     return (
-        <Animated.View
+        <View
             style={{
                 ...styles.container,
                 top: mask.y + mask.height,
                 left: 50
             }}
-            entering={FadeInDown.duration(300)}
-            exiting={FadeOutUp.duration(200)}
         >
             <View style={styles.pointer} />
             <View style={styles.overlay}>
@@ -47,7 +45,7 @@ const DictionarySearchOverlay = ({
                     </Animated.View>
                 </Pressable>
             </View>
-        </Animated.View>
+        </View>
     );
 };
 

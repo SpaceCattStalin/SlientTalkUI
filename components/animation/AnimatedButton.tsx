@@ -15,20 +15,27 @@ type Props = {
 export default function AnimatedButton({ children, onPress, style }: Props) {
     const scale = useSharedValue(1);
 
-    const animatedStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ scale: scale.value }],
-        };
-    });
-
+    const animatedStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: scale.value }],
+    }));
     return (
+        // <Pressable
+        //     onPressIn={() => {
+        //         scale.value = withSpring(0.95, { damping: 10, stiffness: 200 });
+        //     }}
+        //     onPressOut={() => {
+        //         scale.value = withSpring(1, { damping: 10, stiffness: 200 });
+        //     }}
+        //     onPress={onPress}
+        //     style={style}
+        // >
+        //     <Animated.View style={[animatedStyle]}>
+        //         {children}
+        //     </Animated.View>
+        // </Pressable>
         <Pressable
-            onPressIn={() => {
-                scale.value = withSpring(0.95, { damping: 10, stiffness: 200 });
-            }}
-            onPressOut={() => {
-                scale.value = withSpring(1, { damping: 10, stiffness: 200 });
-            }}
+            onPressIn={() => { scale.value = withSpring(0.95); }}
+            onPressOut={() => { scale.value = withSpring(1); }}
             onPress={onPress}
             style={style}
         >

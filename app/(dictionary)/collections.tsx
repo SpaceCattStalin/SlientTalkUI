@@ -5,43 +5,96 @@ import ResultModal from '@/components/ResultModal';
 import CollectionScreenOverlay from '@/components/walkthrough/CollectionScreenOverlay';
 import { useNav } from '@/context/NavContext';
 import { colors, fontSizes, spacing } from '@/global/theme';
-import { Collection } from '@/types/Types';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
+import { getMyCollections } from '@/services/api';
+import { ApiResponse, Collection } from '@/types/Types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
+import React, { useCallback, useEffect, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
 import Animated, { FadeInLeft, FadeInUp, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { navigate } from 'expo-router/build/global-state/routing';
 
-const collections: Collection[] = [
-    { id: 'randomstring', name: 'Tất cả từ đã lưu', wordCount: 12 },
-    // { id: 'randomstring1', name: 'Y tế', wordCount: 4, tag: 'y_te' },
-    // { id: 'randomstring3', name: 'fafa', wordCount: 6, tag: 'fafa' },
-];
+type LocalCollection = {
+    id: string,
+    name: string,
+    wordCount: number;
+};
+
+// const collections: LocalCollection[] = [
+//     { id: 'randomstring', name: 'Tất cả từ đã lưu', wordCount: 12 },
+//     // { id: 'randomstring1', name: 'Y tế', wordCount: 4, tag: 'y_te' },
+//     // { id: 'randomstring3', name: 'fafa', wordCount: 6, tag: 'fafa' },
+// ];
 
 const Collections = () => {
     const { activeTab, setActiveTab } = useNav();
 
+    const [collections, setCollections] = useState<Collection[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [isCollectionVisible, setIsCollectionVisible] = useState(false);
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
     const [isResultVisible, setIsResultVisible] = useState(false);
-    const [resultState, setResultState] = useState<"add" | "save">("save");
+    const [resultState, setResultState] = useState<"add" | "save" | "delete">("save");
+
+    const params = useLocalSearchParams();
+
+    useEffect(() => {
+        if (params?.deleted === "true") {
+            setResultState("delete");
+            setIsResultVisible(true);
+
+            router.setParams({ deleted: undefined });
+        }
+    }, [params]);
+
+    // useEffect(() => {
+    //     const fetchCollections = async (): Promise<void> => {
+    //         setIsLoading(true);
+
+    //         try {
+    //             let token = await AsyncStorage.getItem("userToken");
+    //             if (token == null) throw new Error("Thiếu token");
+
+    //             let res: ApiResponse<Collection[]> = await getMyCollections(token);
+    //             setCollections(res.data);
+    //         } catch (err: any) {
+    //             console.log(err.message);
+    //         } finally {
+    //             setIsLoading(false);
+    //         }
+    //     };
+
+    //     fetchCollections();
+    // }, []);
+    useFocusEffect(
+        useCallback(() => {
+            const fetchCollections = async (): Promise<void> => {
+                setIsLoading(true);
+                try {
+                    let token = await AsyncStorage.getItem("userToken");
+                    if (token == null) throw new Error("Thiếu token");
+
+                    let res: ApiResponse<Collection[]> = await getMyCollections(token);
+                    setCollections(res.data);
+                } catch (err: any) {
+                    console.log(err.message);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            fetchCollections();
+        }, [])
+    );
 
     const scale = useSharedValue(1);
 
     const animatedStyle = useAnimatedStyle(() => ({
         transform: [{ scale: scale.value }],
     }));
-    const { onLayout: step13OnLayout, goTo, start, next } = useWalkthroughStep({
-        number: 14,
-        fullScreen: false,
-        OverlayComponent: CollectionScreenOverlay,
-        maskAllowInteraction: true
-    });
-
-    // useEffect(() => {
-    //     goTo(14);
-    // }, [goTo, start]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -52,7 +105,8 @@ const Collections = () => {
                         marginTop: spacing.lg,
                         alignSelf: 'center'
                     }}>
-                        <BackButton color={colors.gray50} />
+                        {/* <BackButton color={colors.gray50} /> */}
+                        <BackButton color={colors.gray300} onPress={() => navigate("/(dictionary)")} />
                     </View>
                 </View>
 
@@ -94,19 +148,17 @@ const Collections = () => {
                             marginHorizontal: spacing.lg,
                         }}
                         data={collections}
-                        keyExtractor={(item) => item.id}
+                        keyExtractor={(item) => item.collectionId}
                         renderItem={({ item, index }) => (
                             <Animated.View
-                                onLayout={index === 0 ? step13OnLayout : undefined}
+                                //onLayout={index === 0 ? step13OnLayout : undefined}
                                 entering={FadeInUp.delay(100 * index).duration(200)}
                                 style={styles.card}
                             >
                                 <TouchableOpacity
                                     style={styles.searchItem}
                                     onPress={() => {
-                                        next();
-                                        router.push(`./collection/${encodeURIComponent(item.tag ?? 'default')}
-                                        ?name=${encodeURIComponent(item.name)}`);
+                                        router.push(`./collection/${item.collectionId}`);
                                     }}
                                 >
                                     <Text style={{
@@ -116,7 +168,7 @@ const Collections = () => {
                                         textAlign: 'center',
                                         flex: 1,
                                     }}>
-                                        {item.name} ({item.wordCount} từ)
+                                        {item.name} ({item.signWords.length} từ)
                                     </Text>
 
                                 </TouchableOpacity>
@@ -133,7 +185,7 @@ const Collections = () => {
                 state={resultState}
             />
 
-            <AddCollectionModal
+            {/* <AddCollectionModal
                 isVisible={isAddModalVisible}
                 onCancel={() => setIsAddModalVisible(false)}
                 onAdd={() => {
@@ -141,7 +193,31 @@ const Collections = () => {
                     setResultState("add");
                     setIsResultVisible(true);
                 }}
+            /> */}
+            <AddCollectionModal
+                isVisible={isAddModalVisible}
+                onCancel={() => setIsAddModalVisible(false)}
+                onAdd={async () => {
+                    setIsAddModalVisible(false);
+                    setResultState("add");
+                    setIsResultVisible(true);
+
+                    // gọi lại API để update danh sách
+                    try {
+                        setIsLoading(true);
+                        let token = await AsyncStorage.getItem("userToken");
+                        if (token == null) throw new Error("Thiếu token");
+
+                        let res: ApiResponse<Collection[]> = await getMyCollections(token);
+                        setCollections(res.data);
+                    } catch (err: any) {
+                        console.log("Lỗi khi fetch sau add:", err.message);
+                    } finally {
+                        setIsLoading(false);
+                    }
+                }}
             />
+
         </SafeAreaView>
     );
 };

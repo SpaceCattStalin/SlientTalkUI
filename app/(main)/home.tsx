@@ -12,50 +12,41 @@ import WelcomeMessageOverlay from '@/components/walkthrough/WelcomeMessageOverla
 import { useNav } from '@/context/NavContext';
 import { colors, fontSizes, spacing } from '@/global/theme';
 import { Link, router } from 'expo-router';
-import React from 'react';
-import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { use, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useWalkthroughStep } from 'react-native-interactive-walkthrough';
 import Animated, { FadeInLeft } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 // import Wave from '@/assets/images/wave.svg';
+import Video from 'react-native-video';
+
 import Scan from '@/assets/images/scan.svg';
+import { useWalkthrough } from '@/hooks/useWalkthrough';
+import { getWordOfTheDay } from '@/services/api';
 const ICON_SIZE = 20;
 
 const Home = () => {
     const { activeTab, setActiveTab } = useNav();
+    const renderCount = useRef(0);
+    const [wordOfTheDay, setWordOfTheDay] = useState<any | null>(null);
+    const [loadingWord, setLoadingWord] = useState(true);
 
-    const { isWalkthroughOn: step1On, start: startStep1 } = useWalkthroughStep({
-        number: 1,
-        OverlayComponent: WelcomeMessageOverlay,
-        fullScreen: true,
-    });
+    useEffect(() => {
+        const fetchWord = async () => {
+            try {
+                const data = await getWordOfTheDay();
+                if (data.isSuccess) {
+                    setWordOfTheDay(data.data);
+                }
+            } catch (err) {
+                console.error("Không lấy được từ của ngày hôm nay!", err);
+            } finally {
+                setLoadingWord(false);
+            }
+        };
+        fetchWord();
+    }, []);
 
-    const { onLayout: step2OnLayout } = useWalkthroughStep({
-        number: 2,
-        fullScreen: false,
-        OverlayComponent: HomeScreenOverlay,
-    });
-
-    const { onLayout: step3OnLayout } = useWalkthroughStep({
-        number: 3,
-        fullScreen: false,
-        OverlayComponent: WordOfTheDayOverlay,
-    });
-
-    const { onLayout: step4OnLayout, goTo, stop } = useWalkthroughStep({
-        number: 4,
-        fullScreen: false,
-        maskAllowInteraction: true,
-        OverlayComponent: WordOfTheDayButtonOverlay,
-    });
-
-
-    // useEffect(
-    //     () => {
-    //         startStep1();
-    //     },
-    //     [startStep1],
-    // );
 
     return (
         <SafeAreaView style={styles.container} >
@@ -67,7 +58,7 @@ const Home = () => {
 
                     <View style={{ marginTop: spacing.md }}>
                         <AnimatedTyping
-                            textToType={["Xin chào, An"]}
+                            textToType={["Xin chào"]}
                             displayLogo={false}
                             textStyle={styles.greeting}
                         />
@@ -76,8 +67,6 @@ const Home = () => {
                     <Animated.View
                         style={styles.summary}
                         entering={FadeInLeft.delay(200).duration(1000).springify()}
-                        //onLayout={onLayout}
-                        onLayout={step2OnLayout}
                     >
                         <View style={{
                             flex: 1,
@@ -158,10 +147,9 @@ const Home = () => {
 
                     <View
                         className='gap-4 mt-1'
-                        onLayout={step3OnLayout}
                     //onLayout={onLayout}
                     >
-                        <Animated.View
+                        {/* <Animated.View
                             entering={FadeInLeft.delay(300).duration(500).springify()}
                         >
                             <Text
@@ -199,23 +187,14 @@ const Home = () => {
                                     <View className='flex-row'>
                                         <View style={{ flex: 1 }}>
                                             <Text style={{ fontSize: fontSizes['2xl'], fontWeight: 600, color: colors.gray800 }}>Bạn bè</Text>
-                                            {/* <Text style={{ fontSize: fontSizes.xs, color: colors.blueAccent550, fontWeight: 400 }}>Danh từ</Text> */}
                                         </View>
-                                        {/* <AnimatedLikeIcon
-                                            primary={colors.red500}
-                                            accent={colors.blueAccent500}
-                                            onPress={() => console.log("Hi")}
-                                        /> */}
+                        
                                         <View
-                                            onLayout={step4OnLayout}
-                                        //onLayout={onLayout}
                                         >
                                             <AnimateChveron
                                                 onPress={() => {
-                                                    //goTo(5);
-                                                    stop()
                                                     router.push({
-                                                        pathname: "../(dictionary)/word/[word]",
+                                                        pathname: "/(dictionary)/word/[word]",
                                                         params: { word: "friend" },
                                                     });
                                                 }}
@@ -223,16 +202,6 @@ const Home = () => {
                                         </View>
                                     </View>
 
-                                    {/* <Text style={{
-                                        fontSize: fontSizes.sm,
-                                        flexShrink: 1,
-                                        flexWrap: 'wrap',
-                                        color: colors.gray700
-                                    }}>
-                                        Người có mối quan hệ thân thiết,
-                                        thường xuyên chia sẻ, trò chuyện
-                                        và hỗ trợ nhau trong học tập hoặc cuộc sống.
-                                    </Text> */}
                                 </View>
                             </View>
                             <View>
@@ -249,6 +218,98 @@ const Home = () => {
 
                             </View>
 
+                        </Animated.View> */}
+                        <Animated.View
+                            entering={FadeInLeft.delay(400).duration(500).springify()}
+                            style={{
+                                borderWidth: .75,
+                                borderColor: colors.gray500,
+                                borderRadius: 10,
+                                backgroundColor: colors.gray100,
+                                padding: spacing.md,
+                                alignSelf: 'stretch',
+                                gap: 8,
+                                ...Platform.select({
+                                    ios: {
+                                        shadowColor: '#ddd',
+                                        shadowOffset: { width: 0, height: 2 },
+                                        shadowOpacity: 0.1,
+                                        shadowRadius: 4
+                                    },
+                                    android: { elevation: 2 },
+                                }),
+                            }}>
+                            {loadingWord ? (
+                                <View style={{ alignItems: "center", paddingVertical: spacing.lg }}>
+                                    <ActivityIndicator size="large" color={colors.primary500} />
+                                </View>
+                            ) : wordOfTheDay ? (
+                                <View>
+                                    <View className="gap-4">
+                                        <View className="flex-row">
+                                            <View style={{ flex: 1 }}>
+                                                <Text style={{ fontSize: fontSizes['2xl'], fontWeight: 600, color: colors.gray800 }}>
+                                                    {wordOfTheDay.word}
+                                                </Text>
+                                                <Text style={{ fontSize: fontSizes.xs, color: colors.blueAccent550, fontWeight: 400 }}>
+                                                    {wordOfTheDay.category}
+                                                </Text>
+                                            </View>
+                                            <View>
+                                                <AnimateChveron
+                                                    onPress={() => {
+                                                        router.push({
+                                                            pathname: "/(dictionary)/word/[word]",
+                                                            params: { word: wordOfTheDay.signWordId },
+                                                        });
+                                                    }}
+                                                />
+                                            </View>
+                                        </View>
+
+                                        <Text style={{
+                                            fontSize: fontSizes.sm,
+                                            flexShrink: 1,
+                                            flexWrap: 'wrap',
+                                            color: colors.gray700
+                                        }}>
+                                            {wordOfTheDay.definition}
+                                        </Text>
+                                    </View>
+
+                                    <View style={{ marginTop: spacing.md }}>
+                                        {wordOfTheDay.category === "Chữ cái" ? (
+                                            // Render mô hình 3D (dùng component TestRender hoặc Three.js)
+                                            <Image
+                                                source={require('@/assets/images/3d.png')}
+                                                style={{
+                                                    width: 200,
+                                                    height: 200,
+                                                    alignSelf: 'center',
+                                                    resizeMode: 'contain',
+                                                }}
+                                            />
+                                        ) : wordOfTheDay.signWordUri ? (
+                                            <Video
+                                                source={{ uri: wordOfTheDay.signWordUri }}
+                                                style={{
+                                                    width: '100%',
+                                                    height: 230,
+                                                    alignSelf: 'center',
+                                                }}
+                                                controls={true}
+                                                paused={true}
+                                            />
+                                        ) : (
+                                            <Text style={{ textAlign: "center", color: colors.gray500 }}>
+                                                Không có media
+                                            </Text>
+                                        )}
+                                    </View>
+                                </View>
+                            ) : (
+                                <Text>Không có từ hôm nay</Text>
+                            )}
                         </Animated.View>
                     </View>
 

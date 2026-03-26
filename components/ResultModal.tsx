@@ -1,4 +1,5 @@
 import { colors, spacing } from "@/global/theme";
+import LottieView from "lottie-react-native";
 import { Check } from "lucide-react-native";
 import React, { useEffect } from "react";
 import { Modal, View, Text, TouchableOpacity, TextInput, StyleSheet, TouchableWithoutFeedback } from "react-native";
@@ -8,12 +9,15 @@ const titles: Record<Props["state"], string> = {
     save: "Lưu thành công!",
     move: "Di chuyển thành công!",
     delete: "Xóa thành công!",
+    payment: "Thanh toán thành công!",
+    unsave: "Bỏ lưu thành công!",
+    register: "Đăng ký thành công!"
 };
 
 type Props = {
     visible: boolean;
     onClose: () => void;
-    state: "add" | "save" | "move" | "delete";
+    state: "add" | "save" | "move" | "delete" | "payment" | "unsave" | "register";
 };
 
 const ResultModal = ({ visible, onClose, state }: Props) => {
@@ -24,7 +28,7 @@ const ResultModal = ({ visible, onClose, state }: Props) => {
         if (visible) {
             timer = setTimeout(() => {
                 onClose();
-            }, 1400);
+            }, 3000);
         }
         return () => clearTimeout(timer);
     }, [visible]);
@@ -45,9 +49,14 @@ const ResultModal = ({ visible, onClose, state }: Props) => {
                         </Text> */}
                         <Text style={styles.title}>{titles[state]}</Text>
 
-                        <View style={styles.checkBtn}>
-                            <Check size={50} strokeWidth={4} color={colors.gray50} />
-                        </View>
+                        {/* <View style={styles.checkBtn}> */}
+                        {/* <Check size={50} strokeWidth={4} color={colors.gray50} /> */}
+                        <LottieView
+                            source={require('@/assets/lottie/success.json')}
+                            autoPlay
+                            style={{ width: 150, height: 150, alignSelf: 'center' }}
+                        />
+                        {/* </View> */}
 
                     </View>
                 </View>
@@ -69,7 +78,9 @@ const styles = StyleSheet.create({
         width: "75%",
         elevation: 5,
         paddingHorizontal: spacing.md,
-        paddingVertical: spacing.lg
+        paddingVertical: spacing.md,
+        justifyContent: 'center',
+        alignItems: 'center'
     },
     title: {
         fontSize: 18,

@@ -1,22 +1,73 @@
-import React, { useState } from "react";
-import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, TouchableWithoutFeedback } from "react-native";
-import { spacing, colors } from "@/global/theme";
+import React, { useState, useContext } from "react";
+import {
+    Modal,
+    View,
+    Text,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    TextInput,
+    ActivityIndicator,
+    StyleSheet
+} from "react-native";
+import { addWordToCollection, createCollection } from "@/services/api";
+import { AuthContext } from "@/context/AuthProvider";
 import { Collection } from "@/types/Types";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type Props = {
     isVisible: boolean;
     onCancel: () => void;
-    onAdd: (newCollection: Collection) => void;
+    onAdd: () => void;
+    signWordId?: string;
+    onError?: (message: string) => void;
 };
 
-const AddCollectionModal = ({ isVisible, onCancel, onAdd }: Props) => {
+const AddCollectionModal = ({ isVisible, onCancel, onAdd, signWordId, onError }: Props) => {
     const [name, setName] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
+    const handleCreate = async () => {
+        if (!name.trim()) return;
+
+        setIsLoading(true);
+        try {
+            const token = await AsyncStorage.getItem("userToken");
+            if (!token) throw new Error("Missing access token");
+
+            const createRes = await createCollection(token, {
+                name: name.trim(),
+                isDefault: false,
+            });
+
+            const collection = createRes.data;
+
+            if (signWordId && signWordId !== "") {
+                await addWordToCollection(token, {
+                    collectionId: collection.collectionId,
+                    signWordId: signWordId,
+                });
+            }
+
+            onAdd();
+            onCancel();
+            setName("");
+        } catch (err: any) {
+            //console.error("Error creating or linking collection:", err.message);
+            if (onError) {
+                const msg = err.response?.data?.errorMessage;
+                onError(msg);
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    };
     return (
         <Modal visible={isVisible} transparent animationType="fade">
             <TouchableWithoutFeedback onPress={() => {
-                onCancel();
-                setName("");
+                if (!isLoading) {
+                    onCancel();
+                    setName("");
+                }
             }}>
                 <View style={styles.backdrop}>
                     <View style={styles.container}>
@@ -27,6 +78,7 @@ const AddCollectionModal = ({ isVisible, onCancel, onAdd }: Props) => {
                             placeholder="Tên bộ sưu tập"
                             value={name}
                             onChangeText={setName}
+                            editable={!isLoading}
                         />
 
                         <View style={styles.buttonsRow}>
@@ -35,28 +87,26 @@ const AddCollectionModal = ({ isVisible, onCancel, onAdd }: Props) => {
                                 onPress={() => {
                                     onCancel();
                                     setName("");
-                                }}>
+                                }}
+                                disabled={isLoading}
+                            >
                                 <Text style={styles.buttonText}>Hủy</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
                                 style={[styles.button, styles.confirm]}
-                                onPress={() => {
-                                    if (name.trim()) {
-                                        const newCollection: Collection = {
-                                            id: Date.now().toString(),
-                                            name: name.trim(),
-                                            wordCount: 0,
-                                        };
-                                        onAdd(newCollection);
-                                        setName("");
-                                        onCancel();
-                                    }
-                                }}
+                                onPress={handleCreate}
+                                disabled={isLoading}
                             >
                                 <Text style={styles.buttonText}>Tạo</Text>
                             </TouchableOpacity>
                         </View>
+
+                        {isLoading && (
+                            <View style={styles.loadingOverlay}>
+                                <ActivityIndicator size="large" color="#fff" />
+                            </View>
+                        )}
                     </View>
                 </View>
             </TouchableWithoutFeedback>
@@ -64,56 +114,63 @@ const AddCollectionModal = ({ isVisible, onCancel, onAdd }: Props) => {
     );
 };
 
-export default AddCollectionModal;
-
 const styles = StyleSheet.create({
     backdrop: {
         flex: 1,
-        backgroundColor: "rgba(0,0,0,0.5)",
+        backgroundColor: "rgba(0,0,0,0.6)",
         justifyContent: "center",
         alignItems: "center",
     },
     container: {
         width: "85%",
-        backgroundColor: "white",
-        borderRadius: 15,
-        elevation: 5,
-        padding: spacing.md,
+        backgroundColor: "#fff",
+        borderRadius: 12,
+        padding: 20,
+        position: "relative",
     },
     title: {
         fontSize: 18,
         fontWeight: "bold",
-        color: colors.primary700,
-        marginBottom: spacing.md,
-        textAlign: "center",
+        marginBottom: 16,
     },
     input: {
         borderWidth: 1,
         borderColor: "#ccc",
-        borderRadius: 10,
-        padding: spacing.sm,
-        marginBottom: spacing.md,
+        borderRadius: 8,
+        padding: 10,
+        marginBottom: 20,
     },
     buttonsRow: {
         flexDirection: "row",
-        justifyContent: "space-between",
-        marginTop: spacing.sm,
+        justifyContent: "flex-end",
+        gap: 10,
     },
     button: {
-        flex: 1,
-        padding: spacing.sm,
-        marginHorizontal: spacing.xs,
-        borderRadius: 10,
-        alignItems: "center",
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 8,
     },
     cancel: {
         backgroundColor: "#ccc",
     },
     confirm: {
-        backgroundColor: colors.primary300,
+        backgroundColor: "#007bff",
     },
     buttonText: {
-        color: "white",
-        fontWeight: "bold",
+        color: "#fff",
+        fontWeight: "600",
+    },
+    loadingOverlay: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0,0,0,0.4)",
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: 12,
     },
 });
+
+export default AddCollectionModal;

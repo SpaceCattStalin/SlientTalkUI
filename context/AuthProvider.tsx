@@ -42,36 +42,36 @@ export const AuthProvider = ({ children }: { children: ReactNode; }) => {
     const [state, dispatch] = useReducer(authReducer, initialState);
 
     useEffect(() => {
-    const bootstrapAsync = async () => {
-        try {
-            const token = await AsyncStorage.getItem('userToken');
-            dispatch({ type: 'RESTORE_TOKEN', token });
-        } catch (e) {
-            console.error("Không thể lấy token:", e);
-        }
-    };
-    bootstrapAsync();
-}, []);
+        const bootstrapAsync = async () => {
+            try {
+                const token = await AsyncStorage.getItem('userToken');
+                dispatch({ type: 'RESTORE_TOKEN', token });
+            } catch (e) {
+                console.error("Không thể lấy token:", e);
+            }
+        };
+        bootstrapAsync();
+    }, []);
 
     const authContext: AuthContextType = useMemo(() => (
         {
             signIn: async (token: string) => {
-            try {
-                await AsyncStorage.setItem('userToken', token);
-                dispatch({ type: "SIGN_IN", token });
-            } catch (e) {
-                console.error("Lưu token thất bại:", e);
-            }
-        },
+                try {
+                    await AsyncStorage.setItem('userToken', token);
+                    dispatch({ type: "SIGN_IN", token });
+                } catch (e) {
+                    console.error("Lưu token thất bại:", e);
+                }
+            },
 
-        signOut: async () => {
-            try {
-                await AsyncStorage.removeItem('userToken');
-                dispatch({ type: "SIGN_OUT" });
-            } catch (e) {
-                console.error("Xóa token thất bại:", e);
-            }
-        },
+            signOut: async () => {
+                try {
+                    await AsyncStorage.removeItem('userToken');
+                    dispatch({ type: "SIGN_OUT" });
+                } catch (e) {
+                    console.error("Xóa token thất bại:", e);
+                }
+            },
             /* signIn: async (data: any) => {
                 dispatch({ type: "SIGN_IN", token: "ada" });
             },

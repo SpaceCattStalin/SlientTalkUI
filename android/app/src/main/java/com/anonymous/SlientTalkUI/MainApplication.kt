@@ -3,6 +3,7 @@ package com.anonymous.SlientTalkUI
 import android.app.Application
 import android.content.res.Configuration
 
+
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
@@ -15,6 +16,7 @@ import com.facebook.react.defaults.DefaultReactNativeHost
 
 import expo.modules.ApplicationLifecycleDispatcher
 import expo.modules.ReactNativeHostWrapper
+import com.anonymous.SlientTalkUI.PayZaloBridgePackage
 
 class MainApplication : Application(), ReactApplication {
 
@@ -23,6 +25,7 @@ class MainApplication : Application(), ReactApplication {
       object : DefaultReactNativeHost(this) {
         override fun getPackages(): List<ReactPackage> =
             PackageList(this).packages.apply {
+              add(PayZaloBridgePackage())
               // Packages that cannot be autolinked yet can be added manually here, for example:
               // add(MyReactNativePackage())
             }

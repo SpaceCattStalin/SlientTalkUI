@@ -9,40 +9,44 @@ import {
 } from "react-native";
 import { colors, spacing } from "@/global/theme";
 
-type ConfirmDeleteModalProps = {
+type ConfirmActionModalProps = {
   visible: boolean;
-  word: string;
+  message: string;
   onCancel: () => void;
   onConfirm: () => void;
+  cancelText?: string;
+  confirmText?: string;
 };
 
-const ConfirmDeleteModal = ({ visible, word, onCancel, onConfirm }: ConfirmDeleteModalProps) => {
+const ConfirmActionModal = ({ visible, message, onCancel, onConfirm, cancelText = "Hủy bỏ",
+  confirmText = "Xác nhận", }: ConfirmActionModalProps) => {
   return (
     <Modal transparent animationType="fade" visible={visible}>
       <TouchableWithoutFeedback onPress={onCancel}>
         <View style={styles.overlay}>
           <View style={styles.modalContent}>
             <Text style={styles.message}>
-              Xác nhận xóa từ <Text style={styles.word}>“{word}”</Text>
+              {/* Xác nhận xóa từ <Text style={styles.word}>“{word}” */}
+              {message}
             </Text>
 
             <View style={styles.actions}>
               <Pressable style={[styles.button, styles.cancelButton]} onPress={onCancel}>
-                <Text style={styles.cancelText}>Hủy bỏ</Text>
+                <Text style={styles.cancelText}>{cancelText}</Text>
               </Pressable>
 
               <Pressable style={[styles.button, styles.confirmButton]} onPress={onConfirm}>
-                <Text style={styles.confirmText}>Xác nhận</Text>
+                <Text style={styles.confirmText}>{confirmText}</Text>
               </Pressable>
             </View>
           </View>
         </View>
       </TouchableWithoutFeedback>
-    </Modal>
+    </Modal >
   );
 };
 
-export default ConfirmDeleteModal;
+export default ConfirmActionModal;
 
 const styles = StyleSheet.create({
   overlay: {

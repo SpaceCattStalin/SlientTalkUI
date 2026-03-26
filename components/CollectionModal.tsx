@@ -14,7 +14,7 @@ import Profile from '@/assets/images/profile.svg';
 import Search from '@/assets/images/search.svg';
 import { useNav } from "@/context/NavContext";
 import { colors, fontSizes, spacing } from "@/global/theme";
-import { Collection } from "@/types/Types";
+import { Collection, GenericResponse } from "@/types/Types";
 import { Link } from "expo-router";
 import { useEffect, useState } from "react";
 import { useWalkthroughStep } from "react-native-interactive-walkthrough";
@@ -23,70 +23,114 @@ import WordDefinitionOverlay5 from "./walkthrough/WordDefinitionOverlay5";
 // import Wave from '@/assets/images/wave.svg';
 import Scan from '@/assets/images/scan.svg';
 import WordDefinitionOverlay6 from "./walkthrough/WordDefinitionOverlay6";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { addWordToCollection, getMyCollections } from "@/services/api";
 
 type Props = {
     isVisible: boolean;
     onCancel: () => void;
-    collections: Collection[];
+    collections?: Collection[];
     onConfirm: (collectionId: string) => void;
     onAdd?: () => void;
     isMove?: boolean;
     inDictionary?: boolean;
+    signWordId?: string;
+    refetch?: boolean;
+    onError?: (message: string) => void;
 };
 const ICON_SIZE = 20;
 
-const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd, isMove = false, inDictionary = false, walkthroughDone }: Props) => {
+const CollectionModal = ({ isVisible, onCancel, onConfirm, onAdd, isMove = false, signWordId, refetch, onError }: Props) => {
     const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [collections, setCollections] = useState<Collection[]>([]);
+
     const [newName, setNewName] = useState("");
     const { activeTab, setActiveTab } = useNav();
-
-    const { onLayout: step5OnLayout, goTo: goTo8, start: startStep8 } = useWalkthroughStep({
-        number: 8,
-        fullScreen: false,
-        OverlayComponent: WordDefinitionOverlay4,
-    });
-
-    const { onLayout: step6OnLayout, } = useWalkthroughStep({
-        number: 9,
-        fullScreen: false,
-        OverlayComponent: WordDefinitionOverlay5,
-    });
-
-    const { onLayout: step10OnLayout, } = useWalkthroughStep({
-        number: 10,
-        fullScreen: false,
-        maskAllowInteraction: true,
-        OverlayComponent: WordDefinitionOverlay6,
-    });
-
-    // useEffect(() => {
-    //     if (!inDictionary)
-    //         goTo(8);
-    // }, [start]);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (!inDictionary)
-            goTo8(8);
-    }, [goTo8, inDictionary, startStep8]);
+        const fetchCollections = async () => {
+            setLoading(true);
+            try {
+                const token = await AsyncStorage.getItem("userToken");
+                if (!token) return;
+
+                const res = await getMyCollections(token);
+                if (res.isSuccess) {
+                    const formatted = res.data.map((c: Collection) => ({ ...c, totalCount: c.signWords.length ?? 0 }));
+                    setCollections(formatted);
+                }
+            } catch (err) {
+                console.error("Failed to fetch collections:", err);
+                if (onError) {
+                    const msg = err.response?.data?.errorMessage;
+                    onError(msg);
+                }
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCollections();
+    }, [isVisible, refetch]);
+
+    const handleConfirm = async () => {
+        if (!selectedId) return;
+
+        try {
+            const token = await AsyncStorage.getItem("userToken");
+            if (!token) return;
+
+            if (signWordId) {
+                setLoading(true);
+                const res = await addWordToCollection(token, {
+                    collectionId: selectedId,
+                    signWordId: signWordId,
+                });
+                if (res.isSuccess) {
+                    // Refetch collections immediately
+                    const collectionsRes = await getMyCollections(token);
+                    if (collectionsRes.isSuccess) {
+                        const formatted = collectionsRes.data.map((c: Collection) => ({
+                            ...c,
+                            totalCount: c.signWords.length ?? 0
+                        }));
+                        setCollections(formatted);
+                    }
+                } else {
+                    console.error("Failed to add word:", res.errorMessage);
+                }
+            }
+
+            // Always call parent onConfirm
+            onConfirm(selectedId);
+        } catch (error) {
+            console.error("Error adding word to collection:", error);
+        } finally {
+            setLoading(false);
+            setSelectedId(null);
+        }
+    };
 
 
     if (!isVisible) return null;
 
     const renderItem = ({ item }: { item: Collection; }) => {
-        const isSelected = item.id === selectedId;
+        const isSelected = item.collectionId === selectedId;
         return (
             <TouchableOpacity
                 style={[styles.collectionItem, isSelected && styles.selected]}
                 onPress={() => {
-                    if (selectedId == item.id) {
+                    if (selectedId === item.collectionId) {
                         setSelectedId(null);
                     } else {
-                        setSelectedId(item.id);
+                        setSelectedId(item.collectionId);
                     }
                 }}
             >
                 <Text style={[styles.collectionText, isSelected && styles.selectedText]}>
-                    {item.name} ({item.wordCount})
+                    {item.name} ({item.totalCount} từ)
+                    {/* ({item.signWords?.length}) */}
                 </Text>
 
             </TouchableOpacity>
@@ -94,12 +138,6 @@ const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd, i
     };
 
     return (
-        // <Modal
-        //     visible={isVisible}
-        //     transparent
-        //     animationType="fade"
-        //     style={{ zIndex: 2 }}
-        // >
         <View style={styles.overlayContainer}>
 
             <TouchableWithoutFeedback
@@ -119,15 +157,15 @@ const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd, i
                         </Text>
 
                         <FlatList
-                            onLayout={step5OnLayout}
+                            //onLayout={step5OnLayout}
                             data={collections}
                             renderItem={renderItem}
-                            keyExtractor={(item) => item.id}
+                            keyExtractor={(item) => item.collectionId}
                         />
                         {!isMove && <TouchableOpacity
                             style={[styles.collectionItem, styles.addNew]}
                             onPress={onAdd}
-                            onLayout={step6OnLayout}
+                        //onLayout={step6OnLayout}
                         >
                             <Text style={styles.addNewText}>+ Lưu vào bộ sưu tập mới</Text>
                         </TouchableOpacity>}
@@ -145,10 +183,7 @@ const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd, i
 
                                 <TouchableOpacity
                                     style={[styles.button, styles.confirm]}
-                                    onPress={() => {
-                                        onConfirm(selectedId);
-                                        setSelectedId(null);
-                                    }}
+                                    onPress={handleConfirm}
                                 >
                                     <Text style={styles.buttonText}>
                                         {isMove ? "Di chuyển" : "Lưu"}
@@ -159,87 +194,6 @@ const CollectionModal = ({ isVisible, onCancel, collections, onConfirm, onAdd, i
                     </View>
                 </View>
             </TouchableWithoutFeedback>
-            {/* -------------------------------------------------- */}
-            <View style={{ ...styles.containerNav }}>
-                <Link href="/(main)/home" asChild>
-                    <TouchableOpacity onPress={() => setActiveTab("home")}>
-                        {/* <View style={{ backgroundColor: activeTab === "home" ? "red" : "transparent", ...styles.wrapper }}> */}
-                        <View style={styles.wrapper}>
-                            <HomeIcon
-                                width={ICON_SIZE}
-                                height={ICON_SIZE}
-                                stroke={activeTab === "home" ? colors.primary400 : colors.gray500}
-                                fill={activeTab === "home" ? colors.primary400 : colors.gray500}
-                            />
-                            <Text style={{ color: activeTab === "home" ? colors.primary400 : colors.gray500, ...styles.text }}>Trang chủ</Text>
-                        </View>
-                    </TouchableOpacity>
-                </Link>
-
-                {/* <Link href="/(practice)" asChild>
-                                <TouchableOpacity style={styles.button} onPress={() => setActiveTab("practice")}>
-                                    <View style={styles.wrapper}>
-                                        <Book
-                                            width={ICON_SIZE}
-                                            height={ICON_SIZE}
-                                            stroke={activeTab === "practice" ? colors.primary400 : colors.gray500}
-                                        />
-                                        <Text style={{ color: activeTab === "practice" ? colors.primary400 : colors.gray500, ...styles.text }}>Luyện tập</Text>
-                                    </View>
-                                </TouchableOpacity>
-                            </Link> */}
-
-                {/* <Button style={styles.button}>
-                                <Wave width={ICON_SIZE} height={ICON_SIZE} />
-                            </Button> */}
-
-                <Link href="/(translate)" asChild>
-                    <TouchableOpacity style={styles.translateBtn} onPress={() => setActiveTab("translate")}>
-                        <View style={{ ...styles.wrapper, }}>
-                            <Scan
-                                width={ICON_SIZE}
-                                height={ICON_SIZE}
-                                stroke={activeTab === "translate" ? colors.primary400 : colors.gray500}
-                            />
-                            <Text style={{ color: activeTab === "translate" ? colors.primary400 : colors.gray500, ...styles.text }}>
-                                Phiên dịch
-                            </Text>
-                        </View>
-                    </TouchableOpacity>
-                </Link>
-
-                <Link href="/(dictionary)" asChild>
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={() => setActiveTab("dictionary")}
-                        onLayout={step10OnLayout}
-                    >
-                        <View style={{ ...styles.wrapper, }}>
-                            <Search
-                                width={ICON_SIZE}
-                                height={ICON_SIZE}
-                                stroke={activeTab === "dictionary" ? colors.primary400 : colors.gray500}
-                            />
-                            <Text style={{ color: activeTab === "dictionary" ? colors.primary400 : colors.gray500, ...styles.text }}>Từ điển</Text>
-                        </View>
-                    </TouchableOpacity>
-                </Link>
-
-                <Link href="/(profile)" asChild>
-                    <TouchableOpacity style={styles.button} onPress={() => setActiveTab("profile")}>
-                        <View style={{ ...styles.wrapper }}>
-                            <Profile
-                                width={ICON_SIZE}
-                                height={ICON_SIZE}
-                                stroke={activeTab === "profile" ? colors.primary400 : colors.gray500}
-                            />
-                            <Text style={{ color: activeTab === "profile" ? colors.primary400 : colors.gray500, ...styles.text }}>Tài khoản</Text>
-                        </View>
-                    </TouchableOpacity>
-                </Link>
-            </View>
-
-            {/* </Modal> */}
         </View>
     );
 };

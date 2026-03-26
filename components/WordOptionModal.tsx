@@ -6,7 +6,6 @@ import {
     Text,
     StyleSheet,
     Pressable,
-    TouchableOpacity,
     TouchableWithoutFeedback,
 } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
@@ -67,7 +66,7 @@ const WordOptionsModal = ({ visible, onClose, onMove, onDelete }: WordOptionsMod
                                 deleteAnimatedStyle]}
                             >
                                 <Text style={styles.deleteText}>
-                                    Xóa từ này
+                                    Bỏ thích từ này
                                 </Text>
                             </Animated.View>
                         </Pressable>
@@ -92,7 +91,7 @@ const styles = StyleSheet.create({
         width: "80%",
         backgroundColor: "#fff",
         borderRadius: 10,
-        padding: 18,
+        padding: 24,
         justifyContent: 'center',
         gap: spacing.sm,
         alignItems: "stretch",
